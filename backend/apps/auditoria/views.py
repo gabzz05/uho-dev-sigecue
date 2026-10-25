@@ -1,7 +1,8 @@
 from django.utils.dateparse import parse_date
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
-from rest_framework.permissions import IsAdminUser
+
+from apps.roles.permissions import PermisoModulo
 
 from .models import LogAuditoria
 from .serializers import LogAuditoriaSerializer
@@ -23,8 +24,8 @@ class LogAuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
     """Consulta de logs de auditoría. Solo lectura: los logs son inmutables."""
 
     serializer_class = LogAuditoriaSerializer
-    # Provisional: en feature/auth-users se restringe a Superadmin y Jefe CI.
-    permission_classes = [IsAdminUser]
+    permission_classes = [PermisoModulo]
+    modulo = "logs"
 
     def get_queryset(self):
         qs = LogAuditoria.objects.all()

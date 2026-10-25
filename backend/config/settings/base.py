@@ -21,6 +21,7 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     "apps.core",
+    "apps.roles",
     "apps.users",
     "apps.auditoria",
 ]
