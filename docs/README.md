@@ -13,6 +13,7 @@ de plazas y prematrícula.
 | [DESPLIEGUE.md](DESPLIEGUE.md) | Cómo instalar y poner en producción en Linux, macOS o Windows |
 | [DOCKER.md](DOCKER.md) | Cómo contenerizar el sistema más adelante (pendiente de implementar) |
 | [GIT.md](GIT.md) | Flujo de ramas y formato de commits |
+| [SGU.md](SGU.md) | Cómo conectar la autenticación con auth.uho.edu.cu |
 | [DECISIONES.md](DECISIONES.md) | Decisiones del cliente que se apartan o precisan la ERS |
 | [ANOTACIONES.md](ANOTACIONES.md) | Elementos provisionales y pendientes de material externo |
 
@@ -44,8 +45,55 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | App | Responsabilidad |
 |---|---|
 | `core` | Piezas transversales: formato de errores, paginación, modelos base, cifrado de datos personales |
-| `users` | Modelo de usuario (`AUTH_USER_MODEL = users.Usuario`) |
-| `auditoria` | Log de auditoría inmutable (RG-010) |
+| `roles` | Roles, catálogo de permisos (módulo × acción) y la clase `PermisoModulo` |
+| `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
+| `auditoria` | Log de auditoría (RG-010) |
+
+### Autenticación
+
+| Endpoint | Uso |
+|---|---|
+| `POST /api/v1/auth/login/` | `{identificador, password}`. Aspirantes con su email, internos con su usuario. Devuelve `{access, usuario}` y deja la cookie de refresh. |
+| `POST /api/v1/auth/refresh/` | Sin cuerpo. Lee la cookie, devuelve un `access` nuevo y rota la cookie. |
+| `POST /api/v1/auth/logout/` | Invalida el refresh y borra la cookie. |
+| `POST /api/v1/auth/registro/` | Registro de aspirante. Envía el correo de activación. |
+| `POST /api/v1/auth/activar/` | `{token}` recibido en el correo. |
+| `GET/PATCH /api/v1/auth/me/` | Perfil propio con rol y permisos. Editables: `celular`, `foto`. |
+| `POST /api/v1/auth/me/password/` | `{actual, nueva}`. No aplica a usuarios del SGU. |
+
+- **Tokens**: el `access` (JWT, 15 min) se manda como `Authorization: Bearer ...`
+  y el frontend lo guarda **solo en memoria**. El refresh (8 h) va en la cookie
+  `sigecue_refresh`: `httpOnly`, `SameSite=Strict`, `Secure` en producción y
+  limitada a `/api/v1/auth/`. JavaScript no puede leerla. Se rota en cada uso,
+  así que la sesión caduca tras 8 h sin renovarse o al cerrar sesión (RG-011).
+- **Importante para el frontend**: renovar el access solo cuando hay actividad
+  del usuario. Si el polling de notificaciones renovara la sesión por su
+  cuenta, una pestaña abierta nunca caducaría por inactividad.
+- **Bloqueo temporal** (RG-009): tras `LOGIN_MAX_INTENTOS` fallos seguidos la
+  cuenta queda bloqueada `LOGIN_BLOQUEO_MINUTOS`. Los endpoints públicos de auth
+  tienen además un límite de peticiones por IP (`AUTH_THROTTLE_RATE`).
+- **Contraseñas**: Argon2 (RG-007) y validadores de Django.
+- **Cuentas no activadas**: la tarea `eliminar_cuentas_no_verificadas` (Celery
+  beat, cada hora) borra los aspirantes que no activaron su cuenta en 48 h.
+
+### Permisos
+
+- Cada rol tiene permisos `modulo.accion` (catálogo en `apps/roles/catalogo.py`).
+  El Superadmin tiene acceso total sin necesidad de permisos.
+- Los 13 roles de la ERS se crean en la migración `roles/0002_roles_iniciales`
+  con una matriz inicial. El Superadmin puede editar sus permisos, crear roles
+  nuevos y desactivarlos, pero no borrar ni cambiar el código o ámbito de los
+  13 roles del sistema.
+- En una vista: `permission_classes = [PermisoModulo]` y `modulo = "..."`.
+  `list`/`retrieve` exigen `ver`, `create` exige `crear`, `update` exige
+  `editar` y `destroy` exige `eliminar`. Las acciones propias se declaran en
+  `acciones_permiso`; si una acción no está declarada, se deniega.
+- Por defecto, toda vista de la API exige sesión iniciada
+  (`DEFAULT_PERMISSION_CLASSES`). Las públicas lo declaran explícitamente.
+- `GET /api/v1/admin/roles/catalogo/` devuelve los permisos agrupados por módulo
+  para construir la matriz en el panel.
+- **Pendiente** (feature `nomencladores`): vincular a los usuarios locales con su
+  Facultad o CUM/FUM y filtrar los datos por ámbito (RG-027, criterio 11).
 
 ### API
 

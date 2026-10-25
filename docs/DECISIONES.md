@@ -22,6 +22,15 @@ Este archivo registra esas decisiones.
 | Cifrado (RG-025) | CI, celular y email se cifran en reposo con AES-256. El CI guarda además un hash para comprobar unicidad y buscar. |
 | Listado público de otorgados (RF-024) | Se puede buscar por nombre o CI, pero el listado **no muestra el CI completo**: solo nombre, carrera y entidad (o CI enmascarado). Así se cumplen RF-024, RG-025 y RG-027. |
 
+## Autenticación y usuarios
+
+| Tema | Decisión |
+|---|---|
+| Login | Aspirantes con su email; usuarios internos con nombre de usuario y contraseña local hasta que se conecte el SGU. |
+| Sesión (RG-011) | Access token de 15 min en memoria del navegador y refresh en cookie httpOnly; la sesión caduca tras 8 h de inactividad o al cerrarla. |
+| Roles (RE-006) | Los 13 roles de la ERS vienen precargados con una matriz de permisos inicial. El Superadmin puede editar permisos y crear roles nuevos. |
+| Auditoría (RG-010) | Las lecturas (GET) no se auditan automáticamente; las lecturas sensibles se registran explícitamente en cada módulo. |
+
 ## Expresión de interés
 
 | Tema | Decisión |

@@ -154,6 +154,19 @@ tienen prioridad sobre las del archivo.
 | `CELERY_BROKER_URL` / `CELERY_RESULT_BACKEND` | No | Por defecto `redis://localhost:6379/0` |
 | `CELERY_TASK_ALWAYS_EAGER` | No | Debe ser `False` en producción |
 | `API_PAGE_SIZE` | No | Elementos por página en la API (20) |
+| `FRONTEND_URL` | Sí | URL pública del sistema, p. ej. `https://sigecue.uho.edu.cu`. Se usa en los enlaces de los correos. |
+| `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` | Sí | SMTP corporativo. Más adelante será editable desde el panel (RE-010). |
+| `DEFAULT_FROM_EMAIL` | No | Remitente de los correos |
+| `LOGIN_MAX_INTENTOS` / `LOGIN_BLOQUEO_MINUTOS` | No | Bloqueo temporal por intentos fallidos (5 / 15) |
+| `AUTH_THROTTLE_RATE` | No | Límite de peticiones a login y registro por IP (`20/min`) |
+| `AUTH_COOKIE_SECURE` | No | `True` (la cookie de sesión solo viaja por HTTPS). No cambiar en producción. |
+| `SGU_PROVEEDOR` | No | Integración con auth.uho.edu.cu. Ver [SGU.md](SGU.md). |
+
+Tras la primera migración, crear el Superadmin:
+
+```bash
+.venv/bin/python manage.py createsuperuser
+```
 
 Inicializar la base de datos y los archivos estáticos:
 

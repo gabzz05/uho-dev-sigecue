@@ -22,11 +22,15 @@ source .venv/bin/activate
 pip install -r requirements/dev.txt
 cp .env.example .env        # opcional en desarrollo: hay valores por defecto
 python manage.py migrate
+python manage.py createsuperuser   # Superadmin para entrar al panel
 python manage.py runserver  # http://localhost:8000
 ```
 
 Por defecto `manage.py` usa `config.settings.dev`, que trabaja con SQLite
 (`backend/db.sqlite3`) y no necesita ninguna variable de entorno obligatoria.
+
+En desarrollo los correos (p. ej. el de activación de cuenta) se imprimen en la
+consola del `runserver` en lugar de enviarse.
 
 Comprobación rápida: `http://localhost:8000/api/v1/health/` debe responder
 `{"status": "ok"}`.
