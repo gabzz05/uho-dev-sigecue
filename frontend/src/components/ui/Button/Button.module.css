@@ -1,0 +1,79 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sm { padding: var(--space-1) var(--space-3); font-size: var(--font-size-sm); }
+.md { padding: var(--space-2) var(--space-4); font-size: var(--font-size-md); }
+.lg { padding: var(--space-3) var(--space-6); font-size: var(--font-size-lg); }
+
+.fullWidth { width: 100%; }
+
+.primary { background: var(--color-primary); color: var(--color-text-inverse); }
+.primary:hover:not(:disabled) { background: var(--color-primary-light); }
+
+.accent { background: var(--color-accent); color: var(--color-text-inverse); }
+.accent:hover:not(:disabled) { filter: brightness(0.92); }
+
+.secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.secondary:hover:not(:disabled) { background: var(--color-surface-muted); }
+
+.outline {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.outline:hover:not(:disabled) { background: var(--color-surface-muted); }
+
+.ghost { background: transparent; color: var(--color-text-muted); }
+.ghost:hover:not(:disabled) { background: var(--color-surface-muted); color: var(--color-text); }
+
+.inverse { background: var(--color-surface); color: var(--color-primary); }
+.inverse:hover:not(:disabled) { background: var(--color-surface-muted); }
+
+.success { background: var(--color-success); color: var(--color-text-inverse); }
+.success:hover:not(:disabled) { filter: brightness(0.92); }
+
+.danger { background: var(--color-danger); color: var(--color-text-inverse); }
+.danger:hover:not(:disabled) { filter: brightness(0.92); }
+
+.link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-primary-light);
+  font-weight: 600;
+}
+.link:hover:not(:disabled) { text-decoration: underline; }
+
+.icon,
+.spinner {
+  width: 1.1em;
+  height: 1.1em;
+  flex-shrink: 0;
+}
+
+.spinner { animation: girar 0.8s linear infinite; }
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
