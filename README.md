@@ -6,4 +6,5 @@ Sistema de Gestión de Carreras por Encuentro — Universidad de Holguín.
 - `frontend/`: aplicación web (React + Vite).
 - `docs/`: documentación técnica, instalación y despliegue.
 
-Ver [docs/README.md](docs/README.md).
+Inicio rápido en desarrollo: [docs/DESARROLLO.md](docs/DESARROLLO.md).
+Toda la documentación: [docs/README.md](docs/README.md).
