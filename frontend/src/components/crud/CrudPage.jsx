@@ -26,6 +26,17 @@ const OPCIONES_ESTADO = [
 ]
 
 const identidad = (x) => x
+const porNombre = (item) => item.nombre
+const siempre = () => true
+
+/** Estado por defecto: campo `activo` editable con PATCH. */
+const ESTADO_ACTIVO = {
+  activo: (item) => item.activo,
+  alternar: (recurso, item) => recurso.actualizar(item.id, { activo: !item.activo }),
+  etiquetas: { activo: 'Activo', inactivo: 'Inactivo' },
+  acciones: { desactivar: 'Desactivar', activar: 'Activar' },
+  mensajes: { desactivado: 'Se desactivó', activado: 'Se activó' },
+}
 
 /**
  * Pantalla de listado + alta/edición/baja de un recurso (nomencladores y similares).
@@ -36,6 +47,10 @@ const identidad = (x) => x
  * - `filtros`: selects extra `[{ name, label, options }]`; buscar y estado van siempre.
  * - `permisos`: `{ crear, editar, eliminar }`. Sin permiso, la acción no se muestra.
  * - `aFormulario(item)` / `aDatos(valores)`: conversión entre API y formulario.
+ * - `nombreDe(item)`: texto con el que se nombra un registro en avisos y etiquetas.
+ * - `estado`: cómo se lee y se alterna el estado (por defecto, el campo `activo`).
+ * - `accionesExtra(item, recargar)`: botones adicionales por fila.
+ * - `puedeEliminarItem(item)`: oculta "Eliminar" en registros concretos.
  */
 export function CrudPage({
   titulo,
@@ -51,6 +66,11 @@ export function CrudPage({
   aFormulario = identidad,
   aDatos = identidad,
   conEncabezado = true,
+  nombreDe = porNombre,
+  estado = ESTADO_ACTIVO,
+  accionesExtra,
+  puedeEliminarItem = siempre,
+  placeholderBusqueda = 'Nombre o código',
 }) {
   const listado = useListado(recurso, { filtrosIniciales: { buscar: '', activo: '' } })
   const toast = useToast()
@@ -59,9 +79,10 @@ export function CrudPage({
   const [ocupado, setOcupado] = useState(false)
 
   async function cambiarEstado(item) {
+    const activo = estado.activo(item)
     try {
-      await recurso.actualizar(item.id, { activo: !item.activo })
-      toast.exito(item.activo ? `Se desactivó: ${item.nombre}.` : `Se activó: ${item.nombre}.`)
+      await estado.alternar(recurso, item)
+      toast.exito(`${activo ? estado.mensajes.desactivado : estado.mensajes.activado}: ${nombreDe(item)}.`)
       listado.recargar()
     } catch (error) {
       toast.error(mensajeDeError(error))
@@ -72,7 +93,7 @@ export function CrudPage({
     setOcupado(true)
     try {
       await recurso.eliminar(aEliminar.id)
-      toast.exito(`Se eliminó: ${aEliminar.nombre}.`)
+      toast.exito(`Se eliminó: ${nombreDe(aEliminar)}.`)
       listado.recargar()
     } catch (error) {
       toast.error(mensajeDeError(error))
@@ -89,7 +110,7 @@ export function CrudPage({
 
   function cerrarEdicion(guardado) {
     if (guardado) {
-      toast.exito(edicion.item ? 'Los cambios se guardaron.' : `Se creó: ${guardado.nombre}.`)
+      toast.exito(edicion.item ? 'Los cambios se guardaron.' : `Se creó: ${nombreDe(guardado)}.`)
       listado.recargar()
     }
     setEdicion(null)
@@ -100,30 +121,42 @@ export function CrudPage({
     {
       key: 'activo',
       header: 'Estado',
-      render: (item) => <Badge tone={item.activo ? 'success' : 'neutral'}>{item.activo ? 'Activo' : 'Inactivo'}</Badge>,
+      render: (item) =>
+        estado.render?.(item) ?? (
+          <Badge tone={estado.activo(item) ? 'success' : 'neutral'}>
+            {estado.activo(item) ? estado.etiquetas.activo : estado.etiquetas.inactivo}
+          </Badge>
+        ),
     },
   ]
-  if (permisos.editar || permisos.eliminar) {
+  if (permisos.editar || permisos.eliminar || accionesExtra) {
     columnasCompletas.push({
       key: 'acciones',
       header: <span className={styles.srOnly}>Acciones</span>,
       align: 'right',
       render: (item) => (
         <div className={styles.acciones}>
+          {accionesExtra?.(item, listado.recargar)}
           {permisos.editar && (
             <>
-              <Button variant="ghost" size="sm" icon={Pencil} onClick={() => setEdicion({ item })} aria-label={`Editar ${item.nombre}`} />
+              <Button variant="ghost" size="sm" icon={Pencil} onClick={() => setEdicion({ item })} aria-label={`Editar ${nombreDe(item)}`} />
               <Button
                 variant="ghost"
                 size="sm"
                 icon={Power}
                 onClick={() => cambiarEstado(item)}
-                aria-label={item.activo ? `Desactivar ${item.nombre}` : `Activar ${item.nombre}`}
+                aria-label={`${estado.activo(item) ? estado.acciones.desactivar : estado.acciones.activar} ${nombreDe(item)}`}
               />
             </>
           )}
-          {permisos.eliminar && (
-            <Button variant="ghost" size="sm" icon={Trash2} onClick={() => setAEliminar(item)} aria-label={`Eliminar ${item.nombre}`} />
+          {permisos.eliminar && puedeEliminarItem(item) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Trash2}
+              onClick={() => setAEliminar(item)}
+              aria-label={`Eliminar ${nombreDe(item)}`}
+            />
           )}
         </div>
       ),
@@ -149,7 +182,7 @@ export function CrudPage({
           <Input
             label="Buscar"
             type="search"
-            placeholder="Nombre o código"
+            placeholder={placeholderBusqueda}
             value={listado.filtros.buscar}
             onChange={(e) => listado.cambiarFiltro('buscar', e.target.value)}
           />
@@ -198,7 +231,7 @@ export function CrudPage({
       <ConfirmDialog
         open={Boolean(aEliminar)}
         title={`Eliminar ${singular}`}
-        message={`¿Eliminar "${aEliminar?.nombre}"? Si está en uso no se podrá eliminar; en ese caso desactívalo.`}
+        message={`¿Eliminar "${aEliminar ? nombreDe(aEliminar) : ''}"? Si está en uso no se podrá eliminar; en ese caso desactívalo.`}
         confirmLabel="Eliminar"
         loading={ocupado}
         onConfirm={eliminar}

@@ -1,0 +1,59 @@
+.fieldset {
+  border: none;
+  min-width: 0;
+}
+
+.legend {
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.tabla th,
+.tabla td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tabla thead th {
+  background: var(--color-surface-muted);
+  font-weight: 600;
+}
+
+.tabla tbody th {
+  text-align: left;
+  font-weight: 500;
+}
+
+.tabla tbody tr:last-child th,
+.tabla tbody tr:last-child td { border-bottom: none; }
+
+.tabla input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.na { color: var(--color-border); }
+
+.error {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-danger);
+}

@@ -4,6 +4,8 @@ import { Dashboard } from './pages/admin/Dashboard'
 import { Carreras } from './pages/admin/nomencladores/Carreras'
 import { Entidades } from './pages/admin/nomencladores/Entidades'
 import { OtrosNomencladores } from './pages/admin/nomencladores/OtrosNomencladores'
+import { Roles } from './pages/admin/roles/Roles'
+import { Usuarios } from './pages/admin/usuarios/Usuarios'
 import { InicioAspirante } from './pages/aspirante/Inicio'
 import { Activar } from './pages/auth/Activar'
 import { Login } from './pages/auth/Login'
@@ -21,6 +23,8 @@ const PANTALLAS_ADMIN = {
   carreras: <Carreras />,
   entidades: <Entidades />,
   nomencladores: <OtrosNomencladores />,
+  usuarios: <Usuarios />,
+  roles: <Roles />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
