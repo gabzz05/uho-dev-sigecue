@@ -6,6 +6,10 @@ from .base import *  # noqa: F401,F403
 
 SECRET_KEY = env_str("DJANGO_SECRET_KEY")
 
+# RG-025: claves de cifrado de datos personales y de hash de búsqueda.
+FIELD_ENCRYPTION_KEY = env_str("FIELD_ENCRYPTION_KEY")
+SEARCH_HASH_KEY = env_str("SEARCH_HASH_KEY")
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
