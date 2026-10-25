@@ -93,6 +93,12 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
   (`DEFAULT_PERMISSION_CLASSES`). Las públicas lo declaran explícitamente.
 - `GET /api/v1/admin/roles/catalogo/` devuelve los permisos agrupados por módulo
   para construir la matriz en el panel.
+- `GET /api/v1/admin/usuarios/roles-asignables/` (permiso `usuarios.ver`)
+  devuelve los roles que el usuario actual puede asignar, sin exigir
+  `roles.ver`:
+  - el Superadmin recibe todos;
+  - los demás, solo roles locales;
+  - un rol local, solo los de su mismo ámbito.
 ### Ámbito de datos: global y local (RG-027, criterio 11)
 
 - Un usuario con rol local pertenece a una Facultad (`usuario.facultad`) **o** a
@@ -243,6 +249,18 @@ const recurso = crearRecurso('/admin/algo/')       // services/recursos.js
   permisos={{ crear: true, editar: true, eliminar: false }}
 />
 ```
+
+Otras opciones de `CrudPage`:
+
+| Opción | Para qué sirve |
+|---|---|
+| `campos` como función `(valores) => [...]` | Mostrar campos según lo elegido, p. ej. la Facultad solo si el rol es de Facultad. |
+| `type: 'checkbox'` | Campo de casilla. |
+| `type: 'custom'` con `render({value, onChange, error})` | Un control propio, como la matriz de permisos. |
+| `nombreDe(item)` | Texto con el que se nombra el registro. |
+| `estado` | Cómo se lee y alterna el estado. Usuarios usa bloquear/desbloquear en lugar de `activo`. |
+| `accionesExtra(item, recargar)` | Botones adicionales por fila. |
+| `puedeEliminarItem(item)` | Ocultar "Eliminar" en registros concretos, como los roles del sistema. |
 
 `crearRecurso` envía JSON, o multipart si algún valor es un `File`. Con
 imágenes, `aDatos={omitirArchivoSinCambios}` evita reenviar la que ya estaba
