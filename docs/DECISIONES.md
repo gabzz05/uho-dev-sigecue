@@ -47,6 +47,18 @@ Este archivo registra esas decisiones.
 | Imágenes | Las de carreras, facultades y CUM/FUM son públicas (las sirve nginx). Los documentos de los aspirantes son privados y solo los entrega la API. |
 | Escritura de catálogos | Municipios, facultades, CUM/FUM, cargos y carreras los modifican solo los roles globales. Áreas y departamentos los gestiona también cada entidad. |
 
+## Configuración del sistema
+
+| Tema | Decisión |
+|---|---|
+| Quién la modifica | Solo el Superadmin. Los demás, con `configuracion.ver`, la ven en modo lectura. |
+| Contraseña SMTP (RE-010) | Cifrada con AES-256 (reversible, porque se usa para autenticarse). La API nunca la devuelve. |
+| SMTP: panel o `.env` | Manda la configuración del panel si está activada; si no, la del `.env`. |
+| Plantillas (RF-011) | Texto plano con variables `{{ variable }}`, sin HTML. Se muestran las variables disponibles. El correo de activación también es una plantilla. |
+| Identidad visual | Nombre de la institución, color primario, primario claro, acento y escudo. |
+| Parámetros RF-007 / RF-008 | En base de datos; los valores iniciales salen del `.env`. |
+| Campos dinámicos de prematrícula (RF-010) | Se implementan en el feature de prematrícula, no en configuración. |
+
 ## Expresión de interés
 
 | Tema | Decisión |

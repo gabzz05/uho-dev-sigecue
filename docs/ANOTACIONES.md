@@ -24,8 +24,11 @@ cuando exista el componente del mapa.
 
 ## 2. Escudo de la UHO (RE-001, RE-009)
 
-**Estado actual:** no se tiene el archivo. La interfaz y los PDF reservan su
-espacio.
+**Estado actual:** no se tiene el archivo. La interfaz muestra un distintivo
+"UHO" en su lugar.
+
+**Cómo integrarlo:** subirlo desde Configuración → Identidad visual. La interfaz
+lo usa en cuanto se guarda; los PDF lo tomarán de ahí (feature de exportaciones).
 
 **Qué hace falta:** el escudo en SVG (preferido) o PNG de alta resolución, y el
 Manual de Identidad Visual si existe.
@@ -55,6 +58,7 @@ frontend los pedirá con el token y los mostrará como `blob:`, porque un
 
 ## 5. Identidad visual
 
-**Estado actual:** se usa la paleta del mockup. Los colores se guardan en base
-de datos (los define el Superadmin) y el frontend los aplica al cargar.
-`frontend/src/styles/tokens.css` contiene los valores por defecto.
+**Estado actual:** se usa la paleta del mockup como valor inicial. El Superadmin
+la cambia en Configuración → Identidad visual y el frontend la aplica al
+cargar. `frontend/src/styles/tokens.css` contiene los valores por defecto, que
+se usan si la API no responde.

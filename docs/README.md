@@ -47,6 +47,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `core` | Piezas transversales: formato de errores, paginación, modelos base, cifrado de datos personales |
 | `roles` | Roles, catálogo de permisos (módulo × acción) y la clase `PermisoModulo` |
 | `nomencladores` | Municipios, Facultades, CUM/FUM, Áreas, Departamentos, Cargos y catálogo global de Carreras |
+| `configuracion` | Parámetros del sistema, SMTP, plantillas de correo e identidad visual |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -131,6 +132,46 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
   `nomencladores/0002`.
 - La carrera es un catálogo global. Qué entidad la oferta cada año lo define
   `OfertaCarrera`, que llega con la convocatoria de interés.
+
+### Configuración del sistema
+
+Leer exige `configuracion.ver`. Modificar exige además ser **Superadmin**, aunque
+otro rol tenga `configuracion.editar`.
+
+| Endpoint | Contenido |
+|---|---|
+| `GET/PATCH /api/v1/admin/configuracion/parametros/` | Máximo de carreras por aspirante (RF-007), intentos de login y minutos de bloqueo (RF-008). Los valores iniciales salen de `LOGIN_MAX_INTENTOS` y `LOGIN_BLOQUEO_MINUTOS`; después manda la base de datos. |
+| `GET/PATCH /api/v1/admin/configuracion/smtp/` | Servidor de correo (RF-009, RE-010). |
+| `POST /api/v1/admin/configuracion/smtp/probar/` | `{destinatario}`. Envía un correo de prueba con la configuración guardada. |
+| `GET/PATCH /api/v1/admin/configuracion/plantillas/{codigo}/` | Texto de una plantilla de correo (RF-011). |
+| `POST .../plantillas/{codigo}/vista-previa/` | `{asunto, cuerpo}` con valores de ejemplo. |
+| `POST .../plantillas/{codigo}/restablecer/` | Vuelve al texto por defecto. |
+| `GET/PATCH /api/v1/admin/configuracion/identidad/` | Nombre de la institución, tres colores y escudo. |
+| `GET /api/v1/identidad/` | Lo mismo, público. El frontend lo pide al arrancar. |
+
+- **SMTP**:
+  - Si en el panel está marcado "usar esta configuración", se usa esa; si no,
+    se usan las variables `EMAIL_*` del `.env`.
+  - La contraseña se guarda cifrada con AES-256 (la misma clave de RG-025)
+    porque el sistema necesita leerla. La API la acepta pero nunca la
+    devuelve: solo informa `password_configurada`. Si se envía vacía, se
+    conserva la guardada.
+  - El modelo no está registrado en el admin de Django.
+- **Plantillas**:
+  - Asunto y cuerpo en texto plano, con variables `{{ variable }}`. La
+    sustitución es propia, no usa el motor de plantillas de Django: no se
+    pueden usar etiquetas `{% ... %}`.
+  - La API rechaza las variables que la plantilla no admite.
+  - El catálogo (`apps/configuracion/catalogo_plantillas.py`) fija las
+    variables y el texto por defecto de cada plantilla.
+  - **Para agregar un correo nuevo**:
+    1. Añadir la entrada en el catálogo.
+    2. Crear una migración de datos que cree la fila.
+    3. Enviarlo con `apps.configuracion.services.enviar_correo(codigo, destinatarios, contexto)`.
+- **Identidad visual**: `IdentidadProvider` (frontend) sobrescribe
+  `--color-primary`, `--color-primary-light` y `--color-accent` al arrancar y al
+  guardar. Si la API no responde, quedan los valores de `tokens.css`. El escudo
+  se guarda en el almacenamiento público.
 
 ### Archivos
 
