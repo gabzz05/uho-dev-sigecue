@@ -69,7 +69,9 @@ def exception_handler(exc, context):
         return response
 
     codigo = exc.get_codes() if isinstance(exc.get_codes(), str) else exc.default_code
-    if isinstance(exc, ErrorDeNegocio):
+    # Un mensaje propio (p. ej. PermissionDenied("...")) se respeta; el texto por
+    # defecto de DRF, en inglés, se sustituye por el de MENSAJES.
+    if str(exc.detail) != str(exc.default_detail):
         mensaje = str(exc.detail)
     else:
         mensaje = MENSAJES.get(codigo, str(exc.detail))
