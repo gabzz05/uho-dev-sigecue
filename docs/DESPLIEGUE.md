@@ -156,9 +156,9 @@ tienen prioridad sobre las del archivo.
 | `CELERY_TASK_ALWAYS_EAGER` | No | Debe ser `False` en producción |
 | `API_PAGE_SIZE` | No | Elementos por página en la API (20) |
 | `FRONTEND_URL` | Sí | URL pública del sistema, p. ej. `https://sigecue.uho.edu.cu`. Se usa en los enlaces de los correos. |
-| `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` | Sí | SMTP corporativo. Más adelante será editable desde el panel (RE-010). |
+| `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` | Sí | SMTP corporativo. También se puede configurar en el panel (Configuración → Correo); si se activa allí, tiene prioridad sobre estas variables. |
 | `DEFAULT_FROM_EMAIL` | No | Remitente de los correos |
-| `LOGIN_MAX_INTENTOS` / `LOGIN_BLOQUEO_MINUTOS` | No | Bloqueo temporal por intentos fallidos (5 / 15) |
+| `LOGIN_MAX_INTENTOS` / `LOGIN_BLOQUEO_MINUTOS` | No | Valores iniciales del bloqueo temporal (5 / 15). Después se cambian en el panel (Configuración → Parámetros). |
 | `AUTH_THROTTLE_RATE` | No | Límite de peticiones a login y registro por IP (`20/min`) |
 | `AUTH_COOKIE_SECURE` | No | `True` (la cookie de sesión solo viaja por HTTPS). No cambiar en producción. |
 | `SGU_PROVEEDOR` | No | Integración con auth.uho.edu.cu. Ver [SGU.md](SGU.md). |
