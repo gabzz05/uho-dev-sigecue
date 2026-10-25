@@ -79,8 +79,12 @@ determinista. Las claves están en `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY`.
   personales de un aspirante, RG-027). Las lecturas normales no se registran
   solas, porque el polling de notificaciones generaría miles de registros por
   minuto.
-- Los registros no se pueden modificar ni borrar: ni desde la API, ni desde el
-  admin de Django, ni desde el ORM.
+- La aplicación impide modificar o borrar registros de auditoría mediante la
+  API, el panel de administración y las operaciones normales del ORM. Quien
+  tenga acceso directo al código o a la base de datos puede saltarse esa
+  restricción. Para reforzarla en producción se puede agregar un trigger de
+  PostgreSQL que rechace `UPDATE`/`DELETE` sobre la tabla y conectar la
+  aplicación con un usuario de base de datos sin esos privilegios.
 - Consulta: `GET /api/v1/admin/logs/` con filtros `usuario`, `accion`, `modulo`,
   `resultado`, `desde`, `hasta`.
 
