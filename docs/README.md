@@ -136,6 +136,62 @@ determinista. Las claves están en `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY`.
 - Consulta: `GET /api/v1/admin/logs/` con filtros `usuario`, `accion`, `modulo`,
   `resultado`, `desde`, `hasta`.
 
+## Frontend
+
+### Estructura (`frontend/src/`)
+
+| Carpeta | Contenido |
+|---|---|
+| `components/ui/` | Sistema de diseño genérico: `Button`, `Badge`/`StatusBadge`, `Card`, `KpiCard`, `Alert`, `Input`/`Select`/`Textarea`/`Checkbox`, `Modal`, `DataTable`, `Pagination`, `Stepper`, `Avatar`, `Spinner`, `EmptyState`, `PageHeader`, `Toast`. Se importan desde `components/ui`. |
+| `components/layout/` | `PublicLayout`, `AdminLayout` (sidebar + barra superior), `AspiranteLayout`, `RequireAuth`, `UserMenu`, `NotificationBell`, `Logo`, `AuthCard`. El menú del panel está en `Sidebar/menuAdmin.js`. |
+| `pages/` | Pantallas, agrupadas en `public/`, `auth/`, `admin/`, `aspirante/`, `cuenta/` y `errores/`. |
+| `hooks/` | `useAuth` (sesión, `tienePermiso`) y `useFormulario` (valores, errores de la API, envío). |
+| `services/` | Acceso a la API: `api.js` (cliente axios), `auth.js`, `perfil.js`, `errores.js`. |
+| `utils/` | Funciones puras pequeñas (`cx`, `iniciales`). |
+| `router.jsx` | Todas las rutas. |
+| `styles/tokens.css` | Único CSS global: variables de diseño y reset. |
+
+### Reglas de estilo
+
+- Cada componente tiene su `Componente.module.css`. Nada de estilos inline ni
+  de clases globales.
+- Colores, espacios, radios y tipografía salen de las variables de `tokens.css`
+  (`var(--color-primary)`, `var(--space-4)`...). La identidad visual guardada en
+  base de datos sobrescribirá esas variables al cargar la app (pendiente:
+  feature `system-config`).
+- Mobile-first (RE-003): estilos base para 320 px y `@media (min-width: ...)`
+  para 768 px y 1024 px.
+- Accesibilidad (RG-005): etiquetas asociadas a cada campo, errores enlazados
+  con `aria-describedby`, foco gestionado en los modales y enlace "Saltar al
+  contenido" en el panel.
+
+### Sesión en el navegador
+
+- El access token vive solo en memoria (`services/tokenStore.js`). Al recargar
+  la página, `AuthProvider` recupera la sesión con la cookie de refresh.
+- Ante un 401, `services/api.js` renueva el token una sola vez (las peticiones
+  simultáneas comparten la renovación) y repite la petición.
+- **Inactividad**: `services/actividad.js` registra la última interacción del
+  usuario (clic, tecla, rueda, toque). Si pasaron más de 8 h, no se renueva y
+  la sesión se da por caducada. Así el polling no mantiene viva una pestaña
+  abandonada.
+- `RequireAuth tipo="interno" | "aspirante"` y `permiso="modulo.accion"`
+  protegen las rutas. Es solo una ayuda de interfaz: la API valida cada
+  petición.
+
+### Añadir la pantalla de un módulo del panel
+
+1. Crear la página en `pages/admin/`.
+2. Registrarla en `PANTALLAS_ADMIN` dentro de `router.jsx`, con el mismo `path`
+   que tiene en `menuAdmin.js`. La ruta, el permiso y la entrada del sidebar ya
+   salen del menú.
+
+### Pruebas
+
+- `src/**/*.test.jsx` con Vitest y Testing Library.
+- `src/test/renderApp.jsx` monta la app completa en una ruta, con un router en
+  memoria, para probar flujos (login, rutas protegidas...).
+
 ### Tareas en segundo plano
 
 - **Celery + Redis** — tareas programadas (cierre automático de convocatorias,

@@ -30,7 +30,18 @@ espacio.
 **Qué hace falta:** el escudo en SVG (preferido) o PNG de alta resolución, y el
 Manual de Identidad Visual si existe.
 
-## 3. Identidad visual
+## 3. Texto de la Política de Privacidad (RG-026)
+
+**Estado actual:** la página `/privacidad` existe y el registro enlaza a ella,
+pero muestra un aviso de "texto pendiente".
+
+**Qué hace falta:** el texto oficial de la política de privacidad de la UHO
+(Decreto-Ley 370/2019, RG-024).
+
+**Cómo integrarlo:** sustituir el contenido de
+`frontend/src/pages/public/Privacidad.jsx`.
+
+## 4. Identidad visual
 
 **Estado actual:** se usa la paleta del mockup. Los colores se guardan en base
 de datos (los define el Superadmin) y el frontend los aplica al cargar.
