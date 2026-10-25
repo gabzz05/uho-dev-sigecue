@@ -118,12 +118,16 @@ class TestBloqueoTemporal:
 
         assert login(api, "maria@nauta.cu").status_code == 200
 
-    def test_parametros_configurables(self, api, aspirante, settings):
-        settings.LOGIN_MAX_INTENTOS = 2
+    def test_parametros_configurables_desde_el_panel(self, api, aspirante):
+        from apps.configuracion.models import ConfiguracionSistema
+
+        ConfiguracionSistema.objects.update_or_create(pk=1, defaults={"login_max_intentos": 2, "login_bloqueo_minutos": 60})
         login(api, "maria@nauta.cu", "mal")
         login(api, "maria@nauta.cu", "mal")
 
         assert login(api, "maria@nauta.cu").status_code == 403
+        aspirante.refresh_from_db()
+        assert aspirante.bloqueado_hasta > timezone.now() + timedelta(minutes=59)
 
 
 class TestRefreshYLogout:

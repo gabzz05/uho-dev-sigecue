@@ -8,6 +8,7 @@ from rest_framework import exceptions
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.auditoria import services as auditoria
+from apps.configuracion.services import parametros
 from apps.core import crypto
 from apps.users import sgu
 from apps.users.models import Usuario
@@ -42,9 +43,11 @@ def _verificar_password(usuario, password):
 
 
 def _registrar_fallo(usuario, request):
+    # RF-008: intentos y duración del bloqueo configurables desde el panel.
+    config = parametros()
     usuario.intentos_fallidos += 1
-    if usuario.intentos_fallidos >= settings.LOGIN_MAX_INTENTOS:
-        usuario.bloqueado_hasta = timezone.now() + timedelta(minutes=settings.LOGIN_BLOQUEO_MINUTOS)
+    if usuario.intentos_fallidos >= config.login_max_intentos:
+        usuario.bloqueado_hasta = timezone.now() + timedelta(minutes=config.login_bloqueo_minutos)
         usuario.intentos_fallidos = 0
         auditoria.registrar(
             request=request, usuario=usuario, accion="bloqueo temporal por intentos fallidos",

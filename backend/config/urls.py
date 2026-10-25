@@ -10,6 +10,7 @@ api_v1 = [
     path("", include("apps.roles.urls")),
     path("", include("apps.users.urls")),
     path("", include("apps.nomencladores.urls")),
+    path("", include("apps.configuracion.urls")),
 ]
 
 urlpatterns = [

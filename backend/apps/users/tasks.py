@@ -2,8 +2,8 @@ import logging
 
 from celery import shared_task
 from django.conf import settings
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+
+from apps.configuracion.services import enviar_correo
 
 from .models import Usuario
 from .services import registro
@@ -16,16 +16,10 @@ def enviar_correo_activacion(usuario_id):
     usuario = Usuario.objects.filter(pk=usuario_id).first()
     if usuario is None:
         return
-    contexto = {
-        "usuario": usuario,
-        "enlace": registro.enlace_activacion(usuario),
-        "horas": settings.ACTIVACION_HORAS,
-    }
-    send_mail(
-        subject="SIGECUE — Activa tu cuenta",
-        message=render_to_string("emails/activacion.txt", contexto),
-        from_email=None,
-        recipient_list=[usuario.email],
+    enviar_correo(
+        "activacion_cuenta",
+        [usuario.email],
+        {"nombre": usuario.first_name, "enlace": registro.enlace_activacion(usuario), "horas": settings.ACTIVACION_HORAS},
     )
 
 

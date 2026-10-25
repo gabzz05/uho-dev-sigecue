@@ -1,21 +1,9 @@
 from rest_framework import serializers
 
 from apps.core.ambito import es_de_su_entidad
-from apps.core.validators import validar_imagen
+from apps.core.serializers import ImagenOpcional
 
 from .models import Area, Cargo, Carrera, CumFum, Departamento, Facultad, Municipio
-
-
-class ImagenOpcional(serializers.ImageField):
-    """Imagen pública validada. Enviar el campo vacío la elimina."""
-
-    def __init__(self, **kwargs):
-        super().__init__(required=False, allow_null=True, validators=[validar_imagen], **kwargs)
-
-    def to_internal_value(self, data):
-        if data in ("", None):
-            return None
-        return super().to_internal_value(data)
 
 
 class MunicipioSerializer(serializers.ModelSerializer):
