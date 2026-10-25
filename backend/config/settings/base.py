@@ -22,6 +22,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.core",
     "apps.users",
+    "apps.auditoria",
 ]
 
 AUTH_USER_MODEL = "users.Usuario"
@@ -35,7 +36,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.auditoria.middleware.AuditoriaMiddleware",
 ]
+
+# Solo debe activarse detrás de un proxy inverso de confianza (nginx).
+AUDITORIA_CONFIAR_X_FORWARDED_FOR = False
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"

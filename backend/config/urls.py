@@ -4,6 +4,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 api_v1 = [
     path("", include("apps.core.urls")),
+    path("", include("apps.auditoria.urls")),
 ]
 
 urlpatterns = [
