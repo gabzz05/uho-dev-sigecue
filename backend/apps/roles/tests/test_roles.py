@@ -148,3 +148,11 @@ class TestApiRoles:
 
         logs = next(m for m in datos if m["modulo"] == "logs")
         assert logs["acciones"] == [{"codigo": "logs.ver", "accion": "ver", "nombre": "Ver"}]
+
+
+    def test_filtra_por_busqueda_y_estado(self, api_como, superadmin):
+        Rol.objects.filter(codigo="vicerrector").update(activo=False)
+        client = api_como(superadmin)
+
+        assert client.get(URL, {"buscar": "secretario"}).json()["count"] == 3
+        assert client.get(URL, {"activo": "false"}).json()["count"] == 1

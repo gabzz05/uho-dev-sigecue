@@ -1,4 +1,5 @@
-from drf_spectacular.utils import extend_schema, inline_serializer
+from django.db.models import Q
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view, inline_serializer
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from .permissions import PermisoModulo
 from .serializers import RolSerializer
 
 
+@extend_schema_view(list=extend_schema(parameters=[OpenApiParameter("activo", bool), OpenApiParameter("buscar", str)]))
 class RolViewSet(viewsets.ModelViewSet):
     """Roles del sistema y sus permisos por módulo y acción (RE-006)."""
 
@@ -19,6 +21,15 @@ class RolViewSet(viewsets.ModelViewSet):
     permission_classes = [PermisoModulo]
     modulo = "roles"
     acciones_permiso = {"catalogo": VER}
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        params = self.request.query_params
+        if (activo := params.get("activo")) in ("true", "false"):
+            qs = qs.filter(activo=activo == "true")
+        if buscar := params.get("buscar"):
+            qs = qs.filter(Q(nombre__icontains=buscar) | Q(codigo__icontains=buscar))
+        return qs
 
     def perform_destroy(self, rol):
         if rol.es_sistema:
