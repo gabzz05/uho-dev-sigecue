@@ -51,6 +51,9 @@ class Rol(ModeloActivable, ModeloConFechas):
     ambito = models.CharField("ámbito", max_length=10, choices=Ambito.choices)
     # Los 13 roles de la ERS: no se pueden borrar ni cambiar su código o ámbito.
     es_sistema = models.BooleanField("rol del sistema", default=False, editable=False)
+    requiere_area = models.BooleanField(
+        "requiere área", default=False, help_text="Los usuarios con este rol se vinculan a un área concreta (Jefes de Área)."
+    )
     permisos = models.ManyToManyField(Permiso, verbose_name="permisos", blank=True, related_name="roles")
 
     class Meta:

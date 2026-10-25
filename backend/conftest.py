@@ -11,6 +11,7 @@ def _entorno_de_pruebas(settings, tmp_path):
     # Argon2 es lento a propósito; en pruebas basta un hasher rápido.
     settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
     settings.MEDIA_ROOT = tmp_path / "media"
+    settings.PUBLIC_MEDIA_ROOT = tmp_path / "media_publica"
     # El throttle guarda sus contadores en caché: cada prueba empieza de cero.
     cache.clear()
 
@@ -30,6 +31,36 @@ def crear_usuario(db):
         return Usuario.objects.create_user(username=username, password=password, rol=rol, **extra)
 
     return _crear
+
+
+@pytest.fixture
+def municipio(db):
+    from apps.nomencladores.models import Municipio
+
+    return Municipio.objects.get(nombre="Holguín")
+
+
+@pytest.fixture
+def facultad(municipio):
+    from apps.nomencladores.models import Facultad
+
+    return Facultad.objects.create(nombre="Facultad de Informática", codigo="FINF", municipio=municipio)
+
+
+@pytest.fixture
+def otra_facultad(municipio):
+    from apps.nomencladores.models import Facultad
+
+    return Facultad.objects.create(nombre="Facultad de Ciencias Económicas", codigo="FCE", municipio=municipio)
+
+
+@pytest.fixture
+def cum(db):
+    from apps.nomencladores.models import CumFum, Municipio
+
+    return CumFum.objects.create(
+        nombre="CUM Calixto García", codigo="CUMCG", tipo="CUM", municipio=Municipio.objects.get(nombre="Calixto García")
+    )
 
 
 @pytest.fixture

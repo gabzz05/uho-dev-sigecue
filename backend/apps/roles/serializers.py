@@ -10,7 +10,7 @@ class RolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Rol
-        fields = ["id", "codigo", "nombre", "descripcion", "ambito", "es_sistema", "activo", "permisos"]
+        fields = ["id", "codigo", "nombre", "descripcion", "ambito", "requiere_area", "es_sistema", "activo", "permisos"]
         read_only_fields = ["es_sistema"]
 
     def to_representation(self, rol):

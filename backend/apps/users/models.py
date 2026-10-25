@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.functional import cached_property
 
@@ -31,6 +32,26 @@ class Usuario(AbstractUser):
     celular = CampoCifrado("celular", blank=True)
 
     rol = models.ForeignKey(Rol, verbose_name="rol", null=True, blank=True, on_delete=models.PROTECT, related_name="usuarios")
+
+    # Entidad de los usuarios con rol local (RF-014/RF-015). La base de datos
+    # impide tener ambas; que el rol local tenga exactamente la que
+    # corresponde a su ámbito lo valida la aplicación.
+    facultad = models.ForeignKey(
+        "nomencladores.Facultad", verbose_name="facultad", null=True, blank=True,
+        on_delete=models.PROTECT, related_name="usuarios",
+    )
+    cum_fum = models.ForeignKey(
+        "nomencladores.CumFum", verbose_name="CUM/FUM", null=True, blank=True,
+        on_delete=models.PROTECT, related_name="usuarios",
+    )
+    area = models.ForeignKey(
+        "nomencladores.Area", verbose_name="área", null=True, blank=True,
+        on_delete=models.PROTECT, related_name="usuarios", help_text="Solo para los Jefes de Área.",
+    )
+    cargo = models.ForeignKey(
+        "nomencladores.Cargo", verbose_name="cargo", null=True, blank=True,
+        on_delete=models.PROTECT, related_name="usuarios",
+    )
     foto = models.ImageField("foto", upload_to="usuarios/fotos/", null=True, blank=True)
     origen = models.CharField("origen", max_length=10, choices=Origen.choices, default=Origen.LOCAL)
 
@@ -45,6 +66,13 @@ class Usuario(AbstractUser):
     class Meta:
         verbose_name = "usuario"
         verbose_name_plural = "usuarios"
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(facultad__isnull=True) | Q(cum_fum__isnull=True),
+                name="usuario_una_sola_entidad",
+                violation_error_message="Un usuario pertenece a una sola entidad (RF-015).",
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         self.email_hash = crypto.hash_busqueda(self.email) if self.email else None
@@ -62,6 +90,16 @@ class Usuario(AbstractUser):
     @property
     def es_aspirante(self) -> bool:
         return self.rol_id is not None and self.rol.codigo == Rol.ASPIRANTE
+
+    @property
+    def es_global(self) -> bool:
+        """Ve datos de todas las entidades (roles globales y superadmin)."""
+        return self.es_superadmin or (self.rol_id is not None and self.rol.es_global)
+
+    @property
+    def entidad(self):
+        """Facultad o CUM/FUM del usuario local; None si es global o aspirante."""
+        return self.facultad or self.cum_fum
 
     @property
     def esta_bloqueado_temporalmente(self) -> bool:

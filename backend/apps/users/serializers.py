@@ -1,11 +1,14 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.utils import extend_schema_field, inline_serializer
 from rest_framework import serializers
 
+from apps.core.ambito import es_de_su_entidad
+from apps.core.validators import validar_imagen
 from apps.roles.models import Rol
 
 from .models import Usuario
-from .validators import validar_celular, validar_ci, validar_imagen, validar_unico
+from .validators import validar_celular, validar_ci, validar_unico
 
 CI_REGISTRADO = "Ya existe una cuenta con este carnet de identidad."
 EMAIL_REGISTRADO = "Ya existe una cuenta con este correo electrónico."
@@ -55,12 +58,29 @@ class RolResumenSerializer(serializers.ModelSerializer):
         fields = ["codigo", "nombre", "ambito"]
 
 
+def resumen_entidad(usuario):
+    if usuario.facultad_id:
+        return {"tipo": "facultad", "id": usuario.facultad_id, "nombre": usuario.facultad.nombre}
+    if usuario.cum_fum_id:
+        return {"tipo": "cum_fum", "id": usuario.cum_fum_id, "nombre": usuario.cum_fum.nombre}
+    return None
+
+
+ENTIDAD_SCHEMA = inline_serializer(
+    "EntidadResumen",
+    {"tipo": serializers.ChoiceField(["facultad", "cum_fum"]), "id": serializers.IntegerField(), "nombre": serializers.CharField()},
+    allow_null=True,
+)
+
+
 class UsuarioActualSerializer(serializers.ModelSerializer):
     """Perfil del usuario autenticado (RF-018). Solo celular y foto son editables."""
 
     nombre = serializers.CharField(source="first_name", read_only=True)
     apellidos = serializers.CharField(source="last_name", read_only=True)
     rol = RolResumenSerializer(read_only=True)
+    entidad = serializers.SerializerMethodField()
+    area_nombre = serializers.CharField(source="area.nombre", read_only=True, default=None)
     permisos = serializers.SerializerMethodField()
     celular = serializers.CharField(validators=[validar_celular], required=False)
     foto = serializers.ImageField(required=False, allow_null=True, validators=[validar_imagen])
@@ -69,9 +89,13 @@ class UsuarioActualSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = [
             "id", "username", "nombre", "apellidos", "email", "ci", "celular", "foto",
-            "origen", "rol", "es_superadmin", "permisos",
+            "origen", "rol", "entidad", "area_nombre", "es_superadmin", "permisos",
         ]
         read_only_fields = ["username", "email", "ci", "origen", "es_superadmin"]
+
+    @extend_schema_field(ENTIDAD_SCHEMA)
+    def get_entidad(self, usuario):
+        return resumen_entidad(usuario)
 
     def get_permisos(self, usuario) -> list[str]:
         """Códigos `modulo.accion`. El superadmin recibe `["*"]`."""
@@ -96,21 +120,70 @@ class CambiarPasswordSerializer(serializers.Serializer):
 
 
 class UsuarioAdminSerializer(serializers.ModelSerializer):
-    """Gestión de usuarios internos (RF-014/RF-016)."""
+    """Gestión de usuarios internos (RF-014 a RF-016).
+
+    Reglas de entidad:
+    - Rol global: sin Facultad, CUM/FUM ni área.
+    - Rol local: exactamente la entidad de su ámbito (Facultad o CUM/FUM).
+    - Rol con `requiere_area` (Jefe de Área): un área de esa misma entidad.
+    - Un usuario local solo crea usuarios de su entidad; si no la indica, se usa la suya.
+    """
 
     rol = serializers.SlugRelatedField(slug_field="codigo", queryset=Rol.objects.exclude(codigo=Rol.ASPIRANTE))
     email = serializers.EmailField()
     ci = serializers.CharField(validators=[validar_ci], required=False, allow_blank=True)
     celular = serializers.CharField(validators=[validar_celular], required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, required=False, trim_whitespace=False)
+    entidad = serializers.SerializerMethodField()
+    area_nombre = serializers.CharField(source="area.nombre", read_only=True, default=None)
+    cargo_nombre = serializers.CharField(source="cargo.nombre", read_only=True, default=None)
 
     class Meta:
         model = Usuario
         fields = [
             "id", "username", "first_name", "last_name", "email", "ci", "celular", "rol",
+            "facultad", "cum_fum", "entidad", "area", "area_nombre", "cargo", "cargo_nombre",
             "origen", "is_active", "bloqueado_hasta", "last_login", "date_joined", "password",
         ]
         read_only_fields = ["is_active", "bloqueado_hasta", "last_login", "date_joined"]
+        # La exclusión Facultad/CUM la valida `_validar_entidad` con un mensaje claro.
+        validators = []
+
+    @extend_schema_field(ENTIDAD_SCHEMA)
+    def get_entidad(self, usuario):
+        return resumen_entidad(usuario)
+
+    def _actual(self, attrs, campo):
+        return attrs[campo] if campo in attrs else getattr(self.instance, campo, None)
+
+    def _validar_entidad(self, attrs, actor):
+        rol = self._actual(attrs, "rol")
+        facultad = self._actual(attrs, "facultad")
+        cum_fum = self._actual(attrs, "cum_fum")
+        area = self._actual(attrs, "area")
+
+        if rol.es_global:
+            facultad = cum_fum = area = None
+        else:
+            if facultad is None and cum_fum is None and not actor.es_global:
+                facultad, cum_fum = actor.facultad, actor.cum_fum
+            if rol.ambito == Rol.Ambito.FACULTAD:
+                if facultad is None or cum_fum is not None:
+                    raise serializers.ValidationError({"facultad": "Este rol requiere una Facultad."})
+            elif cum_fum is None or facultad is not None:
+                raise serializers.ValidationError({"cum_fum": "Este rol requiere un CUM/FUM."})
+            if not es_de_su_entidad(actor, facultad, cum_fum):
+                raise serializers.ValidationError({"facultad": "Solo puedes gestionar usuarios de tu propia entidad."})
+
+            if rol.requiere_area:
+                if area is None:
+                    raise serializers.ValidationError({"area": "Este rol requiere un área."})
+                if (area.facultad_id, area.cum_fum_id) != (getattr(facultad, "pk", None), getattr(cum_fum, "pk", None)):
+                    raise serializers.ValidationError({"area": "El área debe pertenecer a la entidad del usuario."})
+            else:
+                area = None
+
+        attrs.update(facultad=facultad, cum_fum=cum_fum, area=area)
 
     def validate_email(self, email):
         return validar_unico("email_hash", email.lower(), EMAIL_REGISTRADO, excluir=self.instance)
@@ -128,6 +201,9 @@ class UsuarioAdminSerializer(serializers.ModelSerializer):
         )
         if tocando_global and not actor.es_superadmin:
             raise serializers.ValidationError({"rol": "Solo el Superadmin gestiona usuarios con roles globales."})
+        if self.instance is None and rol is None:
+            raise serializers.ValidationError({"rol": "Indica el rol del usuario."})
+        self._validar_entidad(attrs, actor)
 
         origen = attrs.get("origen", getattr(self.instance, "origen", Usuario.Origen.LOCAL))
         password = attrs.get("password")

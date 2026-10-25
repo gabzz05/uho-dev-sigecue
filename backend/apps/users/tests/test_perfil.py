@@ -67,7 +67,7 @@ class TestPerfil:
         assert "foto" in response.json()["error"]["detalles"]
 
     def test_rechaza_imagen_mayor_de_5_mb(self, api_como, aspirante, monkeypatch):
-        monkeypatch.setattr("apps.users.validators.MAX_IMAGEN_MB", 0)
+        monkeypatch.setattr("apps.core.validators.MAX_IMAGEN_MB", 0)
 
         response = api_como(aspirante).patch(ME, {"foto": imagen()}, format="multipart")
 

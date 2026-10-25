@@ -4,6 +4,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.ambito import filtrar_por_entidad
 from apps.core.exceptions import ErrorDeNegocio
 from apps.roles.catalogo import EDITAR
 from apps.roles.models import Rol
@@ -35,8 +36,15 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     acciones_permiso = {"bloquear": EDITAR, "desbloquear": EDITAR}
 
     def get_queryset(self):
-        # El filtro por entidad para los roles locales se agrega en feature/nomencladores.
-        qs = Usuario.objects.select_related("rol").exclude(rol__codigo=Rol.ASPIRANTE).order_by("username")
+        if getattr(self, "swagger_fake_view", False):  # Generación del esquema OpenAPI.
+            return Usuario.objects.none()
+        # Los roles locales solo ven a los usuarios de su entidad (RG-027).
+        qs = filtrar_por_entidad(
+            Usuario.objects.select_related("rol", "facultad", "cum_fum", "area", "cargo")
+            .exclude(rol__codigo=Rol.ASPIRANTE)
+            .order_by("username"),
+            self.request.user,
+        )
         params = self.request.query_params
         if rol := params.get("rol"):
             qs = qs.filter(rol__codigo=rol)

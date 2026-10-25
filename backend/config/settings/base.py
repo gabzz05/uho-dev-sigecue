@@ -27,6 +27,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.core",
     "apps.roles",
+    "apps.nomencladores",
     "apps.users",
     "apps.auditoria",
 ]
@@ -102,9 +103,18 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# RG-012: los archivos subidos se guardan fuera del directorio web público
-# y se sirven solo a través de endpoints con control de permisos.
+# RG-012: los archivos subidos por los aspirantes se guardan fuera del
+# directorio web público y se sirven solo por la API, con control de permisos.
 MEDIA_ROOT = env_str("MEDIA_ROOT", str(BASE_DIR / "media"))
+# Imágenes institucionales (carreras, facultades, CUM/FUM): públicas, las sirve nginx.
+PUBLIC_MEDIA_ROOT = env_str("PUBLIC_MEDIA_ROOT", str(BASE_DIR / "media_publica"))
+PUBLIC_MEDIA_URL = "/media/"
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "publico": {"BACKEND": "apps.core.storage.AlmacenamientoPublico"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

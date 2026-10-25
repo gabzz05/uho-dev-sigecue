@@ -11,6 +11,7 @@ htmlcov/
 # Django
 *.sqlite3
 backend/media/
+backend/media_publica/
 backend/staticfiles/
 backend/logs/
 
