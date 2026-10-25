@@ -1,0 +1,97 @@
+/*
+ * Único CSS global del proyecto: tokens de diseño y reset.
+ * Todo estilo de componente va en su propio *.module.css.
+ *
+ * Los colores son valores por defecto (paleta institucional UHO). La identidad
+ * visual se guarda en base de datos y, al cargar la app, se aplica sobre
+ * :root sobrescribiendo estas variables.
+ */
+
+:root {
+  /* Identidad visual */
+  --color-primary: #1a3a6b;
+  --color-primary-light: #2e6db4;
+  --color-accent: #c8102e;
+
+  /* Estados */
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #c8102e;
+  --color-info: #2563eb;
+
+  /* Superficies y texto */
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f2f4f7;
+  --color-border: #d0d5dd;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-inverse: #ffffff;
+
+  /* Tipografía */
+  --font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.625rem;
+  --font-size-3xl: 2.125rem;
+
+  /* Espaciado */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  /* Bordes y sombras */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  /* Layout */
+  --sidebar-width: 220px;
+  --topbar-height: 60px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
