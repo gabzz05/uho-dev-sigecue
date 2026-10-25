@@ -234,3 +234,30 @@ class TestSinBorradoYFiltros:
 def test_la_base_de_datos_impide_dos_entidades(crear_usuario, facultad, cum):
     with pytest.raises(IntegrityError):
         crear_usuario("doble", rol="secretario_facultad", facultad=facultad, cum_fum=cum)
+
+
+class TestRolesAsignables:
+    url = f"{URL}roles-asignables/"
+
+    def test_admin_local_recibe_solo_roles_de_su_ambito(self, api_como, admin_facultad):
+        codigos = {r["codigo"] for r in api_como(admin_facultad).get(self.url).json()}
+
+        assert codigos == {"admin_facultad", "vicedecano", "secretario_facultad", "jefe_area_facultad"}
+
+    def test_superadmin_recibe_todos_menos_aspirante(self, api_como, superadmin):
+        codigos = {r["codigo"] for r in api_como(superadmin).get(self.url).json()}
+
+        assert "vicerrector" in codigos and "director_cum" in codigos
+        assert "aspirante" not in codigos
+
+    def test_no_incluye_roles_desactivados(self, api_como, superadmin):
+        from apps.roles.models import Rol
+
+        Rol.objects.filter(codigo="vicerrector").update(activo=False)
+
+        assert "vicerrector" not in {r["codigo"] for r in api_como(superadmin).get(self.url).json()}
+
+    def test_requiere_permiso_de_usuarios(self, api_como, crear_usuario, facultad):
+        sec = crear_usuario("sec", rol="secretario_facultad", facultad=facultad)
+
+        assert api_como(sec).get(self.url).status_code == 403
