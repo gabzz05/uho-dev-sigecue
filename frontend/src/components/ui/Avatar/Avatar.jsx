@@ -1,14 +1,6 @@
 import { cx } from '../../../utils/cx'
+import { iniciales } from '../../../utils/iniciales'
 import styles from './Avatar.module.css'
-
-export function iniciales(nombre = '') {
-  return nombre
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((parte) => parte[0].toUpperCase())
-    .join('')
-}
 
 /** Foto del usuario o, si no tiene, sus iniciales. */
 export function Avatar({ nombre, foto, size = 'md', tone = 'primary' }) {

@@ -8,7 +8,6 @@ import {
   Button,
   Checkbox,
   DataTable,
-  iniciales,
   Input,
   Modal,
   Pagination,
@@ -18,6 +17,7 @@ import {
   ToastProvider,
   useToast,
 } from '.'
+import { iniciales } from '../../utils/iniciales'
 
 describe('Button', () => {
   it('es type="button" por defecto para no enviar formularios por accidente', () => {

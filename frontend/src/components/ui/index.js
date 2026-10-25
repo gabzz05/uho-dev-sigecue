@@ -1,5 +1,5 @@
 export { Alert } from './Alert/Alert'
-export { Avatar, iniciales } from './Avatar/Avatar'
+export { Avatar } from './Avatar/Avatar'
 export { Badge, StatusBadge } from './Badge/Badge'
 export { Button } from './Button/Button'
 export { Card, CardBody, CardFooter, CardHeader } from './Card/Card'
