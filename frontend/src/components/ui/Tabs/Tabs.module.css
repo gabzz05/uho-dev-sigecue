@@ -1,0 +1,27 @@
+.lista {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab {
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab:hover { color: var(--color-text); }
+
+.activa {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.panel { padding-top: var(--space-5); }

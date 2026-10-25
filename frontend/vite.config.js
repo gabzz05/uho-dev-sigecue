@@ -9,6 +9,7 @@ export default defineConfig({
     // así frontend y API comparten origen y no hace falta CORS.
     proxy: {
       '/api': 'http://localhost:8000',
+      '/media': 'http://localhost:8000',
     },
   },
   test: {

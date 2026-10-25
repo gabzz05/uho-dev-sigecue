@@ -1,0 +1,33 @@
+.campos {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.completo { grid-column: 1 / -1; }
+
+@media (min-width: 640px) {
+  .campos { grid-template-columns: 1fr 1fr; }
+  .mitad { grid-column: span 1; }
+}
+
+.acciones {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.accionesSuperiores {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.error { padding: var(--space-4) var(--space-4) 0; }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

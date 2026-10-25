@@ -6,6 +6,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   Lightbulb,
+  ListTree,
   Megaphone,
   ScrollText,
   Settings,
@@ -41,6 +42,7 @@ export const MENU_ADMIN = [
     items: [
       { path: 'carreras', label: 'Carreras', icon: GraduationCap, permiso: 'nomencladores.ver' },
       { path: 'entidades', label: 'Facultades / CUM', icon: Building2, permiso: 'nomencladores.ver' },
+      { path: 'nomencladores', label: 'Otros nomencladores', icon: ListTree, permiso: 'nomencladores.ver' },
       { path: 'usuarios', label: 'Usuarios', icon: Users, permiso: 'usuarios.ver' },
       { path: 'roles', label: 'Roles y permisos', icon: ShieldCheck, permiso: 'roles.ver' },
       { path: 'configuracion', label: 'Configuración', icon: Settings, permiso: 'configuracion.ver' },

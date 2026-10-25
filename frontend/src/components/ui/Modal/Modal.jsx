@@ -12,6 +12,7 @@ const ENFOCABLES = 'button, [href], input, select, textarea, [tabindex]:not([tab
  */
 export function Modal({ open, onClose, title, eyebrow, description, footer, size = 'md', children }) {
   const panelRef = useRef(null)
+  const bodyRef = useRef(null)
   const onCloseRef = useRef(onClose)
   const titleId = useId()
 
@@ -25,7 +26,9 @@ export function Modal({ open, onClose, title, eyebrow, description, footer, size
     if (!open) return undefined
     const anterior = document.activeElement
     const panel = panelRef.current
-    panel?.querySelector(ENFOCABLES)?.focus()
+    // Primer control del contenido; si no hay ninguno, el botón de cerrar.
+    const inicial = bodyRef.current?.querySelector(ENFOCABLES) ?? panel?.querySelector(ENFOCABLES)
+    inicial?.focus()
 
     function alTeclear(evento) {
       if (evento.key === 'Escape') {
@@ -76,7 +79,9 @@ export function Modal({ open, onClose, title, eyebrow, description, footer, size
             <X aria-hidden="true" />
           </button>
         </header>
-        <div className={styles.body}>{children}</div>
+        <div ref={bodyRef} className={styles.body}>
+          {children}
+        </div>
         {footer && <footer className={styles.footer}>{footer}</footer>}
       </div>
     </div>,

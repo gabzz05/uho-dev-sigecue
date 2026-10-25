@@ -63,6 +63,8 @@ export function AuthProvider({ children }) {
       estado,
       sesionExpirada,
       esAspirante: usuario?.rol?.codigo === ROL_ASPIRANTE,
+      // Roles globales y superadmin: ven y gestionan datos de todas las entidades.
+      esGlobal: Boolean(usuario?.es_superadmin || usuario?.rol?.ambito === 'global'),
       iniciarSesion,
       cerrarSesion,
       tienePermiso,

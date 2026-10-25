@@ -1,6 +1,9 @@
 import { createBrowserRouter } from 'react-router'
 import { AdminLayout, AspiranteLayout, MENU_ADMIN, PublicLayout, RequireAuth } from './components/layout'
 import { Dashboard } from './pages/admin/Dashboard'
+import { Carreras } from './pages/admin/nomencladores/Carreras'
+import { Entidades } from './pages/admin/nomencladores/Entidades'
+import { OtrosNomencladores } from './pages/admin/nomencladores/OtrosNomencladores'
 import { InicioAspirante } from './pages/aspirante/Inicio'
 import { Activar } from './pages/auth/Activar'
 import { Login } from './pages/auth/Login'
@@ -15,6 +18,9 @@ import { Privacidad } from './pages/public/Privacidad'
 // hasta que su feature las implemente.
 const PANTALLAS_ADMIN = {
   '': <Dashboard />,
+  carreras: <Carreras />,
+  entidades: <Entidades />,
+  nomencladores: <OtrosNomencladores />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
