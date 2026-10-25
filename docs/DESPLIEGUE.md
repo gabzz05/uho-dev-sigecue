@@ -1,23 +1,104 @@
-# Despliegue en producción (servidor Linux, sin Docker)
+# Despliegue en producción
 
-Guía para instalar SIGECUE en un servidor Ubuntu/Debian. Para la versión con
-contenedores ver [DOCKER.md](DOCKER.md).
+Guía para instalar SIGECUE en un servidor sin Docker, en Linux, macOS o
+Windows. Para la versión con contenedores ver [DOCKER.md](DOCKER.md).
 
-## 1. Paquetes del sistema
+## Qué se instala
+
+| Componente | Función |
+|---|---|
+| Python 3.12+ | Ejecuta el backend (Django) |
+| Node.js 20+ | Solo para compilar el frontend; no se usa en tiempo de ejecución |
+| PostgreSQL 14+ | Base de datos |
+| Redis 6+ | Cola de tareas de Celery |
+| gunicorn | Servidor de la aplicación Django |
+| Celery (worker + beat) | Tareas programadas |
+| nginx | Sirve el frontend, hace de proxy hacia la API y termina el HTTPS |
+
+El orden es siempre el mismo:
+
+1. Instalar los paquetes del sistema operativo.
+2. Seguir los pasos comunes.
+3. Dejar los servicios corriendo según el sistema operativo.
+
+---
+
+## 1. Paquetes del sistema operativo
+
+### Linux — Debian / Ubuntu
 
 ```bash
 sudo apt update
 sudo apt install -y python3 python3-venv python3-dev build-essential \
     postgresql redis-server nginx git
-# Node.js 20+ (solo para compilar el frontend)
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 ```
 
-## 2. Base de datos PostgreSQL
+### Linux — RHEL / Rocky / AlmaLinux / Fedora
 
 ```bash
-sudo -u postgres psql
+sudo dnf install -y python3 python3-devel gcc postgresql-server redis nginx git nodejs
+sudo postgresql-setup --initdb
+sudo systemctl enable --now postgresql redis
+```
+
+### macOS (Homebrew)
+
+```bash
+brew install python@3.13 node@20 postgresql@16 redis nginx git
+brew services start postgresql@16
+brew services start redis
+```
+
+### Windows
+
+gunicorn y el worker de Celery **no funcionan de forma nativa en Windows**.
+La vía recomendada es usar **WSL2**: un Ubuntu completo dentro de Windows.
+
+1. En PowerShell como administrador:
+   ```powershell
+   wsl --install -d Ubuntu
+   ```
+   Reiniciar si lo pide y crear el usuario de Ubuntu.
+2. Activar systemd en WSL. Dentro de Ubuntu, crear `/etc/wsl.conf` con:
+   ```ini
+   [boot]
+   systemd=true
+   ```
+   Después, en PowerShell: `wsl --shutdown`, y volver a abrir Ubuntu.
+3. Dentro de Ubuntu, seguir **toda** la guía como en **Linux — Debian / Ubuntu**.
+4. Para que el sistema sea accesible desde la red, WSL2 debe redirigir los
+   puertos 80/443 de Windows. En Windows 11 lo más simple es el modo de red
+   espejo. En `%UserProfile%\.wslconfig`:
+   ```ini
+   [wsl2]
+   networkingMode=mirrored
+   ```
+   Abrir además los puertos en el Firewall de Windows:
+   ```powershell
+   New-NetFirewallRule -DisplayName "SIGECUE HTTP/HTTPS" -Direction Inbound -Protocol TCP -LocalPort 80,443 -Action Allow
+   ```
+5. Para que WSL arranque con el servidor, crear en el Programador de tareas
+   una tarea "Al iniciar el sistema" que ejecute `wsl -d Ubuntu --exec /bin/true`.
+
+> Una instalación 100 % nativa en Windows requiere reemplazar gunicorn por un
+> servidor compatible y usar Redis para Windows (Memurai). No está
+> contemplada en el stack actual.
+
+---
+
+## 2. Pasos comunes
+
+Los comandos usan sintaxis de Linux/macOS. En Windows se ejecutan dentro de
+WSL. Las rutas de ejemplo son `/opt/sigecue` para el código y
+`/var/lib/sigecue/media` para los archivos subidos. En macOS se puede usar
+`/usr/local/sigecue` y `/usr/local/var/sigecue/media`.
+
+### 2.1 Base de datos PostgreSQL
+
+```bash
+sudo -u postgres psql      # en macOS: psql postgres
 ```
 ```sql
 CREATE USER sigecue WITH PASSWORD 'una-contraseña-segura';
@@ -25,7 +106,9 @@ CREATE DATABASE sigecue OWNER sigecue ENCODING 'UTF8';
 \q
 ```
 
-## 3. Código y usuario del servicio
+### 2.2 Código y usuario del servicio
+
+Linux / WSL:
 
 ```bash
 sudo useradd --system --create-home --home-dir /opt/sigecue sigecue
@@ -34,94 +117,71 @@ sudo mkdir -p /var/lib/sigecue/media
 sudo chown sigecue:sigecue /var/lib/sigecue/media
 ```
 
-`/var/lib/sigecue/media` guarda los archivos subidos por los aspirantes. Queda
-fuera del directorio público de nginx a propósito (RG-012): los archivos solo
-se entregan a través de la API, que comprueba permisos.
+En macOS se puede clonar con el usuario administrador del equipo, sin crear un
+usuario de sistema.
 
-## 4. Backend
+La carpeta de archivos subidos queda **fuera** del directorio público de nginx
+a propósito (RG-012). Los archivos solo se entregan a través de la API, que
+comprueba permisos.
+
+### 2.3 Backend
 
 ```bash
 cd /opt/sigecue/app/backend
-sudo -u sigecue python3 -m venv .venv
-sudo -u sigecue .venv/bin/pip install -r requirements/prod.txt
-sudo -u sigecue cp .env.example .env
-sudo -u sigecue nano .env
+python3 -m venv .venv
+.venv/bin/pip install -r requirements/prod.txt
+cp .env.example .env
+nano .env
 ```
 
-### Variables de entorno (`backend/.env`)
+(En Linux, anteponer `sudo -u sigecue` a cada comando para que los archivos
+pertenezcan al usuario del servicio.)
+
+#### Variables de entorno (`backend/.env`)
+
+El archivo se lee con `python-dotenv`. Las variables definidas en el sistema
+tienen prioridad sobre las del archivo.
 
 | Variable | Obligatoria | Descripción |
 |---|---|---|
 | `DJANGO_SECRET_KEY` | Sí | Clave larga y aleatoria. Generar con `python3 -c "import secrets; print(secrets.token_urlsafe(64))"` |
 | `DJANGO_ALLOWED_HOSTS` | Sí | Dominios separados por coma, p. ej. `sigecue.uho.edu.cu` |
-| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Sí | Datos de la base creada en el paso 2 |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Sí | Datos de la base creada en 2.1 |
 | `POSTGRES_HOST` / `POSTGRES_PORT` | No | Por defecto `localhost` / `5432` |
-| `MEDIA_ROOT` | No | Carpeta de archivos subidos. Recomendado `/var/lib/sigecue/media` |
+| `MEDIA_ROOT` | No | Carpeta de archivos subidos (creada en 2.2) |
 | `CELERY_BROKER_URL` / `CELERY_RESULT_BACKEND` | No | Por defecto `redis://localhost:6379/0` |
 | `CELERY_TASK_ALWAYS_EAGER` | No | Debe ser `False` en producción |
 | `API_PAGE_SIZE` | No | Elementos por página en la API (20) |
 
-Los servicios del paso 6 indican `DJANGO_SETTINGS_MODULE=config.settings.prod`.
-Para los comandos manuales hay que exportarla también:
+Inicializar la base de datos y los archivos estáticos:
 
 ```bash
 export DJANGO_SETTINGS_MODULE=config.settings.prod
-sudo -u sigecue -E .venv/bin/python manage.py migrate
-sudo -u sigecue -E .venv/bin/python manage.py collectstatic --noinput
-sudo -u sigecue -E .venv/bin/python manage.py check --deploy
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py collectstatic --noinput
+.venv/bin/python manage.py check --deploy
 ```
 
-## 5. Frontend
+`DJANGO_SETTINGS_MODULE=config.settings.prod` es imprescindible. Sin esa
+variable, `manage.py` usa la configuración de desarrollo (SQLite).
+
+### 2.4 Frontend
 
 ```bash
 cd /opt/sigecue/app/frontend
-sudo -u sigecue npm ci
-sudo -u sigecue npm run build    # genera frontend/dist/
+npm ci
+npm run build    # genera frontend/dist/
 ```
 
-## 6. Servicios systemd
+### 2.5 nginx
 
-`/etc/systemd/system/sigecue-web.service`:
+Crear la configuración del sitio:
 
-```ini
-[Unit]
-Description=SIGECUE (gunicorn)
-After=network.target postgresql.service
-
-[Service]
-User=sigecue
-WorkingDirectory=/opt/sigecue/app/backend
-Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
-ExecStart=/opt/sigecue/app/backend/.venv/bin/gunicorn config.wsgi:application \
-    --bind 127.0.0.1:8000 --workers 4
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-`/etc/systemd/system/sigecue-worker.service` (igual que el anterior cambiando):
-
-```ini
-Description=SIGECUE (celery worker)
-ExecStart=/opt/sigecue/app/backend/.venv/bin/celery -A config worker -l info
-```
-
-`/etc/systemd/system/sigecue-beat.service`:
-
-```ini
-Description=SIGECUE (celery beat)
-ExecStart=/opt/sigecue/app/backend/.venv/bin/celery -A config beat -l info
-```
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now sigecue-web sigecue-worker sigecue-beat
-```
-
-## 7. nginx
-
-`/etc/nginx/sites-available/sigecue`:
+| Sistema | Ruta del archivo |
+|---|---|
+| Debian / Ubuntu / WSL | `/etc/nginx/sites-available/sigecue`, enlazado en `sites-enabled/` |
+| RHEL / Rocky / Fedora | `/etc/nginx/conf.d/sigecue.conf` |
+| macOS (Homebrew) | `$(brew --prefix)/etc/nginx/servers/sigecue.conf` |
 
 ```nginx
 server {
@@ -159,31 +219,138 @@ server {
 }
 ```
 
+Debian / Ubuntu / WSL:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/sigecue /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-## 8. Actualizar a una nueva versión
+En RHEL y Fedora: `sudo nginx -t && sudo systemctl reload nginx`.
+Si SELinux está activo, permitir el proxy con
+`sudo setsebool -P httpd_can_network_connect 1`.
+
+En macOS: `nginx -t && brew services restart nginx`.
+
+---
+
+## 3. Servicios
+
+Son tres procesos que deben estar siempre corriendo:
+
+| Servicio | Comando (desde `backend/`) |
+|---|---|
+| Web | `.venv/bin/gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 4` |
+| Worker | `.venv/bin/celery -A config worker -l info` |
+| Beat | `.venv/bin/celery -A config beat -l info` |
+
+Los tres necesitan `DJANGO_SETTINGS_MODULE=config.settings.prod`.
+
+### Linux y Windows (WSL): systemd
+
+`/etc/systemd/system/sigecue-web.service`:
+
+```ini
+[Unit]
+Description=SIGECUE (gunicorn)
+After=network.target postgresql.service redis.service
+
+[Service]
+User=sigecue
+WorkingDirectory=/opt/sigecue/app/backend
+Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+ExecStart=/opt/sigecue/app/backend/.venv/bin/gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8000 --workers 4
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+`sigecue-worker.service` y `sigecue-beat.service` se crean copiando el
+anterior y cambiando `Description` y `ExecStart` por el comando
+correspondiente de la tabla.
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now sigecue-web sigecue-worker sigecue-beat
+sudo systemctl status sigecue-web    # comprobar
+```
+
+En RHEL y Fedora el servicio de Redis se llama `redis`, igual que en Debian.
+
+### macOS: launchd
+
+Un archivo por servicio en `~/Library/LaunchAgents/`, por ejemplo
+`cu.edu.uho.sigecue.web.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>cu.edu.uho.sigecue.web</string>
+  <key>WorkingDirectory</key><string>/usr/local/sigecue/app/backend</string>
+  <key>EnvironmentVariables</key>
+  <dict><key>DJANGO_SETTINGS_MODULE</key><string>config.settings.prod</string></dict>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/sigecue/app/backend/.venv/bin/gunicorn</string>
+    <string>config.wsgi:application</string>
+    <string>--bind</string><string>127.0.0.1:8000</string>
+    <string>--workers</string><string>4</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+</dict>
+</plist>
+```
+
+Repetir para `worker` y `beat` cambiando `Label` y `ProgramArguments`.
+Activar cada uno:
+
+```bash
+launchctl load ~/Library/LaunchAgents/cu.edu.uho.sigecue.web.plist
+```
+
+---
+
+## 4. Actualizar a una nueva versión
 
 ```bash
 cd /opt/sigecue/app
-sudo -u sigecue git pull
-cd backend && sudo -u sigecue .venv/bin/pip install -r requirements/prod.txt
+git pull
+cd backend
+.venv/bin/pip install -r requirements/prod.txt
 export DJANGO_SETTINGS_MODULE=config.settings.prod
-sudo -u sigecue -E .venv/bin/python manage.py migrate
-sudo -u sigecue -E .venv/bin/python manage.py collectstatic --noinput
-cd ../frontend && sudo -u sigecue npm ci && sudo -u sigecue npm run build
-sudo systemctl restart sigecue-web sigecue-worker sigecue-beat
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py collectstatic --noinput
+cd ../frontend && npm ci && npm run build
 ```
 
-## 9. Copias de seguridad (RG-013, RNF-004)
+Reiniciar los servicios:
 
-Copia diaria de PostgreSQL con retención de 30 días, p. ej. en
-`/etc/cron.d/sigecue-backup`:
+| Sistema | Comando |
+|---|---|
+| Linux / WSL | `sudo systemctl restart sigecue-web sigecue-worker sigecue-beat` |
+| macOS | `launchctl kickstart -k gui/$(id -u)/cu.edu.uho.sigecue.web` (y lo mismo con worker y beat) |
+
+---
+
+## 5. Copias de seguridad (RG-013, RNF-004)
+
+Copia diaria de PostgreSQL con retención de 30 días. Incluir también la
+carpeta de archivos subidos (`MEDIA_ROOT`).
+
+Linux / WSL — `/etc/cron.d/sigecue-backup`:
 
 ```cron
 0 2 * * * postgres pg_dump -Fc sigecue > /var/backups/sigecue/sigecue-$(date +\%F).dump && find /var/backups/sigecue -name '*.dump' -mtime +30 -delete
 ```
 
-Incluir también `/var/lib/sigecue/media` en la copia.
+En macOS se puede usar la misma línea con `crontab -e`, quitando la columna
+`postgres` (usuario).
+
+En Windows con WSL, la línea de cron funciona dentro de Ubuntu siempre que WSL
+esté corriendo (ver el paso 5 de la sección de Windows). Conviene además copiar
+`/var/backups/sigecue` fuera de WSL, p. ej. a `/mnt/c/Backups/sigecue`.

@@ -10,7 +10,7 @@ de plazas y prematrícula.
 | Documento | Contenido |
 |---|---|
 | [DESARROLLO.md](DESARROLLO.md) | Cómo levantar el proyecto en una máquina local |
-| [DESPLIEGUE.md](DESPLIEGUE.md) | Cómo instalar y poner en producción en un servidor Linux |
+| [DESPLIEGUE.md](DESPLIEGUE.md) | Cómo instalar y poner en producción en Linux, macOS o Windows |
 | [DOCKER.md](DOCKER.md) | Cómo contenerizar el sistema más adelante (pendiente de implementar) |
 | [GIT.md](GIT.md) | Flujo de ramas y formato de commits |
 | [DECISIONES.md](DECISIONES.md) | Decisiones del cliente que se apartan o precisan la ERS |
