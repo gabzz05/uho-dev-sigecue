@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router'
 import { AdminLayout, AspiranteLayout, MENU_ADMIN, PublicLayout, RequireAuth } from './components/layout'
+import { Configuracion } from './pages/admin/configuracion/Configuracion'
 import { Dashboard } from './pages/admin/Dashboard'
 import { Carreras } from './pages/admin/nomencladores/Carreras'
 import { Entidades } from './pages/admin/nomencladores/Entidades'
@@ -25,6 +26,7 @@ const PANTALLAS_ADMIN = {
   nomencladores: <OtrosNomencladores />,
   usuarios: <Usuarios />,
   roles: <Roles />,
+  configuracion: <Configuracion />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({

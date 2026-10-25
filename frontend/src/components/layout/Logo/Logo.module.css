@@ -19,6 +19,13 @@
   font-weight: 700;
 }
 
+.escudo {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 .text {
   display: flex;
   flex-direction: column;

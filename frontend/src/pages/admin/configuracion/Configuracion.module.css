@@ -1,0 +1,115 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.descripcion {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fieldset {
+  display: grid;
+  gap: var(--space-4);
+  border: none;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .fieldset { grid-template-columns: 1fr 1fr; }
+}
+
+.completo { grid-column: 1 / -1; }
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.color {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.color > div { flex: 1; }
+
+.muestra {
+  width: 2.75rem;
+  height: 2.625rem;
+  padding: 0.125rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.plantillas {
+  display: grid;
+  gap: var(--space-5);
+}
+
+@media (min-width: 1024px) {
+  .plantillas { grid-template-columns: 15rem 1fr; align-items: start; }
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.opcion {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.opcion[aria-current='true'] {
+  border-color: var(--color-primary);
+  background: #eff6ff;
+}
+
+.opcion strong { display: block; font-size: var(--font-size-sm); }
+.opcion span { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+.variables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.variables code {
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-xs);
+}
+
+.vistaPrevia {
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: #f9fafb;
+  font-size: var(--font-size-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.vistaPrevia strong { display: block; margin-bottom: var(--space-2); }
