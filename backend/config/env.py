@@ -1,24 +1,19 @@
 """Lectura de variables de entorno.
 
-Carga `backend/.env` (si existe) en `os.environ` sin sobrescribir variables
+Carga `backend/.env` (si existe) con python-dotenv, sin sobrescribir variables
 ya definidas en el sistema, y expone helpers tipados para leerlas.
 """
 
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def load_env_file(path: Path = BASE_DIR / ".env") -> None:
-    if not path.exists():
-        return
-    for raw in path.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip("'\""))
+    load_dotenv(path, override=False)
 
 
 def env_str(key: str, default: str | None = None) -> str:
