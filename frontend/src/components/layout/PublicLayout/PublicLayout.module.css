@@ -1,0 +1,78 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 4rem;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.menuButton {
+  display: inline-flex;
+  padding: var(--space-2);
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.menuButton svg { width: 1.5rem; height: 1.5rem; }
+
+.nav {
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  width: 100%;
+  padding-top: var(--space-2);
+}
+
+.navAbierta { display: flex; }
+
+.link {
+  padding: var(--space-2) 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--font-size-md);
+  text-decoration: none;
+}
+
+.link:hover { color: var(--color-text-inverse); }
+
+.main { flex: 1; }
+
+.footer {
+  padding: var(--space-6) var(--space-4);
+  background: var(--color-primary);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.footerMuted {
+  margin-top: var(--space-1);
+  opacity: 0.7;
+}
+
+@media (min-width: 768px) {
+  .header { padding: 0 var(--space-10); flex-wrap: nowrap; }
+  .menuButton { display: none; }
+
+  .nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-6);
+    width: auto;
+    padding-top: 0;
+  }
+}

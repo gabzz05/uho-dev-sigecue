@@ -1,0 +1,41 @@
+.grid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+@media (min-width: 1024px) {
+  .grid { grid-template-columns: 3fr 2fr; align-items: start; }
+}
+
+.identidad {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.nombre {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.datos dt { color: var(--color-text-muted); }
+
+.datos dd { overflow-wrap: anywhere; }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.form > div { width: 100%; }
