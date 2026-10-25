@@ -17,6 +17,7 @@ DJANGO_APPS = [
 ]
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "drf_spectacular",
 ]
 LOCAL_APPS = [
     "apps.core",
@@ -77,8 +78,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.PaginacionEstandar",
     "PAGE_SIZE": env_int("API_PAGE_SIZE", 20),
+    "EXCEPTION_HANDLER": "apps.core.exceptions.exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # RG-017: fechas en ISO 8601.
+    "DATETIME_FORMAT": "iso-8601",
+}
+
+# RG-016 / RNF-009: documentación OpenAPI en /api/docs.
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SIGECUE API",
+    "DESCRIPTION": "API del Sistema de Gestión de Carreras por Encuentro — Universidad de Holguín.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": r"/api/v1",
 }
 
 # Celery (tareas programadas: cierre de convocatorias, recordatorios, limpieza).

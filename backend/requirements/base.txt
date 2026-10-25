@@ -3,3 +3,5 @@ djangorestframework>=3.16,<4.0
 celery>=5.4,<6.0
 redis>=5.0
 python-dotenv>=1.0
+drf-spectacular>=0.28
+cryptography>=44.0
