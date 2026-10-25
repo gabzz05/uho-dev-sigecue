@@ -195,6 +195,12 @@ describe('Avatar', () => {
     render(<Avatar nombre="Juan Castro" />)
     expect(screen.getByText('JC')).toBeInTheDocument()
   })
+
+  it('vuelve a las iniciales si la foto no carga', () => {
+    const { container } = render(<Avatar nombre="Juan Castro" foto="/rota.png" />)
+    fireEvent.error(container.querySelector('img'))
+    expect(screen.getByText('JC')).toBeInTheDocument()
+  })
 })
 
 describe('Alert y Toast', () => {
