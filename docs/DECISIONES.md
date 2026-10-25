@@ -34,6 +34,19 @@ Este archivo registra esas decisiones.
 | Perfil (RF-018) | El usuario edita su celular, su foto y su contraseña. El email no es editable por ahora (cambiarlo exigiría volver a verificarlo). |
 | Celular | 8 dígitos empezando por 5 (`^5\d{7}$`). |
 
+## Nomencladores
+
+| Tema | Decisión |
+|---|---|
+| Carreras (RF-004) | Catálogo global sin entidad. La entidad que la oferta cada año se define en `OfertaCarrera` (carrera + entidad + año), como en el modelo conceptual. Así una misma carrera puede estar en una Facultad y en varios CUM/FUM (RF-049). |
+| Modalidad | Un único valor: "Por encuentro". Se amplía si aparece otra modalidad. |
+| Áreas y departamentos (RF-005) | El departamento pertenece a un área; el área, a una Facultad o a un CUM/FUM. El Jefe de Área se vincula a un área concreta. |
+| Cargos (RF-006) | El usuario interno tiene un cargo opcional. |
+| Municipios (RF-003) | Se precargan los 14 municipios de la provincia de Holguín. |
+| Usuario–entidad | Dos claves foráneas (`facultad`, `cum_fum`) con restricción de base de datos, en lugar de `tipo_entidad` + `entidad_id`. |
+| Imágenes | Las de carreras, facultades y CUM/FUM son públicas (las sirve nginx). Los documentos de los aspirantes son privados y solo los entrega la API. |
+| Escritura de catálogos | Municipios, facultades, CUM/FUM, cargos y carreras los modifican solo los roles globales. Áreas y departamentos los gestiona también cada entidad. |
+
 ## Expresión de interés
 
 | Tema | Decisión |

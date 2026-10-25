@@ -113,8 +113,8 @@ Linux / WSL:
 ```bash
 sudo useradd --system --create-home --home-dir /opt/sigecue sigecue
 sudo -u sigecue git clone https://github.com/gabzz05/uho-dev-sigecue.git /opt/sigecue/app
-sudo mkdir -p /var/lib/sigecue/media
-sudo chown sigecue:sigecue /var/lib/sigecue/media
+sudo mkdir -p /var/lib/sigecue/media /var/lib/sigecue/media_publica
+sudo chown sigecue:sigecue /var/lib/sigecue/media /var/lib/sigecue/media_publica
 ```
 
 En macOS se puede clonar con el usuario administrador del equipo, sin crear un
@@ -150,7 +150,8 @@ tienen prioridad sobre las del archivo.
 | `SEARCH_HASH_KEY` | Sí | Clave del hash que permite buscar y comprobar unicidad del CI sin descifrarlo. Generar igual que la anterior (debe ser distinta). No se puede cambiar una vez haya datos. |
 | `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Sí | Datos de la base creada en 2.1 |
 | `POSTGRES_HOST` / `POSTGRES_PORT` | No | Por defecto `localhost` / `5432` |
-| `MEDIA_ROOT` | No | Carpeta de archivos subidos (creada en 2.2) |
+| `MEDIA_ROOT` | No | Carpeta privada de archivos subidos por los aspirantes (creada en 2.2) |
+| `PUBLIC_MEDIA_ROOT` | No | Carpeta de imágenes públicas (carreras, facultades, CUM/FUM). Recomendado `/var/lib/sigecue/media_publica`. Debe coincidir con el `alias` de `/media/` en nginx. |
 | `CELERY_BROKER_URL` / `CELERY_RESULT_BACKEND` | No | Por defecto `redis://localhost:6379/0` |
 | `CELERY_TASK_ALWAYS_EAGER` | No | Debe ser `False` en producción |
 | `API_PAGE_SIZE` | No | Elementos por página en la API (20) |
@@ -222,7 +223,12 @@ server {
 
     location /static/ { alias /opt/sigecue/app/backend/staticfiles/; }
 
-    location ~ ^/(api|admin)/ {
+    # Imágenes públicas (carreras, facultades, CUM/FUM). Los archivos de los
+    # aspirantes (MEDIA_ROOT) NO se publican aquí: solo los entrega la API.
+    location /media/ { alias /var/lib/sigecue/media_publica/; }
+
+    # /admin es el panel de React: no se envía a Django.
+    location ~ ^/(api|django-admin)/ {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

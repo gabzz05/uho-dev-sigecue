@@ -46,6 +46,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 |---|---|
 | `core` | Piezas transversales: formato de errores, paginación, modelos base, cifrado de datos personales |
 | `roles` | Roles, catálogo de permisos (módulo × acción) y la clase `PermisoModulo` |
+| `nomencladores` | Municipios, Facultades, CUM/FUM, Áreas, Departamentos, Cargos y catálogo global de Carreras |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -92,8 +93,49 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
   (`DEFAULT_PERMISSION_CLASSES`). Las públicas lo declaran explícitamente.
 - `GET /api/v1/admin/roles/catalogo/` devuelve los permisos agrupados por módulo
   para construir la matriz en el panel.
-- **Pendiente** (feature `nomencladores`): vincular a los usuarios locales con su
-  Facultad o CUM/FUM y filtrar los datos por ámbito (RG-027, criterio 11).
+### Ámbito de datos: global y local (RG-027, criterio 11)
+
+- Un usuario con rol local pertenece a una Facultad (`usuario.facultad`) **o** a
+  un CUM/FUM (`usuario.cum_fum`). Una restricción de base de datos
+  (`usuario_una_sola_entidad`) impide que tenga ambas. La API valida además que
+  cada rol local tenga exactamente la entidad de su ámbito: una `CHECK` no
+  puede leer la tabla de roles. Los Jefes de Área (`rol.requiere_area`) tienen
+  además un área de esa entidad.
+- `apps.core.ambito.filtrar_por_entidad(qs, usuario, campo_facultad, campo_cum_fum)`
+  es el filtro que debe aplicar **todo** módulo con datos por entidad:
+  - Los roles globales ven todo.
+  - Los locales ven solo lo de su entidad.
+  - Un rol local sin entidad asignada no ve nada.
+- `es_de_su_entidad(usuario, facultad, cum_fum)` comprueba las escrituras.
+- Hoy lo aplican los usuarios internos, las áreas y los departamentos.
+
+### Nomencladores
+
+- Rutas: `/api/v1/admin/nomencladores/{municipios,facultades,cum-fum,areas,departamentos,cargos,carreras}/`.
+  Filtros comunes: `activo`, `buscar`. Algunos tienen filtros propios
+  (`municipio`, `tipo`, `facultad`, `cum_fum`, `area`, `duracion`).
+- Leer exige `nomencladores.ver`. Para escribir:
+  - Los catálogos globales (municipios, facultades, CUM/FUM, cargos, carreras)
+    solo los modifican los roles globales, aunque un rol local tenga
+    `nomencladores.crear` o `nomencladores.editar`.
+  - Las áreas y los departamentos los gestiona cada entidad.
+- Un registro en uso no se puede borrar (`PROTECT`): se desactiva con
+  `PATCH {"activo": false}`.
+- Los 14 municipios de Holguín se precargan en la migración
+  `nomencladores/0002`.
+- La carrera es un catálogo global. Qué entidad la oferta cada año lo define
+  `OfertaCarrera`, que llega con la convocatoria de interés.
+
+### Archivos
+
+| Almacenamiento | Carpeta | Contenido | Quién lo sirve |
+|---|---|---|---|
+| `default` (privado) | `MEDIA_ROOT` | Fotos y documentos de los usuarios | Solo la API, con permisos (pendiente: endpoint de descarga) |
+| `publico` | `PUBLIC_MEDIA_ROOT` | Imágenes de carreras, facultades y CUM/FUM | nginx en `/media/` (en desarrollo, Django) |
+
+Un campo público se declara con `storage=almacenamiento_publico`
+(`apps.core.storage`). El admin de Django está en `/django-admin/`, porque
+`/admin` es el panel de React.
 
 ### API
 
@@ -178,6 +220,33 @@ determinista. Las claves están en `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY`.
 - `RequireAuth tipo="interno" | "aspirante"` y `permiso="modulo.accion"`
   protegen las rutas. Es solo una ayuda de interfaz: la API valida cada
   petición.
+
+### Pantallas CRUD
+
+`components/crud/CrudPage` es una pantalla completa de listado y edición,
+configurable. Incluye:
+- búsqueda diferida, filtros y paginación;
+- alta y edición en un modal, con un formulario generado desde un esquema de
+  campos;
+- activar y desactivar;
+- baja con confirmación.
+
+La usan los nomencladores (`pages/admin/nomencladores/`). Para un recurso nuevo:
+
+```jsx
+const recurso = crearRecurso('/admin/algo/')       // services/recursos.js
+<CrudPage
+  titulo="Algo" singular="algo" recurso={recurso}
+  columnas={[{ key: 'nombre', header: 'Nombre' }]}
+  campos={[{ name: 'nombre', label: 'Nombre', required: true }]}
+  valoresIniciales={{ nombre: '' }}
+  permisos={{ crear: true, editar: true, eliminar: false }}
+/>
+```
+
+`crearRecurso` envía JSON, o multipart si algún valor es un `File`. Con
+imágenes, `aDatos={omitirArchivoSinCambios}` evita reenviar la que ya estaba
+guardada.
 
 ### Añadir la pantalla de un módulo del panel
 

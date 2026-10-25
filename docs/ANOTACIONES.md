@@ -41,7 +41,19 @@ pero muestra un aviso de "texto pendiente".
 **Cómo integrarlo:** sustituir el contenido de
 `frontend/src/pages/public/Privacidad.jsx`.
 
-## 4. Identidad visual
+## 4. Fotos de perfil (archivos privados)
+
+**Estado actual:** la foto de perfil se guarda en el almacenamiento privado
+(`MEDIA_ROOT`), que no se publica. Su URL todavía no se puede abrir, así que el
+avatar muestra las iniciales.
+
+**Pendiente** (feature `portal-aspirante`): un endpoint de descarga con control
+de permisos para los archivos privados. Servirá para la foto, el CI y la
+certificación del aspirante, y para el visor de documentos de RF-054. El
+frontend los pedirá con el token y los mostrará como `blob:`, porque un
+`<img>` no puede enviar la cabecera `Authorization`.
+
+## 5. Identidad visual
 
 **Estado actual:** se usa la paleta del mockup. Los colores se guardan en base
 de datos (los define el Superadmin) y el frontend los aplica al cargar.
