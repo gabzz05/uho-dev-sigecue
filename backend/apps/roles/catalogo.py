@@ -24,7 +24,8 @@ CRUD = [VER, CREAR, EDITAR, ELIMINAR]
 MODULOS = {
     "dashboard": ("Dashboard", [VER]),
     "nomencladores": ("Nomencladores", CRUD),
-    "usuarios": ("Usuarios", CRUD),
+    # Los usuarios no se borran: se desactivan (permiso editar).
+    "usuarios": ("Usuarios", [VER, CREAR, EDITAR]),
     "roles": ("Roles y permisos", CRUD),
     "configuracion": ("Configuración", [VER, EDITAR]),
     "interes": ("Convocatoria de interés", CRUD + [EXPORTAR]),

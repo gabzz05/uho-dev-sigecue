@@ -30,6 +30,9 @@ Este archivo registra esas decisiones.
 | Sesión (RG-011) | Access token de 15 min en memoria del navegador y refresh en cookie httpOnly; la sesión caduca tras 8 h de inactividad o al cerrarla. |
 | Roles (RE-006) | Los 13 roles de la ERS vienen precargados con una matriz de permisos inicial. El Superadmin puede editar permisos y crear roles nuevos. |
 | Auditoría (RG-010) | Las lecturas (GET) no se auditan automáticamente; las lecturas sensibles se registran explícitamente en cada módulo. |
+| Borrado de usuarios (RF-014) | Los usuarios no se borran, para conservar la trazabilidad. Se desactivan (`bloquear`) y se reactivan (`desbloquear`). No existe el permiso `usuarios.eliminar`. |
+| Perfil (RF-018) | El usuario edita su celular, su foto y su contraseña. El email no es editable por ahora (cambiarlo exigiría volver a verificarlo). |
+| Celular | 8 dígitos empezando por 5 (`^5\d{7}$`). |
 
 ## Expresión de interés
 

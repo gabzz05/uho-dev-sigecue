@@ -22,8 +22,13 @@ from apps.users.serializers import UsuarioAdminSerializer
     )
 )
 class UsuarioViewSet(viewsets.ModelViewSet):
-    """Usuarios internos (RF-014 a RF-017). Los aspirantes no se gestionan aquí."""
+    """Usuarios internos (RF-014 a RF-017). Los aspirantes no se gestionan aquí.
 
+    Los usuarios no se borran, para conservar la trazabilidad: se desactivan
+    con `bloquear` y se reactivan con `desbloquear`.
+    """
+
+    http_method_names = ["get", "post", "put", "patch", "head", "options"]
     serializer_class = UsuarioAdminSerializer
     permission_classes = [PermisoModulo]
     modulo = "usuarios"
@@ -49,14 +54,10 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         if usuario.rol_id and usuario.rol.es_global and not self.request.user.es_superadmin:
             raise ErrorDeNegocio("Solo el Superadmin gestiona usuarios con roles globales.")
 
-    def perform_destroy(self, usuario):
-        self._exigir_gestionable(usuario)
-        usuario.delete()
-
     @extend_schema(request=None, responses=UsuarioAdminSerializer)
     @action(detail=True, methods=["post"])
     def bloquear(self, request, pk=None):
-        """Bloquea la cuenta: no podrá iniciar sesión (RF-017)."""
+        """Desactiva la cuenta: no podrá iniciar sesión (RF-017)."""
         usuario = self.get_object()
         self._exigir_gestionable(usuario)
         usuario.is_active = False

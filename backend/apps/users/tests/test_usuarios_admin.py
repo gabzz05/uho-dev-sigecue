@@ -137,15 +137,17 @@ class TestBloqueo:
         assert api_como(admin_facultad).post(f"{URL}{jefe.pk}/bloquear/").status_code == 400
 
 
-class TestEliminarYFiltrar:
-    def test_elimina_usuario(self, api_como, superadmin, crear_usuario):
+class TestSinBorradoYFiltros:
+    def test_los_usuarios_no_se_borran(self, api_como, superadmin, crear_usuario):
         sec = crear_usuario("sec", rol="secretario_facultad")
 
-        assert api_como(superadmin).delete(f"{URL}{sec.pk}/").status_code == 204
-        assert not Usuario.objects.filter(pk=sec.pk).exists()
+        assert api_como(superadmin).delete(f"{URL}{sec.pk}/").status_code == 405
+        assert Usuario.objects.filter(pk=sec.pk).exists()
 
-    def test_no_se_elimina_a_si_mismo(self, api_como, superadmin):
-        assert api_como(superadmin).delete(f"{URL}{superadmin.pk}/").status_code == 400
+    def test_no_existe_el_permiso_de_eliminar_usuarios(self):
+        from apps.roles.models import Permiso
+
+        assert not Permiso.objects.filter(modulo="usuarios", accion="eliminar").exists()
 
     def test_filtros(self, api_como, superadmin, crear_usuario):
         crear_usuario("sec", rol="secretario_facultad", first_name="Ana")
