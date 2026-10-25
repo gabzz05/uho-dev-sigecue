@@ -52,19 +52,19 @@ class Usuario(AbstractUser):
         super().save(*args, **kwargs)
 
     @property
-    def nombre_completo(self):
+    def nombre_completo(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
 
     @property
-    def es_superadmin(self):
+    def es_superadmin(self) -> bool:
         return self.is_superuser or (self.rol_id is not None and self.rol.codigo == Rol.SUPERADMIN)
 
     @property
-    def es_aspirante(self):
+    def es_aspirante(self) -> bool:
         return self.rol_id is not None and self.rol.codigo == Rol.ASPIRANTE
 
     @property
-    def esta_bloqueado_temporalmente(self):
+    def esta_bloqueado_temporalmente(self) -> bool:
         return self.bloqueado_hasta is not None and self.bloqueado_hasta > timezone.now()
 
     @cached_property

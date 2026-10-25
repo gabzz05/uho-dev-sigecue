@@ -1,0 +1,164 @@
+from django.conf import settings
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import generics, serializers, status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+
+from apps.core.exceptions import ErrorDeNegocio
+from apps.users.models import Usuario
+from apps.users.serializers import (
+    ActivacionSerializer,
+    CambiarPasswordSerializer,
+    LoginSerializer,
+    RegistroSerializer,
+    UsuarioActualSerializer,
+)
+from apps.users.services import autenticacion, registro
+
+SESION = inline_serializer("Sesion", {"access": serializers.CharField(), "usuario": UsuarioActualSerializer()})
+ACCESS = inline_serializer("Access", {"access": serializers.CharField()})
+MENSAJE = inline_serializer("Mensaje", {"mensaje": serializers.CharField()})
+
+
+def _poner_cookie_refresh(response, refresh):
+    cookie = settings.AUTH_REFRESH_COOKIE
+    response.set_cookie(
+        cookie["key"],
+        refresh,
+        max_age=int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()),
+        path=cookie["path"],
+        httponly=cookie["httponly"],
+        secure=cookie["secure"],
+        samesite=cookie["samesite"],
+    )
+
+
+def _borrar_cookie_refresh(response):
+    cookie = settings.AUTH_REFRESH_COOKIE
+    response.delete_cookie(cookie["key"], path=cookie["path"], samesite=cookie["samesite"])
+
+
+class _VistaPublica(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
+    def get_authenticate_header(self, request):
+        # Sin esto DRF convierte los 401 en 403 en vistas sin autenticación.
+        return 'Bearer realm="api"'
+
+
+class LoginView(_VistaPublica):
+    """Inicia sesión. Devuelve el access token y deja el refresh en una cookie httpOnly."""
+
+    @extend_schema(request=LoginSerializer, responses=SESION, tags=["auth"])
+    def post(self, request):
+        datos = LoginSerializer(data=request.data)
+        datos.is_valid(raise_exception=True)
+        usuario = autenticacion.autenticar(
+            datos.validated_data["identificador"], datos.validated_data["password"], request=request
+        )
+        access, refresh = autenticacion.emitir_tokens(usuario)
+        request.user = usuario  # Para que la auditoría registre quién inició sesión.
+        response = Response(
+            {"access": access, "usuario": UsuarioActualSerializer(usuario, context={"request": request}).data}
+        )
+        _poner_cookie_refresh(response, refresh)
+        return response
+
+
+class RefreshView(_VistaPublica):
+    """Renueva el access token usando la cookie de refresh, que también se rota."""
+
+    @extend_schema(request=None, responses=ACCESS, tags=["auth"])
+    def post(self, request):
+        refresh = request.COOKIES.get(settings.AUTH_REFRESH_COOKIE["key"])
+        serializer = TokenRefreshSerializer(data={"refresh": refresh or ""})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except (TokenError, serializers.ValidationError, Usuario.DoesNotExist):
+            response = Response(
+                {"error": {"codigo": "sesion_expirada", "mensaje": "Tu sesión caducó. Inicia sesión de nuevo."}},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+            _borrar_cookie_refresh(response)
+            return response
+
+        response = Response({"access": serializer.validated_data["access"]})
+        if nuevo := serializer.validated_data.get("refresh"):
+            _poner_cookie_refresh(response, nuevo)
+        return response
+
+
+class LogoutView(_VistaPublica):
+    """Cierra la sesión: invalida el refresh token y borra la cookie (RG-011)."""
+
+    @extend_schema(request=None, responses={204: None}, tags=["auth"])
+    def post(self, request):
+        if refresh := request.COOKIES.get(settings.AUTH_REFRESH_COOKIE["key"]):
+            autenticacion.revocar(refresh)
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        _borrar_cookie_refresh(response)
+        return response
+
+
+class RegistroView(_VistaPublica):
+    """Registro de aspirantes (RF-013, RF-044). Envía el correo de activación."""
+
+    @extend_schema(request=RegistroSerializer, responses={201: MENSAJE}, tags=["auth"])
+    def post(self, request):
+        datos = RegistroSerializer(data=request.data)
+        datos.is_valid(raise_exception=True)
+        d = datos.validated_data
+        registro.registrar_aspirante(
+            nombre=d["nombre"], apellidos=d["apellidos"], ci=d["ci"],
+            email=d["email"], celular=d["celular"], password=d["password"],
+        )
+        return Response(
+            {"mensaje": "Te enviamos un correo para activar tu cuenta. Revisa tu bandeja de entrada."},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class ActivarView(_VistaPublica):
+    """Activa la cuenta con el token recibido por correo (RF-045)."""
+
+    @extend_schema(request=ActivacionSerializer, responses=MENSAJE, tags=["auth"])
+    def post(self, request):
+        datos = ActivacionSerializer(data=request.data)
+        datos.is_valid(raise_exception=True)
+        registro.activar_cuenta(datos.validated_data["token"])
+        return Response({"mensaje": "Tu cuenta está activa. Ya puedes iniciar sesión."})
+
+
+@extend_schema(tags=["auth"])
+class MeView(generics.RetrieveUpdateAPIView):
+    """Perfil del usuario autenticado, con su rol y permisos."""
+
+    serializer_class = UsuarioActualSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    http_method_names = ["get", "patch"]
+
+    def get_object(self):
+        return self.request.user
+
+
+class CambiarPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=CambiarPasswordSerializer, responses={204: None}, tags=["auth"])
+    def post(self, request):
+        if request.user.origen == Usuario.Origen.SGU:
+            raise ErrorDeNegocio("Tu contraseña se gestiona en el Sistema de Gestión de Usuarios de la UHO.")
+        datos = CambiarPasswordSerializer(data=request.data, context={"request": request})
+        datos.is_valid(raise_exception=True)
+        request.user.set_password(datos.validated_data["nueva"])
+        request.user.save(update_fields=["password"])
+        return Response(status=status.HTTP_204_NO_CONTENT)

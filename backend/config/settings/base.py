@@ -1,6 +1,10 @@
 """Configuración común a todos los entornos."""
 
-from config.env import BASE_DIR, env_int, env_list, env_str, load_env_file
+from datetime import timedelta
+
+from celery.schedules import crontab
+
+from config.env import BASE_DIR, env_bool, env_int, env_list, env_str, load_env_file
 
 load_env_file()
 
@@ -17,6 +21,7 @@ DJANGO_APPS = [
 ]
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
 ]
 LOCAL_APPS = [
@@ -69,7 +74,25 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# RG-007: hash de contraseñas con Argon2/bcrypt se configura en feature/auth-users.
+# RG-007: contraseñas con Argon2. PBKDF2 queda solo para leer hashes antiguos.
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
+
+# RG-009 / RF-008: bloqueo temporal tras intentos fallidos. Pasarán a ser
+# parámetros editables desde el panel en feature/system-config.
+LOGIN_MAX_INTENTOS = env_int("LOGIN_MAX_INTENTOS", 5)
+LOGIN_BLOQUEO_MINUTOS = env_int("LOGIN_BLOQUEO_MINUTOS", 15)
+
+# RF-045: horas para activar la cuenta antes de que se elimine.
+ACTIVACION_HORAS = 48
+
+# URL pública del frontend, para los enlaces de los correos.
+FRONTEND_URL = env_str("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+
+# Integración con auth.uho.edu.cu (ver docs/SGU.md). Vacío = desactivada.
+SGU_PROVEEDOR = env_str("SGU_PROVEEDOR", "")
 
 LANGUAGE_CODE = "es"
 TIME_ZONE = "America/Havana"
@@ -87,6 +110,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
+    # Seguro por defecto: toda vista exige sesión salvo que declare lo contrario.
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_THROTTLE_RATES": {"auth": env_str("AUTH_THROTTLE_RATE", "20/min")},
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.PaginacionEstandar",
     "PAGE_SIZE": env_int("API_PAGE_SIZE", 20),
     "EXCEPTION_HANDLER": "apps.core.exceptions.exception_handler",
@@ -94,6 +121,35 @@ REST_FRAMEWORK = {
     # RG-017: fechas en ISO 8601.
     "DATETIME_FORMAT": "iso-8601",
 }
+
+# RG-011 / RG-017: JWT. El access dura 15 min y el frontend lo guarda en memoria.
+# El refresh viaja en una cookie httpOnly y se rota en cada uso: caduca tras
+# 8 h sin renovarse (inactividad) o al cerrar sesión (lista negra).
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=8),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "USER_ID_CLAIM": "user_id",
+}
+AUTH_REFRESH_COOKIE = {
+    "key": "sigecue_refresh",
+    "path": "/api/v1/auth/",
+    "httponly": True,
+    "secure": env_bool("AUTH_COOKIE_SECURE", True),
+    "samesite": "Strict",
+}
+
+# Correo. RE-010 pide editar el SMTP desde el panel: llega en feature/system-config;
+# mientras tanto se toma de estas variables.
+EMAIL_BACKEND = env_str("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = env_str("EMAIL_HOST", "localhost")
+EMAIL_PORT = env_int("EMAIL_PORT", 587)
+EMAIL_HOST_USER = env_str("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = env_str("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+DEFAULT_FROM_EMAIL = env_str("DEFAULT_FROM_EMAIL", "SIGECUE <no-responder@uho.edu.cu>")
 
 # RG-016 / RNF-009: documentación OpenAPI en /api/docs.
 SPECTACULAR_SETTINGS = {
@@ -109,6 +165,12 @@ CELERY_BROKER_URL = env_str("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = env_str("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = False
+CELERY_BEAT_SCHEDULE = {
+    "eliminar-cuentas-no-verificadas": {
+        "task": "apps.users.tasks.eliminar_cuentas_no_verificadas",
+        "schedule": crontab(minute=0),
+    },
+}
 
 # RNF-008: logs INFO/WARNING/ERROR con rotación diaria y retención de 90 días.
 LOG_DIR = BASE_DIR / "logs"

@@ -6,6 +6,7 @@ api_v1 = [
     path("", include("apps.core.urls")),
     path("", include("apps.auditoria.urls")),
     path("", include("apps.roles.urls")),
+    path("", include("apps.users.urls")),
 ]
 
 urlpatterns = [

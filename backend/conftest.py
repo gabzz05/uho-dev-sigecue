@@ -1,8 +1,18 @@
 import pytest
+from django.core.cache import cache
 from rest_framework.test import APIClient
 
 from apps.roles.models import Rol
 from apps.users.models import Usuario
+
+
+@pytest.fixture(autouse=True)
+def _entorno_de_pruebas(settings, tmp_path):
+    # Argon2 es lento a propósito; en pruebas basta un hasher rápido.
+    settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+    settings.MEDIA_ROOT = tmp_path / "media"
+    # El throttle guarda sus contadores en caché: cada prueba empieza de cero.
+    cache.clear()
 
 
 @pytest.fixture

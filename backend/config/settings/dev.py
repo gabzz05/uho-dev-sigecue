@@ -22,3 +22,10 @@ DATABASES = {
 
 # Sin Redis local, las tareas de Celery se ejecutan en el mismo proceso.
 CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", True)
+CELERY_TASK_EAGER_PROPAGATES = True
+
+# Los correos se imprimen en la consola del runserver.
+EMAIL_BACKEND = env_str("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+
+# En http://localhost la cookie no puede ser Secure.
+AUTH_REFRESH_COOKIE = {**AUTH_REFRESH_COOKIE, "secure": False}  # noqa: F405

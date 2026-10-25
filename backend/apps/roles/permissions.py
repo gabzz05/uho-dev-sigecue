@@ -36,8 +36,3 @@ class PermisoModulo(BasePermission):
         if accion is None:
             return False
         return usuario.tiene_permiso(view.modulo, accion)
-
-
-class EsSuperadmin(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.es_superadmin)
