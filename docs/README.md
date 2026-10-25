@@ -39,5 +39,52 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
   - `src/services/`: acceso a la API.
   - `src/styles/tokens.css`: único CSS global (variables de diseño y reset).
     El resto de los estilos usa CSS Modules (`Componente.module.css`).
+### Apps del backend
+
+| App | Responsabilidad |
+|---|---|
+| `core` | Piezas transversales: formato de errores, paginación, modelos base, cifrado de datos personales |
+| `users` | Modelo de usuario (`AUTH_USER_MODEL = users.Usuario`) |
+| `auditoria` | Log de auditoría inmutable (RG-010) |
+
+### API
+
+- Documentación interactiva (Swagger UI): `/api/docs/`. Esquema OpenAPI: `/api/schema/`.
+- Errores: todas las respuestas de error tienen el mismo formato, con un
+  mensaje en español pensado para mostrarse al usuario (RG-003):
+  ```json
+  {"error": {"codigo": "invalid", "mensaje": "Revisa los datos marcados e inténtalo de nuevo.",
+             "detalles": {"ci": ["El CI debe tener 11 dígitos."]}}}
+  ```
+  Los services lanzan `apps.core.exceptions.ErrorDeNegocio("mensaje")` cuando
+  una operación incumple una regla del proceso.
+- Paginación: `?page=N&page_size=M` (máximo 100). Respuesta
+  `{"count", "next", "previous", "results"}`.
+
+### Datos personales cifrados (RG-025)
+
+CI, celular y email se guardan con `apps.core.fields.CampoCifrado` (AES-256-GCM).
+Como el texto cifrado cambia en cada guardado, no se puede buscar ni exigir
+unicidad sobre esa columna. Para eso cada dato que lo necesite (el CI) tiene al
+lado una columna con `apps.core.crypto.hash_busqueda(valor)`, un HMAC-SHA256
+determinista. Las claves están en `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY`.
+
+### Auditoría (RG-010)
+
+- **Automática**: el middleware `AuditoriaMiddleware` registra toda petición
+  a `/api/v1/` con método POST, PUT, PATCH o DELETE: usuario, acción
+  (método + ruta), módulo, id afectado, IP, resultado y código HTTP.
+- **Explícita**: los services llaman a `apps.auditoria.services.registrar(...)`
+  para eventos de negocio y para lecturas sensibles (p. ej. consultar datos
+  personales de un aspirante, RG-027). Las lecturas normales no se registran
+  solas, porque el polling de notificaciones generaría miles de registros por
+  minuto.
+- Los registros no se pueden modificar ni borrar: ni desde la API, ni desde el
+  admin de Django, ni desde el ORM.
+- Consulta: `GET /api/v1/admin/logs/` con filtros `usuario`, `accion`, `modulo`,
+  `resultado`, `desde`, `hasta`.
+
+### Tareas en segundo plano
+
 - **Celery + Redis** — tareas programadas (cierre automático de convocatorias,
   limpieza de cuentas no activadas, recordatorios, etc.).

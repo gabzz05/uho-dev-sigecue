@@ -146,6 +146,8 @@ tienen prioridad sobre las del archivo.
 |---|---|---|
 | `DJANGO_SECRET_KEY` | Sí | Clave larga y aleatoria. Generar con `python3 -c "import secrets; print(secrets.token_urlsafe(64))"` |
 | `DJANGO_ALLOWED_HOSTS` | Sí | Dominios separados por coma, p. ej. `sigecue.uho.edu.cu` |
+| `FIELD_ENCRYPTION_KEY` | Sí | Clave AES-256 para cifrar CI, celular y email (RG-025). Generar con `python manage.py generar_clave`. **Guardarla en lugar seguro: si se pierde, esos datos no se pueden recuperar.** |
+| `SEARCH_HASH_KEY` | Sí | Clave del hash que permite buscar y comprobar unicidad del CI sin descifrarlo. Generar igual que la anterior (debe ser distinta). No se puede cambiar una vez haya datos. |
 | `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Sí | Datos de la base creada en 2.1 |
 | `POSTGRES_HOST` / `POSTGRES_PORT` | No | Por defecto `localhost` / `5432` |
 | `MEDIA_ROOT` | No | Carpeta de archivos subidos (creada en 2.2) |
