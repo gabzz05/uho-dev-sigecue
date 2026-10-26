@@ -49,6 +49,8 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `nomencladores` | Municipios, Facultades, CUM/FUM, Áreas, Departamentos, Cargos y catálogo global de Carreras |
 | `configuracion` | Parámetros del sistema, SMTP, plantillas de correo e identidad visual |
 | `notificaciones` | Notificaciones in-app y por correo, envíos masivos |
+| `oferta` | `OfertaCarrera`: carrera + entidad + año académico |
+| `interes` | Convocatoria de interés, expresiones de interés y endpoints públicos de la landing |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -209,6 +211,66 @@ otro rol tenga `configuracion.editar`.
   - El polling no mantiene viva la sesión: la renovación depende de la
     actividad del usuario.
   - Las notificaciones no se borran automáticamente; el usuario las borra.
+
+### Convocatoria de interés y landing (RF-019 a RF-031)
+
+**Modelo**
+
+- `OfertaCarrera` (app `oferta`): una carrera ofertada por una Facultad o un
+  CUM/FUM en un año académico (`2026-2027`). La base de datos impide repetir la
+  misma carrera en la misma entidad y año. `asignada_por_ci` marca lo que
+  asignó la Comisión de Ingreso: la entidad no puede quitarlo.
+- `ConvocatoriaInteres`:
+  - Una por año académico, con estados `borrador → abierta → cerrada`.
+  - Solo puede haber una abierta a la vez (restricción de base de datos).
+  - La apertura es manual: la CI la abre con al menos una carrera en la oferta.
+  - El cierre es automático: la tarea `cerrar_convocatorias_vencidas`
+    (Celery beat, cada hora) cierra las que pasaron su fecha de cierre.
+  - Acepta interés mientras está abierta y la fecha de hoy cae dentro de su
+    rango.
+- `ExpresionInteres`:
+  - CI, celular y email cifrados (RG-025).
+  - Única por oferta y CI (RF-022): la misma persona puede interesarse por
+    la misma carrera en otra entidad.
+  - Al registrarla se envía la plantilla `interes_confirmado`.
+
+**Endpoints del panel** (módulo `interes`)
+
+| Endpoint | Quién |
+|---|---|
+| `/api/v1/admin/interes/convocatorias/` (+ `abrir/`, `cerrar/`) | Crear y gestionar: solo roles globales. Eliminar: solo en borrador. Una cerrada no se modifica. |
+| `/api/v1/admin/interes/ofertas/?convocatoria=` | La CI agrega a cualquier entidad. Un rol local agrega a la suya (sin indicarla) y quita lo que agregó él mismo. Quitar exige `interes.editar`. |
+| `/api/v1/admin/interes/expresiones/` | Interesados con sus datos personales, filtrados por el ámbito del rol. |
+| `/api/v1/admin/interes/expresiones/exportar/` | Excel (RF-031, `interes.exportar`). Cada exportación se audita con los filtros y el número de registros. |
+
+**Endpoints públicos** (sin sesión y sin datos personales)
+
+| Endpoint | Uso |
+|---|---|
+| `GET /api/v1/interes/convocatoria/` | Convocatoria que hoy acepta interés, o `null`. |
+| `GET /api/v1/oferta/` | Oferta de la convocatoria abierta. Filtros: `buscar`, `duracion`, `facultad`, `cum_fum`, `municipio`. |
+| `GET /api/v1/carreras/` · `/carreras/{id}/` | Catálogo de carreras activas, y detalle con dónde se oferta. |
+| `GET /api/v1/publico/filtros/` | Facultades, CUM/FUM y municipios para los filtros. |
+| `POST /api/v1/interes/` | Registrar interés. Límite por IP: `INTERES_THROTTLE_RATE` (10/hora). |
+
+**Landing**
+
+- Con convocatoria abierta: aviso, oferta (una tarjeta por carrera y entidad)
+  y botón "Me interesa".
+- Sin convocatoria: el catálogo, sin ese botón.
+- No se muestra cuántas personas están interesadas.
+
+### Exportar a Excel
+
+`apps.core.excel.respuesta_excel(nombre, titulo, columnas, filas)` genera un
+`.xlsx` con:
+- encabezado con institución, sistema, título y fecha de generación;
+- cabecera de la tabla con el color primario de la identidad visual;
+- filtros y paneles fijos.
+
+Toda exportación con datos personales debe registrarse con
+`apps.auditoria.services.registrar`. En el frontend, el archivo se pide con
+`responseType: 'blob'` y se descarga con `utils/descargar.js`.
 
 ### Archivos
 

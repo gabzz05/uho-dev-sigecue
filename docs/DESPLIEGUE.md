@@ -160,6 +160,7 @@ tienen prioridad sobre las del archivo.
 | `DEFAULT_FROM_EMAIL` | No | Remitente de los correos |
 | `LOGIN_MAX_INTENTOS` / `LOGIN_BLOQUEO_MINUTOS` | No | Valores iniciales del bloqueo temporal (5 / 15). Después se cambian en el panel (Configuración → Parámetros). |
 | `AUTH_THROTTLE_RATE` | No | Límite de peticiones a login y registro por IP (`20/min`) |
+| `INTERES_THROTTLE_RATE` | No | Límite de expresiones de interés por IP en la landing (`10/hour`) |
 | `AUTH_COOKIE_SECURE` | No | `True` (la cookie de sesión solo viaja por HTTPS). No cambiar en producción. |
 | `SGU_PROVEEDOR` | No | Integración con auth.uho.edu.cu. Ver [SGU.md](SGU.md). |
 

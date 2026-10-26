@@ -44,7 +44,19 @@ pero muestra un aviso de "texto pendiente".
 **Cómo integrarlo:** sustituir el contenido de
 `frontend/src/pages/public/Privacidad.jsx`.
 
-## 4. Fotos de perfil (archivos privados)
+## 4. Sección institucional de la landing (RF-025)
+
+**Estado actual:** misión, visión, dirección, teléfono y correo son textos
+provisionales (teléfono y correo dicen "Pendiente").
+
+**Qué hace falta:** los textos oficiales de la UHO.
+
+**Cómo integrarlo:** editar la constante `TEXTOS` en
+`frontend/src/components/landing/SeccionInstitucional/SeccionInstitucional.jsx`.
+Si más adelante se quiere editarlos desde el panel, se pueden guardar en la
+configuración del sistema como la identidad visual.
+
+## 5. Fotos de perfil (archivos privados)
 
 **Estado actual:** la foto de perfil se guarda en el almacenamiento privado
 (`MEDIA_ROOT`), que no se publica. Su URL todavía no se puede abrir, así que el
@@ -56,7 +68,7 @@ certificación del aspirante, y para el visor de documentos de RF-054. El
 frontend los pedirá con el token y los mostrará como `blob:`, porque un
 `<img>` no puede enviar la cabecera `Authorization`.
 
-## 5. Identidad visual
+## 6. Identidad visual
 
 **Estado actual:** se usa la paleta del mockup como valor inicial. El Superadmin
 la cambia en Configuración → Identidad visual y el frontend la aplica al

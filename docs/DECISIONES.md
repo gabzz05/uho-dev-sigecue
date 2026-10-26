@@ -75,6 +75,16 @@ Este archivo registra esas decisiones.
 | Tema | Decisión |
 |---|---|
 | Email (RF-021) | Obligatorio (el mockup lo marcaba opcional). Es la única vía para avisar a los interesados de la convocatoria (RF-041), porque no tienen cuenta. |
+| Alcance del feature | Convocatoria, oferta, landing, expresión de interés, listado y Excel juntos. El dashboard con gráficos y mapa (RF-029/030) va en el feature de dashboard. |
+| Convocatoria (RF-026) | Una por año académico (`2026-2027`). Estados borrador, abierta y cerrada. Apertura manual y cierre automático por fecha. Solo una abierta a la vez. |
+| Oferta (RF-027/028) | La CI asigna carreras a cualquier entidad. Cada entidad agrega carreras del catálogo a la suya, sin un permiso aparte, y no puede quitar lo asignado por la CI. |
+| Sin convocatoria abierta | La landing muestra el catálogo de carreras sin el botón "Me interesa". |
+| Duplicados (RF-022) | El mismo CI no repite el interés por la misma oferta (carrera + entidad + año). |
+| Contador de interesados | No se muestra en la landing: podría influir artificialmente en la decisión de los aspirantes. |
+| Confirmación | Se envía un correo al registrar el interés (plantilla `interes_confirmado`). |
+| Sección institucional (RF-025) | Textos provisionales, sin edición desde el panel por ahora. |
+| Antispam | Límite de envíos por IP, sin captcha. |
+| Exportaciones | Se auditan siempre, especialmente cuando incluyen CI, email o celular. El Excel se hizo en este feature y el PDF irá con el Plan de Plazas. |
 
 ## Solicitud de carrera
 
