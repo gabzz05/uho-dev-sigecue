@@ -53,6 +53,8 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `interes` | Convocatoria de interés, expresiones de interés y endpoints públicos de la landing |
 | `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
 | `convocatorias` | Convocatoria de solicitud de matrícula (primera, segunda...) |
+| `aspirantes` | Perfil del aspirante, tipos de documento y documentos versionados; descarga con control de acceso |
+| `solicitudes` | Solicitud de carreras del aspirante: selección por prioridad y confirmación |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -339,6 +341,116 @@ Endpoints: `/api/v1/admin/plan-plazas/` (+ `enviar/`, `cargar-oferta/`,
   solicitudes, o `null`. La landing muestra su aviso **por encima** del de la
   convocatoria de interés, con el botón "Solicitar matrícula".
 
+### Portal del aspirante (RF-044 a RF-051)
+
+**Perfil** (`apps/aspirantes`, `GET/PATCH /api/v1/aspirante/perfil/`).
+
+- Nombre, apellidos, CI, email, celular y foto están en `Usuario`.
+  `PerfilAspirante` guarda el centro de trabajo, `indice_declarado` (lo escribe
+  el aspirante, 0–100) e `indice_validado` (lo cargará la entidad en
+  gestión de solicitudes).
+- La foto se cambia en `PATCH /auth/me/`. Para los aspirantes solo se aceptan
+  JPG y PNG.
+- **Perfil completo.** La fuente de verdad es
+  `aspirantes.services.requisitos_perfil(perfil)`, que se recalcula a partir
+  del estado real:
+  - datos personales;
+  - correo validado;
+  - privacidad aceptada;
+  - foto;
+  - centro de trabajo;
+  - índice declarado;
+  - documentos obligatorios activos;
+  - al menos una carrera.
+
+  `PerfilAspirante.perfil_completo` es solo una caché que se actualiza con cada
+  cambio. Si se agrega un documento obligatorio, los perfiles dejan de estar
+  completos sin migrar nada.
+- **Requisito para elegir carreras (RF-046):** todo lo anterior salvo las
+  carreras (`listo_para_carreras`).
+
+**Documentos.**
+
+- `TipoDocumento` (nombre, obligatorio, activo, orden) lo gestiona el
+  Superadmin en Configuración → Documentos del aspirante. Viene sembrado con
+  *CI anverso*, *CI reverso* y *Certificación de estudios*.
+- **Formatos:** PDF, JPG o PNG. Se comprueba el contenido, no la extensión.
+- **Límites:** 5 MB por archivo y 20 MB por aspirante (RNF-005). La cuota
+  cuenta los archivos vigentes, foto incluida.
+- **Subida** (`POST /api/v1/aspirante/documentos/`): crea una **versión
+  nueva**, que pasa a ser la vigente. Las anteriores se conservan como evidencia
+  hasta la política de retención, como máximo 10 por documento; al superar ese
+  número se borra la más antigua, con su archivo.
+
+**Descarga** (`GET /api/v1/documentos/{id}/archivo/`). La API sirve los
+archivos privados con control de acceso:
+
+- **El propio aspirante:** solo la versión vigente.
+- **El personal:** necesita el permiso `solicitudes.documentos_descargar` y,
+  además:
+  - ser de un rol global; o
+  - que su entidad oferte alguna carrera de una solicitud **confirmada** del
+    aspirante (un borrador no da acceso).
+
+  Por semilla tienen ese permiso los roles globales, el Secretario(a) de
+  Facultad, el Secretario(a) de CUM/FUM y el Director(a) de CUM/FUM.
+- **Versiones anteriores:** solo los roles globales.
+- **Auditoría:** cada descarga queda registrada con usuario, fecha, IP, archivo
+  y un motivo automático (`consulta_documentacion` para el propio aspirante,
+  `revision_solicitud` para el personal).
+- **Sin acceso:** la respuesta es 404, para no revelar que el documento
+  existe.
+
+Otros endpoints con las mismas reglas:
+
+- `GET /api/v1/admin/aspirantes/{id}/documentos/`: listado; con el historial
+  para los roles globales.
+- `GET /api/v1/admin/aspirantes/{id}/foto/`: la foto del aspirante.
+
+Cada usuario pide su propia foto en `GET /api/v1/auth/me/foto/`.
+
+**Solicitud** (`apps/solicitudes`, `/api/v1/solicitudes/`).
+
+- **Una por aspirante y convocatoria.**
+  - `POST /solicitudes/` crea el borrador en la convocatoria abierta.
+  - `PUT /solicitudes/{id}/carreras/` reemplaza la selección, con las ofertas
+    en orden de prioridad.
+  - `POST /solicitudes/{id}/confirmar/` la presenta.
+  - `GET /solicitudes/ofertas/` lista las carreras elegibles: las que tienen
+    plazas en el plan publicado, dentro de las entidades de la convocatoria.
+- **Reglas de la selección:**
+  - de 1 al parámetro `max_carreras_aspirante`, sin repetir oferta;
+  - RF-049, por tipo de entidad: una carrera puede ir en una Facultad y en un
+    CUM/FUM, pero no en dos CUM/FUM (ni en dos Facultades).
+- **Estados (RF-051):**
+  - `borrador`: no participa;
+  - `pendiente`: al confirmar;
+  - `en_revision`, `otorgada` y `no_seleccionado`: los asignan gestión de
+    solicitudes y otorgamiento.
+- **Fechas:** `created_at` (borrador), `confirmada_at` (confirmación oficial,
+  desempate del otorgamiento) y `modificada_at` (último cambio de la
+  selección).
+- **Al confirmar** se envía, solo esa vez, la plantilla `solicitud_confirmada`
+  con el resumen, in-app y por correo. Los cambios posteriores no notifican.
+- **Con la convocatoria cerrada** la solicitud y el perfil quedan congelados:
+  - si la solicitud está confirmada, el aspirante ya no puede cambiar datos,
+    documentos ni foto;
+  - un "no seleccionado" vuelve a poder editar para la siguiente convocatoria
+    (RF-062).
+
+**Frontend** (`pages/aspirante/`):
+
+- *Inicio*: pasos del proceso, cuenta atrás de la convocatoria y siguiente
+  paso.
+- *Mi perfil de aspirante* (`/aspirante/completar-perfil`): requisitos,
+  datos, foto y documentos.
+- *Mi solicitud* (`/aspirante/solicitud`): catálogo de carreras y selección
+  ordenable con `ListaOrdenable`. Se reordena arrastrando (drag-and-drop
+  nativo de HTML5), con los botones subir/bajar o con las flechas del teclado
+  sobre el asa.
+- Los archivos privados se piden con el token y se muestran como `blob:`
+  (`useArchivoPrivado`).
+
 ### Exportar a PDF
 
 `apps.core.pdf.respuesta_pdf(plantilla, contexto, nombre, titulo)` renderiza
@@ -366,7 +478,7 @@ Toda exportación con datos personales debe registrarse con
 
 | Almacenamiento | Carpeta | Contenido | Quién lo sirve |
 |---|---|---|---|
-| `default` (privado) | `MEDIA_ROOT` | Fotos y documentos de los usuarios | Solo la API, con permisos (pendiente: endpoint de descarga) |
+| `default` (privado) | `MEDIA_ROOT` | Fotos y documentos de los usuarios | Solo la API, con permisos (ver *Portal del aspirante*) |
 | `publico` | `PUBLIC_MEDIA_ROOT` | Imágenes de carreras, facultades y CUM/FUM | nginx en `/media/` (en desarrollo, Django) |
 
 Un campo público se declara con `storage=almacenamiento_publico`

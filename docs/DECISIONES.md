@@ -101,8 +101,19 @@ Este archivo registra esas decisiones.
 
 | Tema | Decisión |
 |---|---|
-| Índice académico | Escala de 0 a 100. |
-| Municipio del aspirante (RF-049) | El aspirante no tiene municipio asociado. Puede elegir carreras de varias Facultades y de varios CUM/FUM, pero no la misma carrera en dos CUM/FUM distintos. Sí puede elegir la misma carrera en un CUM/FUM y en una Facultad. |
+| Índice académico | Escala de 0 a 100. Lo declara el aspirante (`indice_declarado`); la entidad lo valida contra la certificación (`indice_validado`). |
+| Municipio del aspirante (RF-049) | El aspirante no tiene municipio asociado. Puede elegir carreras de varias Facultades y de varios CUM/FUM, pero no la misma carrera en dos CUM/FUM distintos. Sí puede elegir la misma carrera en un CUM/FUM y en una Facultad. La regla se aplica por tipo de entidad (tampoco en dos Facultades). |
+| Número de carreras (RF-047) | Mínimo 1; máximo, el parámetro global `max_carreras_aspirante` (5 por defecto). |
+| Documentos (RF-046) | Catálogo dinámico de tipos de documento que gestiona el Superadmin. Semillas: CI anverso, CI reverso y certificación de estudios. PDF, JPG o PNG. |
+| Límites (RNF-005) | 5 MB por archivo y 20 MB por aspirante, contando los archivos vigentes (documentos y foto). |
+| Versiones de documentos | Sustituir un documento crea una versión nueva y la última es la vigente. Las anteriores se conservan como evidencia hasta la política de retención, con un máximo de 10 por documento (al superarlo se borra la más antigua, para que el aspirante nunca quede bloqueado). El aspirante y las entidades ven solo la vigente; los roles globales, el historial. |
+| Foto de perfil | La de la cuenta (`Usuario.foto`), JPG o PNG, en el almacenamiento privado, sin versiones. |
+| Perfil completo | Datos personales, correo validado, foto, centro de trabajo, índice declarado, documentos obligatorios, al menos una carrera y privacidad aceptada. Se calcula siempre a partir del estado real; el campo guardado es solo una caché. |
+| Confirmación | La solicitud empieza en borrador y se confirma de forma explícita (pasa a Pendiente). Solo la primera confirmación envía el correo y la notificación con el resumen; los cambios posteriores no notifican y se ven en la fecha de última modificación. Al cerrar la convocatoria se congela la última versión. |
+| Fechas de la solicitud | Tres fechas distintas: creación del borrador, confirmación oficial y última modificación. |
+| Edición | Mientras la convocatoria esté abierta, el aspirante puede cambiar datos, índice, documentos, carreras y prioridades. Al cerrar, solo lectura. |
+| Descarga de documentos | Permiso `solicitudes.documentos_descargar` **y** que la entidad participe en alguna carrera de una solicitud confirmada del aspirante (los roles globales, siempre). Por semilla: roles globales, Secretario(a) de Facultad y de CUM/FUM, Director(a) de CUM/FUM. No: Jefes de Área, Vicedecanos, Admins ni roles de consulta. |
+| Motivo de descarga | Automático, sin pedirlo al usuario: `consulta_documentacion` (el propio aspirante) o `revision_solicitud` (personal). Se audita junto con usuario, fecha, IP y archivo. |
 
 ## Otorgamiento (sección 5.9)
 

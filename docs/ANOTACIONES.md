@@ -58,15 +58,17 @@ configuración del sistema como la identidad visual.
 
 ## 5. Fotos de perfil (archivos privados)
 
-**Estado actual:** la foto de perfil se guarda en el almacenamiento privado
-(`MEDIA_ROOT`), que no se publica. Su URL todavía no se puede abrir, así que el
-avatar muestra las iniciales.
+**Resuelto** (feature `portal-aspirante`). La foto y los documentos se guardan
+en el almacenamiento privado (`MEDIA_ROOT`), que no se publica. La API los sirve
+con control de acceso:
 
-**Pendiente** (feature `portal-aspirante`): un endpoint de descarga con control
-de permisos para los archivos privados. Servirá para la foto, el CI y la
-certificación del aspirante, y para el visor de documentos de RF-054. El
-frontend los pedirá con el token y los mostrará como `blob:`, porque un
-`<img>` no puede enviar la cabecera `Authorization`.
+- `/auth/me/foto/`: la foto propia;
+- `/documentos/{id}/archivo/`: un documento;
+- `/admin/aspirantes/{id}/foto/`: la foto de un aspirante, para el personal.
+
+El frontend los pide con el token y los muestra como `blob:`
+(`useArchivoPrivado`), porque un `<img>` no puede enviar la cabecera
+`Authorization`. El visor inline de RF-054 usará los mismos endpoints.
 
 ## 6. Identidad visual
 
