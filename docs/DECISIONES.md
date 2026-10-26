@@ -120,4 +120,12 @@ Este archivo registra esas decisiones.
 
 | Tema | Decisión |
 |---|---|
-| Estados (RF-032 a 039) | Se siguen los 7 estados de la ERS, no los 6 pasos del mockup. |
+| Estados (RF-032 a 039) | Los 7 estados de la ERS se reparten en dos niveles. Plan: borrador, enviado, revisión de la CI, en aprobación y publicado. Cada entidad: pendiente, en revisión y propuesta enviada. "Aprobado" y "Publicado" son uno solo: **la aprobación del Vicerrector publica directamente**. |
+| Plan y oferta | Cada línea apunta a una carrera + entidad. Al publicar, una carrera nueva aceptada crea su `OfertaCarrera`; una que sale del plan conserva la oferta (por el historial de interés) sin plazas. |
+| Espera de las entidades | La CI puede esperar a que todas envíen su propuesta o forzar el paso. Las que no enviaron conservan la propuesta inicial. |
+| Quién responde por la entidad | Admin, Vicedecano o Director. El Jefe de Área ve y comenta, pero no envía la propuesta. |
+| Negociación (RF-035) | Sin rondas de ida y vuelta: la CI fija el valor final de cada línea con un comentario. Si no toca una línea, se acepta lo propuesto por la entidad. |
+| Historial (RF-038) | Usuario, fecha, valor anterior, valor nuevo, comentario y número de versión. La versión sube con cada versión final generada. |
+| Versión complementaria (RF-039) | Incluida: un plan nuevo que parte de los valores aprobados vigentes y recorre el flujo completo. |
+| "Firma" del Vicerrector (RF-036/037) | Marca de aprobación visible (usuario, fecha y hora) en el PDF; no es una firma criptográfica. |
+| PDF y Windows | WeasyPrint se mantiene. Sin las librerías nativas, las pruebas del PDF se saltan y la exportación avisa con un error claro. |

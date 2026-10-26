@@ -44,6 +44,11 @@ pytest
 
 Muestra el reporte de cobertura al final. La meta del proyecto es ≥ 70 %.
 
+Las pruebas que generan PDF reales se saltan si WeasyPrint no encuentra sus
+librerías nativas (Pango/GTK), lo habitual en Windows. Para ejecutarlas,
+instálalas como se indica en
+[DESPLIEGUE.md](DESPLIEGUE.md#librerías-de-weasyprint-pdf).
+
 ### Celery en desarrollo
 
 En desarrollo `CELERY_TASK_ALWAYS_EAGER=True` (valor por defecto) hace que las

@@ -51,6 +51,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `notificaciones` | Notificaciones in-app y por correo, envíos masivos |
 | `oferta` | `OfertaCarrera`: carrera + entidad + año académico |
 | `interes` | Convocatoria de interés, expresiones de interés y endpoints públicos de la landing |
+| `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -259,6 +260,64 @@ otro rol tenga `configuracion.editar`.
   y botón "Me interesa".
 - Sin convocatoria: el catálogo, sin ese botón.
 - No se muestra cuántas personas están interesadas.
+
+### Plan de plazas (RF-032 a RF-039, sección 7.3)
+
+**Estados del plan**
+
+`borrador → enviado → revision_ci → en_aprobacion → publicado`. Si el
+Vicerrector lo devuelve, vuelve a `revision_ci`. Los estados "En revisión" y
+"Propuesta enviada" de la ERS son de cada entidad, así que están en
+`PlanEntidad`: `pendiente → en_revision → propuesta_enviada`.
+
+**Quién hace qué en cada estado**
+
+| Estado | Quién | Qué |
+|---|---|---|
+| borrador | CI (rol global con `plan_plazas.editar`) | Agrega carreras (manualmente o "cargar oferta del año") con su propuesta de plazas y lo envía. |
+| enviado | Admin, Vicedecano o Director de cada entidad | Aceptan, modifican la cantidad o piden quitar cada línea, y solicitan carreras nuevas. Todo cambio exige comentario. Envían la propuesta, que queda bloqueada. El plan llega a todas las Facultades y CUM/FUM activos. |
+| enviado | Jefe de Área | Ve el plan de su entidad y comenta; no responde ni envía. |
+| enviado → revision_ci | CI | Espera a todas las entidades o fuerza el paso. Las que no enviaron conservan la propuesta inicial: sus cambios sin enviar se descartan. |
+| revision_ci | CI | Decide cada línea: acepta lo propuesto por la entidad (por defecto), mantiene su propia cifra o fija otra, con comentario. Sin rondas de ida y vuelta. "Generar versión final" fija `plazas_aprobadas` y sube la versión. |
+| en_aprobacion | Vicerrector (rol `vicerrector`) | **Aprobar publica directamente.** Devolver exige observaciones. |
+| publicado | — | Inmutable. Se fijan las plazas en `OfertaCarrera.plazas_plan` y se crean las ofertas de las carreras nuevas aceptadas. Las que salen del plan conservan su oferta (historial de interés) sin plazas. |
+
+- **Notificaciones**: plantillas `plan_enviado` (a quienes responden por cada
+  entidad), `plan_para_aprobacion` (Vicerrector), `plan_devuelto` (CI) y
+  `plan_publicado` (usuarios internos con `plan_plazas.ver`).
+- **Historial** (RF-038): `HistorialPlan` guarda cada cambio con usuario,
+  fecha, valor anterior, valor nuevo, comentario y versión. Los roles locales
+  ven las entradas generales y las de sus líneas.
+- **Versión complementaria** (RF-039): se crea desde el plan publicado
+  vigente del año. Copia sus plazas aprobadas como propuesta inicial y
+  recorre el flujo completo. Solo puede haber una en curso; al publicarse
+  pasa a ser la vigente.
+- **Acciones disponibles**: cada plan devuelve `acciones`, la lista de lo que
+  el usuario actual puede hacer ahora. El frontend muestra solo esos botones;
+  la API valida igualmente cada transición.
+- **Concurrencia**: las transiciones bloquean la fila del plan
+  (`select_for_update`) y releen su estado, para que dos acciones
+  simultáneas no se pisen.
+- **Exportación** (RF-037): Excel y PDF, solo del plan publicado. El PDF lleva
+  membrete y la marca de aprobación visible del Vicerrector (usuario, fecha y
+  hora); no es una firma criptográfica. Las exportaciones se auditan.
+
+Endpoints: `/api/v1/admin/plan-plazas/` (+ `enviar/`, `cargar-oferta/`,
+`cerrar-revision/`, `enviar-propuesta/`, `generar-version-final/`,
+`aprobar/`, `devolver/`, `complementaria/`, `historial/`, `comentarios/`,
+`exportar-pdf/`, `exportar-excel/`) y `/api/v1/admin/plan-plazas/lineas/?plan=`
+(+ `responder/`, `decidir/`).
+
+### Exportar a PDF
+
+`apps.core.pdf.respuesta_pdf(plantilla, contexto, nombre, titulo)` renderiza
+una plantilla que extiende `pdf/base.html`, con el membrete de RE-009:
+escudo, institución, sistema, fecha de generación y número de página.
+
+WeasyPrint se importa al usarse. Si faltan sus librerías nativas, el sistema
+funciona igual y solo la exportación responde con un error claro. Las pruebas
+del PDF se saltan solas en ese caso. Instalación: ver
+[DESPLIEGUE.md](DESPLIEGUE.md#librerías-de-weasyprint-pdf).
 
 ### Exportar a Excel
 

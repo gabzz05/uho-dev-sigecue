@@ -86,6 +86,26 @@ La vía recomendada es usar **WSL2**: un Ubuntu completo dentro de Windows.
 > servidor compatible y usar Redis para Windows (Memurai). No está
 > contemplada en el stack actual.
 
+### Librerías de WeasyPrint (PDF)
+
+La exportación a PDF (WeasyPrint) necesita Pango y sus dependencias. Sin ellas
+el sistema funciona, pero los PDF responden con un error.
+
+| Sistema | Instalación |
+|---|---|
+| Debian / Ubuntu / WSL | `sudo apt install -y libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libharfbuzz-subset0 fonts-dejavu-core` |
+| RHEL / Rocky / Fedora | `sudo dnf install -y pango harfbuzz dejavu-sans-fonts` |
+| macOS | `brew install pango` |
+| Windows nativo (desarrollo) | Instalar [MSYS2](https://www.msys2.org/) y, en su terminal, `pacman -S mingw-w64-ucrt-x86_64-pango`. Después añadir `C:\msys64\ucrt64\bin` al `PATH` de Windows y abrir una terminal nueva. |
+
+Comprobación (en Windows, `.venv\Scripts\python`):
+
+```bash
+.venv/bin/python -c "from weasyprint import HTML; HTML(string='ok').write_pdf()"
+```
+
+Si no da error, los PDF funcionan.
+
 ---
 
 ## 2. Pasos comunes
