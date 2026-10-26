@@ -28,5 +28,21 @@ PLANTILLAS = {
             "Universidad de Holguín"
         ),
     },
+    "interes_confirmado": {
+        "nombre": "Interés registrado",
+        "descripcion": "Se envía al registrar una expresión de interés en la landing (RF-021).",
+        "variables": {
+            "nombre": "Nombre de quien expresó interés",
+            "carrera": "Carrera",
+            "entidad": "Facultad o CUM/FUM",
+            "anio": "Año académico",
+        },
+        "asunto": "SIGECUE — Registramos tu interés en {{ carrera }}",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "Registramos tu interés en la carrera {{ carrera }} ({{ entidad }}) para el curso {{ anio }}.\n\n"
+            "Te avisaremos a este correo cuando se abra la convocatoria oficial de solicitud de matrícula.\n\n"
+            "Universidad de Holguín"
+        ),
+    },
 }
-

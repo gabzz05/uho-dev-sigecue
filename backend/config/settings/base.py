@@ -29,6 +29,8 @@ LOCAL_APPS = [
     "apps.roles",
     "apps.nomencladores",
     "apps.configuracion",
+    "apps.oferta",
+    "apps.interes",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
@@ -125,7 +127,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
     # Seguro por defecto: toda vista exige sesión salvo que declare lo contrario.
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
-    "DEFAULT_THROTTLE_RATES": {"auth": env_str("AUTH_THROTTLE_RATE", "20/min")},
+    "DEFAULT_THROTTLE_RATES": {
+        "auth": env_str("AUTH_THROTTLE_RATE", "20/min"),
+        # Formulario anónimo de expresión de interés: límite por IP contra el spam.
+        "interes": env_str("INTERES_THROTTLE_RATE", "10/hour"),
+    },
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.PaginacionEstandar",
     "PAGE_SIZE": env_int("API_PAGE_SIZE", 20),
     "EXCEPTION_HANDLER": "apps.core.exceptions.exception_handler",
@@ -181,6 +187,11 @@ CELERY_BEAT_SCHEDULE = {
     "eliminar-cuentas-no-verificadas": {
         "task": "apps.users.tasks.eliminar_cuentas_no_verificadas",
         "schedule": crontab(minute=0),
+    },
+    # Cierre automático por fecha: cada hora se cierran las vencidas.
+    "cerrar-convocatorias-interes-vencidas": {
+        "task": "apps.interes.tasks.cerrar_convocatorias_vencidas",
+        "schedule": crontab(minute=5),
     },
 }
 
