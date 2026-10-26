@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 import { AdminLayout, AspiranteLayout, MENU_ADMIN, PublicLayout, RequireAuth } from './components/layout'
 import { Configuracion } from './pages/admin/configuracion/Configuracion'
 import { Dashboard } from './pages/admin/Dashboard'
+import { EnviosMasivos } from './pages/admin/notificaciones/EnviosMasivos'
 import { Carreras } from './pages/admin/nomencladores/Carreras'
 import { Entidades } from './pages/admin/nomencladores/Entidades'
 import { OtrosNomencladores } from './pages/admin/nomencladores/OtrosNomencladores'
@@ -12,6 +13,7 @@ import { Activar } from './pages/auth/Activar'
 import { Login } from './pages/auth/Login'
 import { Registro } from './pages/auth/Registro'
 import { MiPerfil } from './pages/cuenta/MiPerfil'
+import { MisNotificaciones } from './pages/cuenta/MisNotificaciones'
 import { EnConstruccion } from './pages/EnConstruccion'
 import { NoEncontrado } from './pages/errores/NoEncontrado'
 import { InicioPublico } from './pages/public/Inicio'
@@ -27,6 +29,7 @@ const PANTALLAS_ADMIN = {
   usuarios: <Usuarios />,
   roles: <Roles />,
   configuracion: <Configuracion />,
+  envios: <EnviosMasivos />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
@@ -53,7 +56,12 @@ export const rutas = [
         <AdminLayout />
       </RequireAuth>
     ),
-    children: [...rutasAdmin, { path: 'perfil', element: <MiPerfil /> }, { path: '*', element: <NoEncontrado /> }],
+    children: [
+      ...rutasAdmin,
+      { path: 'perfil', element: <MiPerfil /> },
+      { path: 'notificaciones', element: <MisNotificaciones /> },
+      { path: '*', element: <NoEncontrado /> },
+    ],
   },
   {
     path: 'aspirante',
@@ -65,6 +73,7 @@ export const rutas = [
     children: [
       { index: true, element: <InicioAspirante /> },
       { path: 'perfil', element: <MiPerfil /> },
+      { path: 'notificaciones', element: <MisNotificaciones /> },
       { path: '*', element: <NoEncontrado /> },
     ],
   },

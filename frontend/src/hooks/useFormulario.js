@@ -57,5 +57,5 @@ export function useFormulario(valoresIniciales) {
     [valores],
   )
 
-  return { valores, campo, checkbox, errores, errorGeneral, enviando, enviar, setValores }
+  return { valores, campo, checkbox, errores, setErrores, errorGeneral, enviando, enviar, setValores }
 }

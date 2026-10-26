@@ -33,7 +33,8 @@ export function DataTable({
           </tr>
         </thead>
         <tbody>
-          {loading ? (
+          {/* Al recargar con filas ya visibles se mantienen (aria-busy avisa); el spinner, solo sin datos. */}
+          {loading && rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className={styles.estado}>
                 <Spinner label="Cargando datos" />

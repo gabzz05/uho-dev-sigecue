@@ -9,6 +9,7 @@ import {
   ListTree,
   Megaphone,
   ScrollText,
+  Send,
   Settings,
   ShieldCheck,
   Trophy,
@@ -26,6 +27,7 @@ export const MENU_ADMIN = [
       { path: '', label: 'Dashboard', icon: LayoutDashboard, permiso: 'dashboard.ver' },
       { path: 'convocatorias', label: 'Convocatorias', icon: Megaphone, permiso: 'convocatorias.ver' },
       { path: 'interes', label: 'Interés de la población', icon: Lightbulb, permiso: 'interes.ver' },
+      { path: 'envios', label: 'Envíos masivos', icon: Send, permiso: 'notificaciones.ver' },
     ],
   },
   {
