@@ -86,6 +86,17 @@ Este archivo registra esas decisiones.
 | Antispam | Límite de envíos por IP, sin captcha. |
 | Exportaciones | Se auditan siempre, especialmente cuando incluyen CI, email o celular. El Excel se hizo en este feature y el PDF irá con el Plan de Plazas. |
 
+## Convocatoria de solicitud
+
+| Tema | Decisión |
+|---|---|
+| Requisito para abrir | Plan de plazas publicado del mismo año académico. |
+| Entidades (RF-040) | Lista opcional; vacía = todas las entidades con plazas en el plan. |
+| Aviso a interesados (RF-041) | A los de la convocatoria de interés del mismo año académico: un correo por persona e in-app si ya tiene cuenta. Solo al abrir la primera convocatoria del año. |
+| Apertura y cierre | Apertura manual, cierre automático por fecha, una sola abierta a la vez. |
+| Número de convocatoria (RF-062) | Existe desde ahora; la validación contra el otorgamiento de la anterior se hace en ese feature. |
+| Landing | Muestra los dos avisos (solicitud e interés) si coinciden; el de solicitud tiene prioridad visual. |
+
 ## Solicitud de carrera
 
 | Tema | Decisión |

@@ -52,6 +52,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `oferta` | `OfertaCarrera`: carrera + entidad + año académico |
 | `interes` | Convocatoria de interés, expresiones de interés y endpoints públicos de la landing |
 | `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
+| `convocatorias` | Convocatoria de solicitud de matrícula (primera, segunda...) |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -307,6 +308,36 @@ Endpoints: `/api/v1/admin/plan-plazas/` (+ `enviar/`, `cargar-oferta/`,
 `aprobar/`, `devolver/`, `complementaria/`, `historial/`, `comentarios/`,
 `exportar-pdf/`, `exportar-excel/`) y `/api/v1/admin/plan-plazas/lineas/?plan=`
 (+ `responder/`, `decidir/`).
+
+### Convocatoria de solicitud de matrícula (RF-040 a RF-043)
+
+- `ConvocatoriaSolicitud`: año académico, `numero` (1.ª, 2.ª... — RF-062),
+  fechas, mensaje público y entidades opcionales. Sin entidades marcadas,
+  aplica a todas las que tienen plazas en el plan publicado.
+- La crean y gestionan los roles globales con permiso `convocatorias.*`. El
+  número se asigna solo. La siguiente exige la anterior cerrada; la condición
+  de que su otorgamiento esté publicado se agrega en el feature de
+  otorgamiento.
+- **Abrir** (manual) exige:
+  - el plan de plazas **publicado** del año;
+  - carreras con plazas en las entidades elegidas;
+  - que no haya otra convocatoria abierta (también restringido en la base de
+    datos).
+- **Cierre** automático por fecha: tarea `cerrar_convocatorias_vencidas`
+  (Celery beat, cada hora).
+- **Aviso a los interesados** (RF-041): al abrir la **primera** convocatoria
+  del año, la tarea `notificar_interesados` escribe a quienes expresaron
+  interés en la convocatoria de interés del mismo año académico, una vez por
+  persona (por CI):
+  - si tiene cuenta de aspirante, recibe una notificación in-app y un correo a
+    la dirección de su cuenta;
+  - si no, un único correo al email que dejó.
+
+  La plantilla es `convocatoria_solicitud_abierta`. En la segunda convocatoria
+  se avisa a los no seleccionados (RF-061), en su feature.
+- `GET /api/v1/convocatorias/activa/` (público): convocatoria que hoy acepta
+  solicitudes, o `null`. La landing muestra su aviso **por encima** del de la
+  convocatoria de interés, con el botón "Solicitar matrícula".
 
 ### Exportar a PDF
 
