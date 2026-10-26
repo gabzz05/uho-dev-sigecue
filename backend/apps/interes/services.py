@@ -18,7 +18,10 @@ def convocatoria_abierta():
 
 # --- Ciclo de vida de la convocatoria (RF-026) --------------------------------
 
+@transaction.atomic
 def abrir(convocatoria):
+    # Relee con bloqueo: la instancia puede estar desactualizada y dos aperturas no deben pisarse.
+    convocatoria = ConvocatoriaInteres.objects.select_for_update().get(pk=convocatoria.pk)
     if convocatoria.estado != ConvocatoriaInteres.Estado.BORRADOR:
         raise ErrorDeNegocio("Solo se puede abrir una convocatoria en borrador.")
     if convocatoria.fecha_cierre < timezone.localdate():
@@ -32,7 +35,9 @@ def abrir(convocatoria):
     return convocatoria
 
 
+@transaction.atomic
 def cerrar(convocatoria):
+    convocatoria = ConvocatoriaInteres.objects.select_for_update().get(pk=convocatoria.pk)
     if convocatoria.estado != ConvocatoriaInteres.Estado.ABIERTA:
         raise ErrorDeNegocio("Solo se puede cerrar una convocatoria abierta.")
     convocatoria.estado = ConvocatoriaInteres.Estado.CERRADA
