@@ -188,6 +188,9 @@ class PlanViewSet(viewsets.ModelViewSet):
         lineas = plan.lineas.exclude(plazas_aprobadas=None).select_related("carrera", "facultad", "cum_fum")
         return sorted(lineas.filter(_filtro_entidad(self.request.user)), key=lambda l: (str(l.entidad), l.carrera.nombre))
 
+    def _aprobador(self, plan):
+        return (plan.aprobado_por.nombre_completo or plan.aprobado_por.username) if plan.aprobado_por else ""
+
     def _titulo(self, plan):
         return f"Plan de plazas {plan.anio_academico}" + (" — versión complementaria" if plan.es_complementario else "")
 
@@ -203,10 +206,9 @@ class PlanViewSet(viewsets.ModelViewSet):
             for items in [list(grupo)]
         ]
         auditoria.registrar(request=request, accion="exportar plan de plazas (PDF)", modulo="plan-plazas", entidad_afectada="plan", entidad_id=plan.pk)
-        aprobado_por = (plan.aprobado_por.nombre_completo or plan.aprobado_por.username) if plan.aprobado_por else ""
         return respuesta_pdf(
             "plan_plazas/plan.html",
-            {"plan": plan, "grupos": grupos, "total": sum(g["total"] for g in grupos), "aprobado_por": aprobado_por},
+            {"plan": plan, "grupos": grupos, "total": sum(g["total"] for g in grupos), "aprobado_por": self._aprobador(plan)},
             f"plan-plazas-{plan.anio_academico}-v{plan.version}.pdf",
             titulo=self._titulo(plan),
         )
@@ -217,7 +219,7 @@ class PlanViewSet(viewsets.ModelViewSet):
         plan = self.get_object()
         lineas = self._lineas_publicadas(plan)
         auditoria.registrar(request=request, accion="exportar plan de plazas (Excel)", modulo="plan-plazas", entidad_afectada="plan", entidad_id=plan.pk)
-        aprobacion = f"Aprobado por {plan.aprobado_por} el {plan.fecha_aprobacion:%d/%m/%Y %H:%M}" if plan.aprobado_por else ""
+        aprobacion = f"Aprobado por {self._aprobador(plan)} el {plan.fecha_aprobacion:%d/%m/%Y %H:%M}" if plan.aprobado_por else ""
         return respuesta_excel(
             f"plan-plazas-{plan.anio_academico}-v{plan.version}.xlsx",
             titulo=f"{self._titulo(plan)} · versión {plan.version} · {aprobacion}",
