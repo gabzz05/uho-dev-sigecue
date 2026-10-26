@@ -259,8 +259,13 @@ determinista. Las claves están en `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY`.
   restricción. Para reforzarla en producción se puede agregar un trigger de
   PostgreSQL que rechace `UPDATE`/`DELETE` sobre la tabla y conectar la
   aplicación con un usuario de base de datos sin esos privilegios.
-- Consulta: `GET /api/v1/admin/logs/` con filtros `usuario`, `accion`, `modulo`,
-  `resultado`, `desde`, `hasta`.
+- Consulta: `GET /api/v1/admin/logs/` con los filtros `usuario` (id),
+  `usuario_nombre`, `accion`, `modulo`, `resultado`, `desde` y `hasta`.
+  `GET /api/v1/admin/logs/modulos/` devuelve los módulos que aparecen en el log.
+  Exige `logs.ver`, que en la matriz inicial tienen solo el Superadmin y el
+  Jefe CI.
+- En el panel: "Logs de auditoría", de solo lectura, con un detalle de cada
+  registro.
 
 ## Frontend
 
