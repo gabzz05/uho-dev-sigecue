@@ -32,6 +32,7 @@ LOCAL_APPS = [
     "apps.oferta",
     "apps.interes",
     "apps.plan_plazas",
+    "apps.convocatorias",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
@@ -179,7 +180,8 @@ SPECTACULAR_SETTINGS = {
     "SCHEMA_PATH_PREFIX": r"/api/v1",
     # Varios modelos tienen un campo "estado"/"origen" con opciones distintas.
     "ENUM_NAME_OVERRIDES": {
-        "EstadoConvocatoriaInteresEnum": "apps.interes.models.ConvocatoriaInteres.Estado",
+        # Las convocatorias de interés y de solicitud comparten estados.
+        "EstadoConvocatoriaEnum": "apps.interes.models.ConvocatoriaInteres.Estado",
         "EstadoPlanEnum": "apps.plan_plazas.models.PlanPlazas.Estado",
         "EstadoEntidadEnPlanEnum": "apps.plan_plazas.models.PlanEntidad.Estado",
         "OrigenUsuarioEnum": "apps.users.models.Usuario.Origen",
@@ -201,6 +203,11 @@ CELERY_BEAT_SCHEDULE = {
     # Cierre automático por fecha: cada hora se cierran las vencidas.
     "cerrar-convocatorias-interes-vencidas": {
         "task": "apps.interes.tasks.cerrar_convocatorias_vencidas",
+        "schedule": crontab(minute=5),
+    },
+    # RF-043: cierre automático de la convocatoria de solicitud.
+    "cerrar-convocatorias-solicitud-vencidas": {
+        "task": "apps.convocatorias.tasks.cerrar_convocatorias_vencidas",
         "schedule": crontab(minute=5),
     },
 }

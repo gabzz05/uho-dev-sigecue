@@ -92,4 +92,23 @@ PLANTILLAS = {
             "Universidad de Holguín"
         ),
     },
+    "convocatoria_solicitud_abierta": {
+        "nombre": "Convocatoria de solicitud abierta",
+        "descripcion": "A quienes expresaron interés ese año, al abrir la primera convocatoria de solicitud (RF-041).",
+        "variables": {
+            "nombre": "Nombre del destinatario",
+            "anio": "Año académico",
+            "fecha_cierre": "Fecha de cierre de la convocatoria",
+            "enlace": "Enlace para registrarse y solicitar",
+        },
+        "asunto": "SIGECUE — Abrió la convocatoria de matrícula {{ anio }}",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "Ya está abierta la convocatoria de solicitud de matrícula en las carreras por encuentro para el curso {{ anio }}. "
+            "Puedes presentar tu solicitud hasta el {{ fecha_cierre }}.\n\n"
+            "Regístrate o inicia sesión en:\n\n"
+            "{{ enlace }}\n\n"
+            "Universidad de Holguín"
+        ),
+    },
 }
