@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 import { AdminLayout, AspiranteLayout, MENU_ADMIN, PublicLayout, RequireAuth } from './components/layout'
 import { Configuracion } from './pages/admin/configuracion/Configuracion'
 import { Dashboard } from './pages/admin/Dashboard'
+import { Logs } from './pages/admin/logs/Logs'
 import { EnviosMasivos } from './pages/admin/notificaciones/EnviosMasivos'
 import { Carreras } from './pages/admin/nomencladores/Carreras'
 import { Entidades } from './pages/admin/nomencladores/Entidades'
@@ -30,6 +31,7 @@ const PANTALLAS_ADMIN = {
   roles: <Roles />,
   configuracion: <Configuracion />,
   envios: <EnviosMasivos />,
+  logs: <Logs />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
