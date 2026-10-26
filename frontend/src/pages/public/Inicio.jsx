@@ -1,11 +1,11 @@
-import { Megaphone } from 'lucide-react'
+import { CalendarClock, Megaphone } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Link } from 'react-router'
 import { FormularioInteres } from '../../components/landing/FormularioInteres/FormularioInteres'
 import { SeccionInstitucional } from '../../components/landing/SeccionInstitucional/SeccionInstitucional'
 import { TarjetaCarrera } from '../../components/landing/TarjetaCarrera/TarjetaCarrera'
 import { Alert, Button, EmptyState, Input, Pagination, Select, Spinner } from '../../components/ui'
-import { useAuth } from '../../hooks/useAuth'
+import { rutaDeInicio, useAuth } from '../../hooks/useAuth'
 import { useCarga } from '../../hooks/useCarga'
 import { useListado } from '../../hooks/useListado'
 import { publico } from '../../services/publico'
@@ -86,13 +86,36 @@ function Catalogo({ convocatoria, filtros, onInteres }) {
 export function InicioPublico() {
   const { usuario } = useAuth()
   const convocatoria = useCarga(publico.convocatoriaInteres)
+  const solicitud = useCarga(publico.convocatoriaSolicitud)
   const filtros = useCarga(useCallback(() => publico.filtros(), []))
   const [interes, setInteres] = useState(null)
 
   const abierta = convocatoria.datos
+  const matricula = solicitud.datos
 
   return (
     <>
+      {/* RF-023 / RF-042: la convocatoria de solicitud tiene prioridad visual sobre la de interés. */}
+      {matricula && (
+        <div className={styles.bannerSolicitud} role="region" aria-label="Convocatoria de solicitud de matrícula abierta">
+          <CalendarClock aria-hidden="true" />
+          <div className={styles.bannerTexto}>
+            <strong>Convocatoria de solicitud de matrícula abierta</strong> — curso {matricula.anio_academico}
+            {matricula.numero > 1 && ` (${matricula.numero}.ª convocatoria)`}: del {formatearFecha(matricula.fecha_inicio)} al{' '}
+            {formatearFecha(matricula.fecha_cierre)}.{matricula.mensaje_publico && <> {matricula.mensaje_publico}</>}
+          </div>
+          <div className={styles.bannerAcciones}>
+            <Button as={Link} to={usuario ? rutaDeInicio(usuario) : '/registro'} variant="inverse">
+              Solicitar matrícula
+            </Button>
+            {!usuario && (
+              <Button as={Link} to="/login" variant="link" className={styles.enlaceClaro}>
+                Ya tengo cuenta
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
       {abierta && (
         <div className={styles.banner} role="region" aria-label="Convocatoria de interés abierta">
           <Megaphone aria-hidden="true" />

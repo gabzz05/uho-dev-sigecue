@@ -8,6 +8,7 @@ vi.mock('../../services/auth', () => ({ restaurarSesion: vi.fn(), iniciarSesion:
 vi.mock('../../services/publico', () => ({
   publico: {
     convocatoriaInteres: vi.fn(),
+    convocatoriaSolicitud: vi.fn(),
     filtros: vi.fn(),
     carrera: vi.fn(),
     registrarInteres: vi.fn(),
@@ -25,6 +26,7 @@ const CONVOCATORIA = { anio_academico: '2026-2027', fecha_inicio: '2026-10-01', 
 beforeEach(() => {
   vi.clearAllMocks()
   auth.restaurarSesion.mockResolvedValue(null)
+  publico.convocatoriaSolicitud.mockResolvedValue(null)
   publico.filtros.mockResolvedValue({ facultades: [{ id: 3, nombre: 'Facultad de Informática' }], cum_fum: [{ id: 5, nombre: 'CUM Moa', tipo: 'CUM' }], municipios: [{ id: 1, nombre: 'Holguín' }] })
   publico.oferta.listar.mockResolvedValue(pagina([OFERTA]))
   publico.carreras.listar.mockResolvedValue(pagina([INFORMATICA]))
@@ -109,6 +111,35 @@ describe('landing con convocatoria abierta', () => {
     fireEvent.click(within(dialogo).getByRole('button', { name: 'Registrar interés' }))
 
     expect(await within(dialogo).findByText('Ya registraste tu interés en esta carrera para este año.')).toBeInTheDocument()
+  })
+})
+
+describe('aviso de la convocatoria de solicitud', () => {
+  const SOLICITUD = { anio_academico: '2026-2027', numero: 1, fecha_inicio: '2026-11-01', fecha_cierre: '2026-11-30', mensaje_publico: '' }
+
+  it('aparece antes que el de interés y lleva al registro', async () => {
+    publico.convocatoriaInteres.mockResolvedValue(CONVOCATORIA)
+    publico.convocatoriaSolicitud.mockResolvedValue(SOLICITUD)
+    renderApp('/')
+
+    const solicitud = await screen.findByRole('region', { name: 'Convocatoria de solicitud de matrícula abierta' })
+    const interes = await screen.findByRole('region', { name: 'Convocatoria de interés abierta' })
+    expect(solicitud.compareDocumentPosition(interes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(solicitud).toHaveTextContent('del 01/11/2026 al 30/11/2026')
+    expect(within(solicitud).getByRole('link', { name: 'Solicitar matrícula' })).toHaveAttribute('href', '/registro')
+    expect(within(solicitud).getByRole('link', { name: 'Ya tengo cuenta' })).toHaveAttribute('href', '/login')
+  })
+
+  it('con sesión de aspirante lleva a su portal', async () => {
+    publico.convocatoriaInteres.mockResolvedValue(null)
+    publico.convocatoriaSolicitud.mockResolvedValue({ ...SOLICITUD, numero: 2 })
+    auth.restaurarSesion.mockResolvedValue({ nombre: 'María', rol: { codigo: 'aspirante' }, permisos: [] })
+    renderApp('/')
+
+    const solicitud = await screen.findByRole('region', { name: 'Convocatoria de solicitud de matrícula abierta' })
+    await waitFor(() => expect(within(solicitud).getByRole('link', { name: 'Solicitar matrícula' })).toHaveAttribute('href', '/aspirante'))
+    expect(solicitud).toHaveTextContent('2.ª convocatoria')
+    expect(within(solicitud).queryByRole('link', { name: 'Ya tengo cuenta' })).not.toBeInTheDocument()
   })
 })
 

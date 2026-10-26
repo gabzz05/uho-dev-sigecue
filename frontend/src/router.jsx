@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 import { AdminLayout, AspiranteLayout, MENU_ADMIN, PublicLayout, RequireAuth } from './components/layout'
 import { Configuracion } from './pages/admin/configuracion/Configuracion'
+import { Convocatorias } from './pages/admin/convocatorias/Convocatorias'
 import { Dashboard } from './pages/admin/Dashboard'
 import { Interes } from './pages/admin/interes/Interes'
 import { Logs } from './pages/admin/logs/Logs'
@@ -38,6 +39,7 @@ const PANTALLAS_ADMIN = {
   logs: <Logs />,
   interes: <Interes />,
   'plan-plazas': <PlanesPlazas />,
+  convocatorias: <Convocatorias />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({

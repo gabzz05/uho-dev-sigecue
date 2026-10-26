@@ -11,6 +11,30 @@
 
 .banner svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; margin-top: 0.125rem; }
 
+.bannerSolicitud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-md);
+}
+
+.bannerSolicitud > svg { width: 1.5rem; height: 1.5rem; flex-shrink: 0; }
+
+.bannerTexto { flex: 1; min-width: 14rem; }
+
+.bannerAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.enlaceClaro { color: var(--color-text-inverse); }
+
 .hero {
   padding: var(--space-10) var(--space-4);
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
@@ -76,7 +100,32 @@
 
 @media (min-width: 768px) {
   .banner { padding: var(--space-3) var(--space-10); }
-  .hero { padding: 4rem var(--space-10); }
+  .bannerSolicitud { padding: var(--space-4) var(--space-10); }
+  .bannerSolicitud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-md);
+}
+
+.bannerSolicitud > svg { width: 1.5rem; height: 1.5rem; flex-shrink: 0; }
+
+.bannerTexto { flex: 1; min-width: 14rem; }
+
+.bannerAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.enlaceClaro { color: var(--color-text-inverse); }
+
+.hero { padding: 4rem var(--space-10); }
   .titulo { font-size: var(--font-size-3xl); }
   .catalogo { padding: var(--space-8) var(--space-10); }
 }

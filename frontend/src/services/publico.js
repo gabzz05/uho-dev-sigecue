@@ -5,6 +5,7 @@ const datos = (r) => r.data
 /** Endpoints públicos de la landing: no requieren sesión. */
 export const publico = {
   convocatoriaInteres: () => api.get('/interes/convocatoria/').then((r) => r.data.convocatoria),
+  convocatoriaSolicitud: () => api.get('/convocatorias/activa/').then((r) => r.data.convocatoria),
   filtros: () => api.get('/publico/filtros/').then(datos),
   carrera: (id) => api.get(`/carreras/${id}/`).then(datos),
   registrarInteres: (interes) => api.post('/interes/', interes).then(datos),
