@@ -6,14 +6,16 @@ import { Identidad } from './Identidad'
 import { Parametros } from './Parametros'
 import styles from './Configuracion.module.css'
 import { Plantillas } from './Plantillas'
+import { TiposDocumento } from './TiposDocumento'
 
 const TABS = [
   { id: 'parametros', label: 'Parámetros' },
   { id: 'correo', label: 'Correo' },
   { id: 'plantillas', label: 'Plantillas de correo' },
   { id: 'identidad', label: 'Identidad visual' },
+  { id: 'documentos', label: 'Documentos del aspirante' },
 ]
-const PANELES = { parametros: Parametros, correo: Correo, plantillas: Plantillas, identidad: Identidad }
+const PANELES = { parametros: Parametros, correo: Correo, plantillas: Plantillas, identidad: Identidad, documentos: TiposDocumento }
 
 /** Configuración del sistema (sección 5.1). Solo el Superadmin la modifica. */
 export function Configuracion() {
@@ -24,7 +26,7 @@ export function Configuracion() {
 
   return (
     <>
-      <PageHeader title="Configuración" subtitle="Parámetros, correo, plantillas e identidad visual del sistema." />
+      <PageHeader title="Configuración" subtitle="Parámetros, correo, plantillas, identidad visual y documentos que se piden al aspirante." />
       <div className={styles.pila}>
         {!editable && (
           <Alert tone="info">Solo el Superadmin puede modificar la configuración. Estás viéndola en modo lectura.</Alert>

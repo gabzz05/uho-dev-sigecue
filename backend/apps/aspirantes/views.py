@@ -159,7 +159,10 @@ class TipoDocumentoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if buscar := self.request.query_params.get("buscar"):
+        params = self.request.query_params
+        if (activo := params.get("activo")) in ("true", "false"):
+            qs = qs.filter(activo=activo == "true")
+        if buscar := params.get("buscar"):
             qs = qs.filter(nombre__icontains=buscar)
         return qs
 

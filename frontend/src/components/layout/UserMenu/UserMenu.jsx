@@ -1,6 +1,7 @@
 import { ChevronDown, LogOut, UserRound } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useArchivoPrivado } from '../../../hooks/useArchivoPrivado'
 import { useAuth } from '../../../hooks/useAuth'
 import { cx } from '../../../utils/cx'
 import { Avatar } from '../../ui'
@@ -13,6 +14,7 @@ export function UserMenu({ inverse = false, perfilPath }) {
   const contenedor = useRef(null)
   const menuId = useId()
   const navigate = useNavigate()
+  const foto = useArchivoPrivado(usuario?.foto)
 
   useEffect(() => {
     if (!abierto) return undefined
@@ -48,7 +50,7 @@ export function UserMenu({ inverse = false, perfilPath }) {
         aria-controls={menuId}
         onClick={() => setAbierto((a) => !a)}
       >
-        <Avatar nombre={nombre} foto={usuario.foto} size="sm" tone={inverse ? 'accent' : 'primary'} />
+        <Avatar nombre={nombre} foto={foto} size="sm" tone={inverse ? 'accent' : 'primary'} />
         <span className={styles.texts}>
           <span className={styles.name}>{nombre}</span>
           <span className={styles.role}>{usuario.rol?.nombre ?? 'Superadmin'}</span>

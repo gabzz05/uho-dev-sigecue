@@ -13,7 +13,9 @@ import { Entidades } from './pages/admin/nomencladores/Entidades'
 import { OtrosNomencladores } from './pages/admin/nomencladores/OtrosNomencladores'
 import { Roles } from './pages/admin/roles/Roles'
 import { Usuarios } from './pages/admin/usuarios/Usuarios'
+import { CompletarPerfil } from './pages/aspirante/CompletarPerfil'
 import { InicioAspirante } from './pages/aspirante/Inicio'
+import { MiSolicitud } from './pages/aspirante/MiSolicitud'
 import { Activar } from './pages/auth/Activar'
 import { Login } from './pages/auth/Login'
 import { Registro } from './pages/auth/Registro'
@@ -91,6 +93,8 @@ export const rutas = [
     ),
     children: [
       { index: true, element: <InicioAspirante /> },
+      { path: 'completar-perfil', element: <CompletarPerfil /> },
+      { path: 'solicitud', element: <MiSolicitud /> },
       { path: 'perfil', element: <MiPerfil /> },
       { path: 'notificaciones', element: <MisNotificaciones /> },
       { path: '*', element: <NoEncontrado /> },

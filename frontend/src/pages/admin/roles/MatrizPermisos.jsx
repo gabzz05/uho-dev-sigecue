@@ -6,6 +6,7 @@ const ACCIONES = [
   { id: 'editar', label: 'Editar' },
   { id: 'eliminar', label: 'Eliminar' },
   { id: 'exportar', label: 'Exportar' },
+  { id: 'documentos_descargar', label: 'Descargar documentos' },
 ]
 
 /**

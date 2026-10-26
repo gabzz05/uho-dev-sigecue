@@ -10,7 +10,15 @@ const MAX_MB = 5
  * Selector de imagen con vista previa.
  * `value`: URL existente (string), archivo nuevo (File) o '' para quitarla.
  */
-export function ImageInput({ label, value, onChange, error, hint = 'JPG, PNG o WEBP, máximo 5 MB' }) {
+export function ImageInput({
+  label,
+  value,
+  onChange,
+  error,
+  hint = 'JPG, PNG o WEBP, máximo 5 MB',
+  accept = 'image/jpeg,image/png,image/webp',
+  disabled = false,
+}) {
   const vistaPrevia = useMemo(() => (value instanceof File ? URL.createObjectURL(value) : value || null), [value])
 
   useEffect(
@@ -36,12 +44,13 @@ export function ImageInput({ label, value, onChange, error, hint = 'JPG, PNG o W
           <div className={styles.acciones}>
             <input
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept={accept}
+              disabled={disabled}
               className={styles.input}
               onChange={(e) => e.target.files?.[0] && onChange(e.target.files[0])}
               {...a11y}
             />
-            {vistaPrevia && (
+            {vistaPrevia && !disabled && (
               <Button variant="ghost" size="sm" icon={Trash2} onClick={() => onChange('')}>
                 Quitar imagen
               </Button>

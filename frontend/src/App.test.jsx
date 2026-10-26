@@ -32,7 +32,7 @@ describe('rutas protegidas', () => {
     auth.restaurarSesion.mockResolvedValue(ASPIRANTE)
     const router = renderApp('/admin')
 
-    expect(await screen.findByRole('heading', { name: 'Hola, María' })).toBeInTheDocument()
+    expect(await screen.findByRole('navigation', { name: 'Portal del aspirante' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/aspirante')
   })
 

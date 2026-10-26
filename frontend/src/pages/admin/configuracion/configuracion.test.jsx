@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { IdentidadProvider, useIdentidad } from '../../../hooks/useIdentidad'
+import * as aspirante from '../../../services/aspirante'
 import * as auth from '../../../services/auth'
 import * as config from '../../../services/configuracion'
 import { perfil, renderApp } from '../../../test/renderApp'
@@ -13,6 +14,10 @@ vi.mock('../../../services/configuracion', () => ({
   smtp: { obtener: vi.fn(), guardar: vi.fn(), probar: vi.fn() },
   identidad: { obtener: vi.fn(), guardar: vi.fn() },
   plantillas: { listar: vi.fn(), guardar: vi.fn(), restablecer: vi.fn(), vistaPrevia: vi.fn() },
+}))
+
+vi.mock('../../../services/aspirante', () => ({
+  tiposDocumento: { ruta: '/t/', listar: vi.fn(), crear: vi.fn(), actualizar: vi.fn(), eliminar: vi.fn() },
 }))
 
 const SUPERADMIN = perfil({ permisos: ['*'], es_superadmin: true, rol: null })
@@ -164,6 +169,27 @@ describe('Identidad visual', () => {
     const enviado = config.identidad.guardar.mock.calls[0][0]
     expect(enviado.color_acento).toBe('#AA0000')
     expect(enviado).not.toHaveProperty('escudo')
+  })
+})
+
+describe('Documentos del aspirante', () => {
+  it('el Superadmin agrega un tipo de documento', async () => {
+    aspirante.tiposDocumento.listar.mockResolvedValue({
+      count: 1,
+      results: [{ id: 1, nombre: 'CI anverso', obligatorio: true, activo: true, orden: 1 }],
+    })
+    aspirante.tiposDocumento.crear.mockResolvedValue({ id: 2 })
+    await abrir()
+    pestana('Documentos del aspirante')
+
+    expect(await screen.findByText('CI anverso')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Nuevo(a) documento' }))
+    const dialogo = screen.getByRole('dialog')
+    fireEvent.change(within(dialogo).getByLabelText(/^Nombre/), { target: { value: ' Aval laboral ' } })
+    fireEvent.click(within(dialogo).getByLabelText(/^Obligatorio/))
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Guardar' }))
+
+    await waitFor(() => expect(aspirante.tiposDocumento.crear).toHaveBeenCalledWith({ nombre: 'Aval laboral', orden: 0, obligatorio: false }))
   })
 })
 

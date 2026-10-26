@@ -1,6 +1,7 @@
 import { KeyRound, Save } from 'lucide-react'
 import { useState } from 'react'
 import { Alert, Avatar, Button, Card, CardBody, CardHeader, Input, PageHeader, useToast } from '../../components/ui'
+import { useArchivoPrivado } from '../../hooks/useArchivoPrivado'
 import { useAuth } from '../../hooks/useAuth'
 import { useFormulario } from '../../hooks/useFormulario'
 import { actualizarPerfil, cambiarPassword } from '../../services/perfil'
@@ -11,9 +12,12 @@ const MAX_FOTO_MB = 5
 
 /** Perfil propio (RF-018): datos de contacto, foto y contraseña. Común a internos y aspirantes. */
 export function MiPerfil() {
-  const { usuario, actualizarUsuario } = useAuth()
+  const { usuario, actualizarUsuario, esAspirante } = useAuth()
   const toast = useToast()
   const nombre = `${usuario.nombre} ${usuario.apellidos}`.trim() || usuario.username
+  const fotoActual = useArchivoPrivado(usuario.foto)
+  // RF-046: la foto del aspirante es JPG o PNG; los internos pueden usar también WEBP.
+  const formatosFoto = esAspirante ? 'image/jpeg,image/png' : 'image/jpeg,image/png,image/webp'
 
   const datos = useFormulario({ celular: usuario.celular ?? '' })
   const [foto, setFoto] = useState(null)
@@ -66,7 +70,7 @@ export function MiPerfil() {
           <CardHeader title="Datos personales" />
           <CardBody>
             <div className={styles.identidad}>
-              <Avatar nombre={nombre} foto={usuario.foto} size="lg" />
+              <Avatar nombre={nombre} foto={fotoActual} size="lg" />
               <div>
                 <strong className={styles.nombre}>{nombre}</strong>
                 <dl className={styles.datos}>
@@ -94,8 +98,8 @@ export function MiPerfil() {
                 key={versionFoto}
                 label="Foto de perfil"
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
-                hint="JPG, PNG o WEBP, máximo 5 MB"
+                accept={formatosFoto}
+                hint={esAspirante ? 'JPG o PNG, máximo 5 MB' : 'JPG, PNG o WEBP, máximo 5 MB'}
                 error={errorFoto || datos.errores.foto}
                 onChange={elegirFoto}
               />

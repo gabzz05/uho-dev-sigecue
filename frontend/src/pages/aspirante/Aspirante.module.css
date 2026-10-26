@@ -1,0 +1,245 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.dosColumnas {
+  display: grid;
+  gap: var(--space-5);
+}
+
+@media (min-width: 768px) {
+  .dosColumnas { grid-template-columns: 3fr 2fr; align-items: start; }
+}
+
+.ayuda {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.formulario > * { width: 100%; }
+.formulario > button { width: auto; }
+
+/* Inicio */
+.bienvenida {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.bienvenidaTexto {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.saludo {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+}
+
+.insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.cuentaAtras {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.cuentaAtras strong { font-size: var(--font-size-lg); }
+
+/* Completar perfil */
+.requisitos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+}
+
+.requisitos li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.requisitos svg { width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+.requisitos .cumple { color: var(--color-text); }
+.requisitos .cumple svg { color: var(--color-success); }
+
+.documentos {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.documento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.documentoInfo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.documentoEstado {
+  flex-basis: 100%;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.documentoAcciones {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.error {
+  flex-basis: 100%;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+/* Mi solicitud */
+.resumenSolicitud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.fechas {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.fechas dt { color: var(--color-text-muted); }
+.fechas dd { margin: 0; }
+
+.filaCarrera {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.prioridad {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+
+.ordinal {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.carrera {
+  display: block;
+  color: var(--color-primary);
+}
+
+.estadoCarrera {
+  margin-left: auto;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.barraAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.filtrosCatalogo {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .filtrosCatalogo { grid-template-columns: 2fr 1fr; }
+}
+
+.catalogo {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ofertaCatalogo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.motivo {
+  display: block;
+  color: var(--color-warning);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
