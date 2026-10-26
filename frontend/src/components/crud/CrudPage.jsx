@@ -49,8 +49,11 @@ const ESTADO_ACTIVO = {
  * - `aFormulario(item)` / `aDatos(valores)`: conversión entre API y formulario.
  * - `nombreDe(item)`: texto con el que se nombra un registro en avisos y etiquetas.
  * - `estado`: cómo se lee y se alterna el estado (por defecto, el campo `activo`).
+ *   `null` si el recurso no tiene estado activo/inactivo: sin columna, filtro ni botón.
+ * - `etiquetaNuevo`: texto del botón y del título de alta (por defecto "Nuevo(a) {singular}").
+ * - `filtrosFijos`: parámetros que se envían siempre al listar (p. ej. `{ convocatoria: 3 }`).
  * - `accionesExtra(item, recargar)`: botones adicionales por fila.
- * - `puedeEliminarItem(item)`: oculta "Eliminar" en registros concretos.
+ * - `puedeEliminarItem(item)` / `puedeEditarItem(item)`: ocultan esas acciones en registros concretos.
  */
 export function CrudPage({
   titulo,
@@ -70,9 +73,16 @@ export function CrudPage({
   estado = ESTADO_ACTIVO,
   accionesExtra,
   puedeEliminarItem = siempre,
+  puedeEditarItem = siempre,
   placeholderBusqueda = 'Nombre o código',
+  filtrosFijos = {},
+  etiquetaNuevo,
 }) {
-  const listado = useListado(recurso, { filtrosIniciales: { buscar: '', activo: '' } })
+  const textoNuevo = etiquetaNuevo ?? `Nuevo(a) ${singular}`
+  const conEstado = estado !== null
+  const listado = useListado(recurso, {
+    filtrosIniciales: { buscar: '', ...(conEstado ? { activo: '' } : {}), ...filtrosFijos },
+  })
   const toast = useToast()
   const [edicion, setEdicion] = useState(null) // { item } | { item: null } para alta
   const [aEliminar, setAEliminar] = useState(null)
@@ -116,9 +126,9 @@ export function CrudPage({
     setEdicion(null)
   }
 
-  const columnasCompletas = [
-    ...columnas,
-    {
+  const columnasCompletas = [...columnas]
+  if (conEstado) {
+    columnasCompletas.push({
       key: 'activo',
       header: 'Estado',
       render: (item) =>
@@ -127,8 +137,8 @@ export function CrudPage({
             {estado.activo(item) ? estado.etiquetas.activo : estado.etiquetas.inactivo}
           </Badge>
         ),
-    },
-  ]
+    })
+  }
   if (permisos.editar || permisos.eliminar || accionesExtra) {
     columnasCompletas.push({
       key: 'acciones',
@@ -137,17 +147,17 @@ export function CrudPage({
       render: (item) => (
         <div className={styles.acciones}>
           {accionesExtra?.(item, listado.recargar)}
-          {permisos.editar && (
-            <>
-              <Button variant="ghost" size="sm" icon={Pencil} onClick={() => setEdicion({ item })} aria-label={`Editar ${nombreDe(item)}`} />
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={Power}
-                onClick={() => cambiarEstado(item)}
-                aria-label={`${estado.activo(item) ? estado.acciones.desactivar : estado.acciones.activar} ${nombreDe(item)}`}
-              />
-            </>
+          {permisos.editar && puedeEditarItem(item) && (
+            <Button variant="ghost" size="sm" icon={Pencil} onClick={() => setEdicion({ item })} aria-label={`Editar ${nombreDe(item)}`} />
+          )}
+          {permisos.editar && conEstado && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Power}
+              onClick={() => cambiarEstado(item)}
+              aria-label={`${estado.activo(item) ? estado.acciones.desactivar : estado.acciones.activar} ${nombreDe(item)}`}
+            />
           )}
           {permisos.eliminar && puedeEliminarItem(item) && (
             <Button
@@ -165,7 +175,7 @@ export function CrudPage({
 
   const botonNuevo = permisos.crear && (
     <Button icon={Plus} onClick={() => setEdicion({ item: null })}>
-      Nuevo(a) {singular}
+      {textoNuevo}
     </Button>
   )
 
@@ -196,13 +206,15 @@ export function CrudPage({
               onChange={(e) => listado.cambiarFiltro(f.name, e.target.value)}
             />
           ))}
-          <Select
-            label="Estado"
-            placeholder="Todos"
-            options={OPCIONES_ESTADO}
-            value={listado.filtros.activo}
-            onChange={(e) => listado.cambiarFiltro('activo', e.target.value)}
-          />
+          {conEstado && (
+            <Select
+              label="Estado"
+              placeholder="Todos"
+              options={OPCIONES_ESTADO}
+              value={listado.filtros.activo}
+              onChange={(e) => listado.cambiarFiltro('activo', e.target.value)}
+            />
+          )}
         </Toolbar>
         {listado.error && (
           <div className={styles.error}>
@@ -219,7 +231,7 @@ export function CrudPage({
         <RecursoModal
           key={edicion.item?.id ?? 'nuevo'}
           open
-          titulo={edicion.item ? `Editar ${singular}` : `Nuevo(a) ${singular}`}
+          titulo={edicion.item ? `Editar ${singular}` : textoNuevo}
           campos={campos}
           valoresIniciales={edicion.item ? aFormulario(edicion.item) : valoresIniciales}
           validar={validar}

@@ -6,7 +6,7 @@ import { useAuth } from '../../../hooks/useAuth'
 import { useOpciones } from '../../../hooks/useOpciones'
 import { areas, cargos, cumFum, facultades } from '../../../services/nomencladores'
 import { usuarios } from '../../../services/usuarios'
-import { MENSAJE_CELULAR, MENSAJE_CI, PATRON_CELULAR, PATRON_CI } from '../../auth/validaciones'
+import { MENSAJE_CELULAR, MENSAJE_CI, PATRON_CELULAR, PATRON_CI } from '../../../utils/validaciones'
 import styles from './Usuarios.module.css'
 
 const ORIGENES = [

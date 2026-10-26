@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router'
 import { AdminLayout, AspiranteLayout, MENU_ADMIN, PublicLayout, RequireAuth } from './components/layout'
 import { Configuracion } from './pages/admin/configuracion/Configuracion'
 import { Dashboard } from './pages/admin/Dashboard'
+import { Interes } from './pages/admin/interes/Interes'
 import { Logs } from './pages/admin/logs/Logs'
 import { EnviosMasivos } from './pages/admin/notificaciones/EnviosMasivos'
 import { Carreras } from './pages/admin/nomencladores/Carreras'
@@ -17,6 +18,7 @@ import { MiPerfil } from './pages/cuenta/MiPerfil'
 import { MisNotificaciones } from './pages/cuenta/MisNotificaciones'
 import { EnConstruccion } from './pages/EnConstruccion'
 import { NoEncontrado } from './pages/errores/NoEncontrado'
+import { DetalleCarrera } from './pages/public/DetalleCarrera'
 import { InicioPublico } from './pages/public/Inicio'
 import { Privacidad } from './pages/public/Privacidad'
 
@@ -32,6 +34,7 @@ const PANTALLAS_ADMIN = {
   configuracion: <Configuracion />,
   envios: <EnviosMasivos />,
   logs: <Logs />,
+  interes: <Interes />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
@@ -44,6 +47,7 @@ export const rutas = [
     element: <PublicLayout />,
     children: [
       { index: true, element: <InicioPublico /> },
+      { path: 'carreras/:id', element: <DetalleCarrera /> },
       { path: 'login', element: <Login /> },
       { path: 'registro', element: <Registro /> },
       { path: 'activar', element: <Activar /> },

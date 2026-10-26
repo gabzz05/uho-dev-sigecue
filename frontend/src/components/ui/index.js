@@ -1,6 +1,7 @@
 export { Alert } from './Alert/Alert'
 export { Avatar } from './Avatar/Avatar'
 export { Badge, StatusBadge } from './Badge/Badge'
+export { BotonConfirmado } from './BotonConfirmado/BotonConfirmado'
 export { Button } from './Button/Button'
 export { Card, CardBody, CardFooter, CardHeader } from './Card/Card'
 export { Checkbox, Input, Select, Textarea } from './Form/inputs'

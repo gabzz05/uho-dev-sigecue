@@ -4,7 +4,7 @@ import { Alert, Avatar, Button, Card, CardBody, CardHeader, Input, PageHeader, u
 import { useAuth } from '../../hooks/useAuth'
 import { useFormulario } from '../../hooks/useFormulario'
 import { actualizarPerfil, cambiarPassword } from '../../services/perfil'
-import { MENSAJE_CELULAR, PATRON_CELULAR, validarPassword } from '../auth/validaciones'
+import { MENSAJE_CELULAR, PATRON_CELULAR, validarPassword } from '../../utils/validaciones'
 import styles from './MiPerfil.module.css'
 
 const MAX_FOTO_MB = 5

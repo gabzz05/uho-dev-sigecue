@@ -1,0 +1,7 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.selector { max-width: 20rem; }

@@ -6,7 +6,7 @@ import { Alert, Button, Checkbox, Input } from '../../components/ui'
 import { useFormulario } from '../../hooks/useFormulario'
 import { registrarAspirante } from '../../services/auth'
 import styles from './auth.module.css'
-import { datosDeRegistro, validarRegistro } from './validaciones'
+import { datosDeRegistro, validarRegistro } from '../../utils/validaciones'
 
 const INICIAL = {
   nombre: '',
