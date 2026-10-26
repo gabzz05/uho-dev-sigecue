@@ -48,6 +48,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `roles` | Roles, catálogo de permisos (módulo × acción) y la clase `PermisoModulo` |
 | `nomencladores` | Municipios, Facultades, CUM/FUM, Áreas, Departamentos, Cargos y catálogo global de Carreras |
 | `configuracion` | Parámetros del sistema, SMTP, plantillas de correo e identidad visual |
+| `notificaciones` | Notificaciones in-app y por correo, envíos masivos |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -172,6 +173,42 @@ otro rol tenga `configuracion.editar`.
   `--color-primary`, `--color-primary-light` y `--color-accent` al arrancar y al
   guardar. Si la API no responde, quedan los valores de `tokens.css`. El escudo
   se guarda en el almacenamiento público.
+
+### Notificaciones (RF-073 a RF-076)
+
+| Endpoint | Uso |
+|---|---|
+| `GET /api/v1/notificaciones/?leida=` | Notificaciones propias, paginadas. Cada usuario ve solo las suyas; no exige permisos de módulo. |
+| `GET /api/v1/notificaciones/no-leidas/` | `{no_leidas}`. Es la consulta del polling de la campana. |
+| `POST /api/v1/notificaciones/{id}/leer/` · `POST .../leer-todas/` · `DELETE .../{id}/` | Marcar como leída o borrar. |
+| `GET/POST /api/v1/admin/notificaciones/envios/` | Historial y creación de envíos masivos (`notificaciones.ver` / `notificaciones.crear`). |
+| `POST /api/v1/admin/notificaciones/envios/contar/` | Número de destinatarios de un grupo, antes de enviar. |
+
+- **Automáticas** (RF-075): los módulos llaman a
+  `apps.notificaciones.services.notificar(usuarios, codigo_plantilla, contexto)`.
+  - Crea la notificación in-app y envía por correo el mismo texto, sacado de
+    la plantilla.
+  - `contexto` puede ser un dict o una función `usuario -> dict` para
+    variables distintas por destinatario. `nombre` se rellena solo.
+  - El correo se envía en la tarea de Celery `enviar_correos`, con una sola
+    conexión SMTP por lote. Si falla un destinatario, se registra en el log y
+    se continúa con el resto.
+- **Masivas** (RF-076):
+  - Grupos: `{"tipo": "rol", "rol": codigo}`,
+    `{"tipo": "entidad", "facultad"|"cum_fum": id}` y `{"tipo": "aspirantes"}`.
+  - Solo reciben usuarios activos; los aspirantes, además, con la cuenta
+    verificada.
+  - Los roles locales solo envían dentro de su entidad: su grupo "entidad" es
+    siempre la suya y no pueden usar "aspirantes". Cada uno ve solo el
+    historial de su entidad.
+  - El texto admite `{{ nombre }}`. El correo es opcional (por defecto, no).
+  - Cada envío queda registrado en `EnvioMasivo`.
+- **Frontend**:
+  - `NotificacionesProvider` (dentro de los layouts del panel y del portal)
+    consulta el contador cada 60 s y solo con la pestaña visible.
+  - El polling no mantiene viva la sesión: la renovación depende de la
+    actividad del usuario.
+  - Las notificaciones no se borran automáticamente; el usuario las borra.
 
 ### Archivos
 

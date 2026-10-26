@@ -59,6 +59,17 @@ Este archivo registra esas decisiones.
 | Parámetros RF-007 / RF-008 | En base de datos; los valores iniciales salen del `.env`. |
 | Campos dinámicos de prematrícula (RF-010) | Se implementan en el feature de prematrícula, no en configuración. |
 
+## Notificaciones
+
+| Tema | Decisión |
+|---|---|
+| Polling (RF-073) | Cada 60 s y solo con la pestaña visible. |
+| Contenido in-app | El mismo de la plantilla de correo: asunto como título y cuerpo como texto (recortado como resumen en la lista). |
+| Grupos masivos (RF-076) | Por ahora: por rol, por entidad y todos los aspirantes. Por carrera y por otorgamiento llegarán con esos módulos. |
+| Alcance | Quien tenga `notificaciones.crear`. Los roles locales solo dentro de su entidad; "todos los aspirantes" es solo para roles globales (los aspirantes no pertenecen a una entidad hasta que solicitan). |
+| Correo en masivos | Opcional, desmarcado por defecto. Las automáticas siempre van por los dos canales. |
+| Limpieza | Las notificaciones se conservan; el usuario puede borrarlas. Sin borrado automático. |
+
 ## Expresión de interés
 
 | Tema | Decisión |
