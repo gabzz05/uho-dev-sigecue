@@ -1,6 +1,7 @@
 from django.conf import settings
-from drf_spectacular.utils import extend_schema, inline_serializer
-from rest_framework import generics, serializers, status
+from django.http import FileResponse
+from drf_spectacular.utils import OpenApiTypes, extend_schema, inline_serializer
+from rest_framework import exceptions, generics, serializers, status
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -148,6 +149,25 @@ class MeView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+    def perform_update(self, serializer):
+        usuario = serializer.save()
+        if usuario.es_aspirante:
+            from apps.aspirantes import services as aspirantes
+
+            aspirantes.actualizar_perfil_completo(aspirantes.perfil_de(usuario))
+
+
+@extend_schema(tags=["auth"], responses={(200, "image/*"): OpenApiTypes.BINARY})
+class MiFotoView(APIView):
+    """Foto de perfil del usuario autenticado (está en el almacenamiento privado)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.foto:
+            raise exceptions.NotFound()
+        return FileResponse(request.user.foto.open("rb"))
 
 
 class CambiarPasswordView(APIView):

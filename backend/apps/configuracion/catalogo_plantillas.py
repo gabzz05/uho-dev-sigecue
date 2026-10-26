@@ -111,4 +111,24 @@ PLANTILLAS = {
             "Universidad de Holguín"
         ),
     },
+    "solicitud_confirmada": {
+        "nombre": "Solicitud de matrícula confirmada",
+        "descripcion": "Al aspirante cuando confirma su solicitud, con el resumen de carreras (paso 16 de 7.2). Solo la primera vez.",
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "anio": "Año académico",
+            "convocatoria": "Número de convocatoria (1.ª, 2.ª...)",
+            "fecha_cierre": "Fecha de cierre de la convocatoria",
+            "carreras": "Carreras elegidas, una por línea, en orden de prioridad",
+        },
+        "asunto": "SIGECUE — Recibimos tu solicitud de matrícula {{ anio }}",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "Recibimos tu solicitud de matrícula en la {{ convocatoria }} convocatoria del curso {{ anio }}, "
+            "con estas carreras en orden de prioridad:\n\n"
+            "{{ carreras }}\n\n"
+            "Puedes modificarla en SIGECUE hasta el {{ fecha_cierre }}. Al cierre se congela la última versión.\n\n"
+            "Universidad de Holguín"
+        ),
+    },
 }

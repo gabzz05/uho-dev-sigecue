@@ -33,6 +33,8 @@ LOCAL_APPS = [
     "apps.interes",
     "apps.plan_plazas",
     "apps.convocatorias",
+    "apps.aspirantes",
+    "apps.solicitudes",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",

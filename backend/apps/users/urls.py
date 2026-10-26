@@ -13,6 +13,7 @@ urlpatterns = [
     path("auth/registro/", auth.RegistroView.as_view(), name="auth-registro"),
     path("auth/activar/", auth.ActivarView.as_view(), name="auth-activar"),
     path("auth/me/", auth.MeView.as_view(), name="auth-me"),
+    path("auth/me/foto/", auth.MiFotoView.as_view(), name="auth-me-foto"),
     path("auth/me/password/", auth.CambiarPasswordView.as_view(), name="auth-password"),
     *router.urls,
 ]

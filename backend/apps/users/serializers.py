@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema_field, inline_serializer
 from rest_framework import serializers
 
 from apps.core.ambito import es_de_su_entidad
-from apps.core.validators import validar_imagen
+from apps.core.validators import FORMATOS_FOTO_ASPIRANTE, validar_imagen
 from apps.roles.models import Rol
 
 from .models import Usuario
@@ -100,6 +100,24 @@ class UsuarioActualSerializer(serializers.ModelSerializer):
     def get_permisos(self, usuario) -> list[str]:
         """Códigos `modulo.accion`. El superadmin recibe `["*"]`."""
         return ["*"] if usuario.es_superadmin else sorted(usuario.codigos_permiso)
+
+    def validate_foto(self, foto):
+        usuario = self.instance
+        if usuario is not None and usuario.es_aspirante:
+            from apps.aspirantes import services as aspirantes
+
+            # RF-046: la foto del aspirante es JPG o PNG y cuenta en su cuota (RNF-005).
+            if foto is not None:
+                validar_imagen(foto, FORMATOS_FOTO_ASPIRANTE)
+            aspirantes.validar_foto(usuario, foto)
+        return foto
+
+    def to_representation(self, usuario):
+        datos = super().to_representation(usuario)
+        # La foto está en el almacenamiento privado: se pide a la API con el token.
+        # El parámetro `v` cambia con cada foto nueva para no reutilizar la caché.
+        datos["foto"] = f"/auth/me/foto/?v={usuario.foto.name.rsplit('/', 1)[-1]}" if usuario.foto else None
+        return datos
 
 
 class CambiarPasswordSerializer(serializers.Serializer):

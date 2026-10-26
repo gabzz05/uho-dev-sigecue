@@ -15,6 +15,8 @@ api_v1 = [
     path("", include("apps.interes.urls")),
     path("", include("apps.plan_plazas.urls")),
     path("", include("apps.convocatorias.urls")),
+    path("", include("apps.aspirantes.urls")),
+    path("", include("apps.solicitudes.urls")),
 ]
 
 urlpatterns = [
