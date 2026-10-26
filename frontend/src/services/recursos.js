@@ -31,6 +31,7 @@ export function crearRecurso(ruta) {
   return {
     ruta,
     listar: (params) => api.get(ruta, { params }).then((r) => r.data),
+    obtener: (id) => api.get(`${ruta}${id}/`).then((r) => r.data),
     crear: (datos) => api.post(ruta, cuerpo(datos)).then((r) => r.data),
     actualizar: (id, datos) => api.patch(`${ruta}${id}/`, cuerpo(datos)).then((r) => r.data),
     eliminar: (id) => api.delete(`${ruta}${id}/`),

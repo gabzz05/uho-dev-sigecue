@@ -4,6 +4,8 @@ import { Configuracion } from './pages/admin/configuracion/Configuracion'
 import { Dashboard } from './pages/admin/Dashboard'
 import { Interes } from './pages/admin/interes/Interes'
 import { Logs } from './pages/admin/logs/Logs'
+import { DetallePlan } from './pages/admin/planPlazas/DetallePlan'
+import { PlanesPlazas } from './pages/admin/planPlazas/PlanesPlazas'
 import { EnviosMasivos } from './pages/admin/notificaciones/EnviosMasivos'
 import { Carreras } from './pages/admin/nomencladores/Carreras'
 import { Entidades } from './pages/admin/nomencladores/Entidades'
@@ -35,6 +37,7 @@ const PANTALLAS_ADMIN = {
   envios: <EnviosMasivos />,
   logs: <Logs />,
   interes: <Interes />,
+  'plan-plazas': <PlanesPlazas />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
@@ -64,6 +67,14 @@ export const rutas = [
     ),
     children: [
       ...rutasAdmin,
+      {
+        path: 'plan-plazas/:id',
+        element: (
+          <RequireAuth permiso="plan_plazas.ver">
+            <DetallePlan />
+          </RequireAuth>
+        ),
+      },
       { path: 'perfil', element: <MiPerfil /> },
       { path: 'notificaciones', element: <MisNotificaciones /> },
       { path: '*', element: <NoEncontrado /> },
