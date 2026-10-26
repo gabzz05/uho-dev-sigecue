@@ -11,6 +11,7 @@ api_v1 = [
     path("", include("apps.users.urls")),
     path("", include("apps.nomencladores.urls")),
     path("", include("apps.configuracion.urls")),
+    path("", include("apps.notificaciones.urls")),
 ]
 
 urlpatterns = [

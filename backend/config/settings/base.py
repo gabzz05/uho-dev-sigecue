@@ -29,6 +29,7 @@ LOCAL_APPS = [
     "apps.roles",
     "apps.nomencladores",
     "apps.configuracion",
+    "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
 ]
