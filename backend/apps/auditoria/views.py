@@ -1,7 +1,10 @@
 from django.utils.dateparse import parse_date
-from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import viewsets
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view, inline_serializer
+from rest_framework import serializers, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
+from apps.roles.catalogo import VER
 from apps.roles.permissions import PermisoModulo
 
 from .models import LogAuditoria
@@ -12,6 +15,7 @@ from .serializers import LogAuditoriaSerializer
     list=extend_schema(
         parameters=[
             OpenApiParameter("usuario", int, description="Id del usuario"),
+            OpenApiParameter("usuario_nombre", str, description="Texto contenido en el nombre de usuario"),
             OpenApiParameter("accion", str, description="Texto contenido en la acción"),
             OpenApiParameter("modulo", str),
             OpenApiParameter("resultado", str, enum=LogAuditoria.Resultado.values),
@@ -26,6 +30,7 @@ class LogAuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = LogAuditoriaSerializer
     permission_classes = [PermisoModulo]
     modulo = "logs"
+    acciones_permiso = {"modulos": VER}
 
     def get_queryset(self):
         qs = LogAuditoria.objects.all()
@@ -33,6 +38,8 @@ class LogAuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
 
         if usuario := params.get("usuario"):
             qs = qs.filter(usuario_id=usuario)
+        if usuario_nombre := params.get("usuario_nombre"):
+            qs = qs.filter(usuario_nombre__icontains=usuario_nombre)
         if accion := params.get("accion"):
             qs = qs.filter(accion__icontains=accion)
         if modulo := params.get("modulo"):
@@ -44,3 +51,10 @@ class LogAuditoriaViewSet(viewsets.ReadOnlyModelViewSet):
         if (hasta := parse_date(params.get("hasta", ""))) is not None:
             qs = qs.filter(created_at__date__lte=hasta)
         return qs
+
+    @extend_schema(responses=inline_serializer("ModulosAuditados", {"modulos": serializers.ListField(child=serializers.CharField())}))
+    @action(detail=False, pagination_class=None)
+    def modulos(self, request):
+        """Módulos que aparecen en el log, para el filtro de la pantalla."""
+        modulos = LogAuditoria.objects.order_by("modulo").values_list("modulo", flat=True).distinct()
+        return Response({"modulos": list(modulos)})

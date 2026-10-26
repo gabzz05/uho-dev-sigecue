@@ -170,6 +170,23 @@ class TestConsulta:
         assert client.get(self.url, {"desde": hoy.isoformat()}).json()["count"] == 1
         assert client.get(self.url, {"hasta": (hoy - timedelta(days=1)).isoformat()}).json()["count"] == 0
 
+    def test_filtra_por_nombre_de_usuario(self, admin, usuario):
+        _log(usuario=usuario)
+        _log()
+        client = APIClient()
+        client.force_authenticate(admin)
+
+        assert client.get(self.url, {"usuario_nombre": "CASTRO"}).json()["count"] == 1
+
+    def test_lista_los_modulos_registrados(self, admin):
+        _log(modulo="usuarios")
+        _log(modulo="auth")
+        _log(modulo="usuarios")
+        client = APIClient()
+        client.force_authenticate(admin)
+
+        assert client.get(f"{self.url}modulos/").json() == {"modulos": ["auth", "usuarios"]}
+
     def test_es_solo_lectura(self, admin):
         client = APIClient()
         client.force_authenticate(admin)
