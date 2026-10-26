@@ -13,6 +13,7 @@ api_v1 = [
     path("", include("apps.configuracion.urls")),
     path("", include("apps.notificaciones.urls")),
     path("", include("apps.interes.urls")),
+    path("", include("apps.plan_plazas.urls")),
 ]
 
 urlpatterns = [

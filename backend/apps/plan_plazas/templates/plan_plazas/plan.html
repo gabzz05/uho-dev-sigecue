@@ -1,0 +1,37 @@
+{% extends "pdf/base.html" %}
+{% block contenido %}
+<style>
+  .sello { margin-top: 10mm; padding: 4mm 5mm; border: 2px solid {{ membrete.color }}; border-radius: 3mm; width: 95mm; }
+  .sello .titulo { font-weight: bold; color: {{ membrete.color }}; text-transform: uppercase; letter-spacing: 0.5px; }
+</style>
+<h1>{{ titulo }}</h1>
+<p class="muted">
+  Versión {{ plan.version }}{% if plan.es_complementario %} · Versión complementaria del plan {{ plan.anio_academico }}{% endif %}
+</p>
+
+{% for grupo in grupos %}
+  <h2>{{ grupo.entidad }}</h2>
+  <table>
+    <thead><tr><th>Carrera</th><th class="num">Plazas</th></tr></thead>
+    <tbody>
+      {% for linea in grupo.lineas %}
+        <tr><td>{{ linea.carrera.nombre }}</td><td class="num">{{ linea.plazas_aprobadas }}</td></tr>
+      {% endfor %}
+      <tr class="total"><td>Total {{ grupo.entidad }}</td><td class="num">{{ grupo.total }}</td></tr>
+    </tbody>
+  </table>
+{% empty %}
+  <p>El plan no tiene carreras con plazas aprobadas.</p>
+{% endfor %}
+
+<table>
+  <tbody><tr class="total"><td>Total general</td><td class="num">{{ total }}</td></tr></tbody>
+</table>
+
+{# RF-036/037: marca de aprobación visible (no es una firma criptográfica). #}
+<div class="sello">
+  <div class="titulo">Aprobado</div>
+  <div>{{ aprobado_por }} — Vicerrector(a) de Formación</div>
+  <div>{{ plan.fecha_aprobacion|date:"d/m/Y H:i" }}</div>
+</div>
+{% endblock %}

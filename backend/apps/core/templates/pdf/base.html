@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>{{ titulo }}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 32mm 16mm 20mm;
+    @top-left { content: element(membrete); }
+    @bottom-left {
+      content: "SIGECUE — Generado el {{ generado|date:'d/m/Y H:i' }}";
+      font-size: 8pt; color: #6b7280;
+    }
+    @bottom-right {
+      content: "Página " counter(page) " de " counter(pages);
+      font-size: 8pt; color: #6b7280;
+    }
+  }
+  body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 9.5pt; color: #111827; }
+  .membrete { position: running(membrete); display: flex; align-items: center; gap: 10px; width: 178mm;
+              border-bottom: 2px solid {{ membrete.color }}; padding-bottom: 6px; }
+  .membrete img { height: 18mm; }
+  .membrete .institucion { font-size: 12pt; font-weight: bold; color: {{ membrete.color }}; }
+  .membrete .sistema { font-size: 8.5pt; color: #374151; }
+  h1 { font-size: 14pt; color: {{ membrete.color }}; margin: 0 0 4mm; }
+  h2 { font-size: 11pt; color: {{ membrete.color }}; margin: 6mm 0 2mm; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
+  th { background: {{ membrete.color }}; color: #fff; text-align: left; padding: 4px 6px; font-weight: bold; }
+  td { padding: 4px 6px; border-bottom: 1px solid #d0d5dd; }
+  td.num, th.num { text-align: right; }
+  tr.total td { font-weight: bold; border-top: 1.5px solid #111827; }
+  .muted { color: #6b7280; }
+</style>
+</head>
+<body>
+  <div class="membrete">
+    {% if membrete.escudo %}<img src="{{ membrete.escudo }}" alt="">{% endif %}
+    <div>
+      <div class="institucion">{{ membrete.institucion }}</div>
+      <div class="sistema">SIGECUE — Sistema de Gestión de Carreras por Encuentro</div>
+    </div>
+  </div>
+  {% block contenido %}{% endblock %}
+</body>
+</html>

@@ -45,4 +45,51 @@ PLANTILLAS = {
             "Universidad de Holguín"
         ),
     },
+    "plan_enviado": {
+        "nombre": "Plan de plazas enviado a las entidades",
+        "descripcion": "A quienes responden por cada entidad cuando la CI envía el plan (RF-033).",
+        "variables": {"nombre": "Nombre del destinatario", "anio": "Año académico", "entidad": "Facultad o CUM/FUM"},
+        "asunto": "SIGECUE — Plan de plazas {{ anio }} para revisión",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "La Comisión de Ingreso envió la propuesta del plan de plazas {{ anio }} para {{ entidad }}.\n\n"
+            "Revísala en SIGECUE: puedes aceptarla, ajustar las cantidades, pedir quitar carreras o agregar otras, "
+            "justificando cada cambio. Luego envía la propuesta de tu entidad.\n\n"
+            "Universidad de Holguín"
+        ),
+    },
+    "plan_para_aprobacion": {
+        "nombre": "Plan de plazas pendiente de aprobación",
+        "descripcion": "Al Vicerrector cuando la CI genera la versión final (RF-036).",
+        "variables": {"nombre": "Nombre del destinatario", "anio": "Año académico", "version": "Número de versión"},
+        "asunto": "SIGECUE — Plan de plazas {{ anio }} pendiente de aprobación",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "La Comisión de Ingreso generó la versión {{ version }} del plan de plazas {{ anio }} y está pendiente de tu aprobación.\n\n"
+            "Universidad de Holguín"
+        ),
+    },
+    "plan_devuelto": {
+        "nombre": "Plan de plazas devuelto",
+        "descripcion": "A la Comisión de Ingreso cuando el Vicerrector devuelve el plan (paso 26 de 7.3).",
+        "variables": {"nombre": "Nombre del destinatario", "anio": "Año académico", "observaciones": "Observaciones del Vicerrector"},
+        "asunto": "SIGECUE — Plan de plazas {{ anio }} devuelto con observaciones",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "El Vicerrector devolvió el plan de plazas {{ anio }} con estas observaciones:\n\n"
+            "{{ observaciones }}\n\n"
+            "Universidad de Holguín"
+        ),
+    },
+    "plan_publicado": {
+        "nombre": "Plan de plazas publicado",
+        "descripcion": "A los usuarios internos cuando el Vicerrector aprueba y publica el plan (paso 27 de 7.3).",
+        "variables": {"nombre": "Nombre del destinatario", "anio": "Año académico"},
+        "asunto": "SIGECUE — Plan de plazas {{ anio }} aprobado y publicado",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "El Vicerrector de Formación aprobó el plan de plazas {{ anio }}. Ya puedes consultarlo en SIGECUE.\n\n"
+            "Universidad de Holguín"
+        ),
+    },
 }

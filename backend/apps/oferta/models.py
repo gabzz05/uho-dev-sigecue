@@ -32,6 +32,8 @@ class OfertaCarrera(models.Model):
     anio_academico = models.CharField("año académico", max_length=9, validators=[validar_anio_academico], db_index=True)
     # True si la asignó la Comisión de Ingreso: la entidad no puede quitarla (RF-028).
     asignada_por_ci = models.BooleanField("asignada por la Comisión de Ingreso", default=False)
+    # Plazas del plan de plazas publicado vigente (RF-036). Vacío hasta que se publique.
+    plazas_plan = models.PositiveIntegerField("plazas del plan", null=True, blank=True)
     creada_por = models.ForeignKey(
         settings.AUTH_USER_MODEL, verbose_name="creada por", null=True, on_delete=models.SET_NULL, related_name="+"
     )

@@ -31,6 +31,7 @@ LOCAL_APPS = [
     "apps.configuracion",
     "apps.oferta",
     "apps.interes",
+    "apps.plan_plazas",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
@@ -176,6 +177,15 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": r"/api/v1",
+    # Varios modelos tienen un campo "estado"/"origen" con opciones distintas.
+    "ENUM_NAME_OVERRIDES": {
+        "EstadoConvocatoriaInteresEnum": "apps.interes.models.ConvocatoriaInteres.Estado",
+        "EstadoPlanEnum": "apps.plan_plazas.models.PlanPlazas.Estado",
+        "EstadoEntidadEnPlanEnum": "apps.plan_plazas.models.PlanEntidad.Estado",
+        "OrigenUsuarioEnum": "apps.users.models.Usuario.Origen",
+        "OrigenLineaPlanEnum": "apps.plan_plazas.models.LineaPlan.Origen",
+        "DecisionCiEnum": "apps.plan_plazas.models.LineaPlan.DecisionCI",
+    },
 }
 
 # Celery (tareas programadas: cierre de convocatorias, recordatorios, limpieza).
