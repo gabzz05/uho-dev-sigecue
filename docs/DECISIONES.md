@@ -147,7 +147,14 @@ Este archivo registra esas decisiones.
 | Flujo | Ranking generado (al cerrar la convocatoria) → otorgamiento automático → revisión y aprobación del Jefe CI → revisión y aprobación del Vicerrector, que **publica**. El Vicerrector no devuelve al Jefe CI: edita y aprueba. |
 | Publicación | Todo junto, no por entidad. Al publicar se notifica a otorgados y no seleccionados, se publica el listado y se habilita la prematrícula. |
 | Cambios después de publicar (RF-064) | **No hay.** Se descarta la reversión con justificación. |
-| Segunda convocatoria (RF-062) | Los no seleccionados pueden volver a solicitar. Plazas restantes = plan − otorgadas. |
+| Segunda convocatoria (RF-062) | Los no seleccionados pueden volver a solicitar. Plazas restantes = plan − otorgadas. Solo se crea con la anterior cerrada y su otorgamiento publicado. Al publicar, el Vicerrector indica si habrá segunda convocatoria, y eso cambia el aviso a los no seleccionados. |
+| Generación | La Secretaria General ve antes un resumen (elegibles, no elegibles y motivos) y confirma. Al ranking entran solo los elegibles; los demás quedan fuera. |
+| Desempate | Índice validado, luego `confirmada_at` (la solicitud oficial nace al confirmarse) y, por último, el id. |
+| Ajustes manuales | Solo a aspirantes elegibles y solo en carreras que solicitaron. Otorgar fija una opción; quitar la impide. Tras cada ajuste el reparto se recalcula (primero los ajustes, después el algoritmo cubre las vacantes por ranking). Se pueden anular con justificación. |
+| Permisos por etapa | `otorgamiento.generar` (Secretaría General), `otorgamiento.aprobar` (Jefe CI: revisa, ajusta y aprueba) y `otorgamiento.publicar` (Vicerrector: revisa, ajusta y publica). Desaparece `otorgamiento.editar`. |
+| Visibilidad del provisional | Solo los roles globales. El aspirante no ve resultados intermedios; las entidades ven lo suyo tras publicar. |
+| Snapshot | Obligatorio: `ResultadoOtorgamiento` guarda índice utilizado, posición, motivo de exclusión, opciones y lo otorgado. Queda congelado al publicar. |
+| Revisión tras generar | Generado el otorgamiento, la revisión de esa convocatoria (validar, observar, corregir) se cierra, para que el snapshot no quede desfasado. |
 
 ## Prematrícula
 

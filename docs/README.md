@@ -54,6 +54,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
 | `convocatorias` | Convocatoria de solicitud de matrícula (primera, segunda...) |
 | `aspirantes` | Perfil del aspirante, tipos de documento y documentos versionados; descarga con control de acceso |
+| `otorgamiento` | Ranking, reparto de plazas, ajustes manuales, aprobación y publicación (snapshot del resultado) |
 | `solicitudes` | Solicitud de carreras del aspirante (selección y confirmación) y su revisión por las entidades: observaciones, validación del índice, historial, estadísticas y exportación |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
@@ -566,6 +567,84 @@ La usará el otorgamiento.
   - observaciones en *Mi solicitud*, con "Enviar corrección";
   - elementos observados resaltados y desbloqueados en *Mi perfil de
     aspirante*.
+
+### Otorgamiento de plazas (RF-057 a RF-064)
+
+**Etapas** (`apps/otorgamiento`). Los permisos van por etapa, no por código de
+rol:
+
+1. **Generar** (`otorgamiento.generar`, Secretaría General): con la
+   convocatoria cerrada, `GET /admin/otorgamiento/previsualizar/?convocatoria=`
+   muestra cuántas solicitudes son elegibles, cuántas no y por qué. Después,
+   `POST /admin/otorgamiento/` con `confirmar: true` genera el ranking y el
+   reparto. Solo se ejecuta una vez por convocatoria.
+2. **Revisión del Jefe CI** (`otorgamiento.aprobar`): revisa, ajusta y aprueba.
+3. **Aprobación del Vicerrector** (`otorgamiento.publicar`): revisa, ajusta y
+   aprueba. Su aprobación **publica**. El diálogo pregunta si habrá segunda
+   convocatoria.
+
+**Elegibilidad y ranking.**
+
+- Entran al ranking solo las solicitudes elegibles (ver
+  `revision.motivos_no_elegible`); las demás quedan fuera con su motivo.
+- Orden del ranking: índice **validado** de mayor a menor, luego
+  `confirmada_at` y, como desempate técnico, el id.
+- Reparto (`algoritmo.repartir`, una función pura): cada aspirante recibe una
+  sola plaza, la de mayor prioridad que tenga plaza libre.
+- Nunca se otorga plaza a un no elegible, ni en el reparto automático ni en
+  un ajuste manual.
+
+**Ajustes manuales** (`POST /admin/otorgamiento/{id}/ajustar/`).
+
+- Tipos:
+  - `otorgar`: fija al aspirante en una de **sus** opciones; si tenía otra,
+    la pierde;
+  - `quitar`: le impide esa opción, y el reparto le da la siguiente si
+    alcanza.
+- Cada ajuste exige justificación.
+- Tras cada ajuste el reparto se recalcula: primero los ajustes vigentes y
+  después el algoritmo, por orden de ranking, cubre las vacantes. Así se
+  resuelven las cascadas, y el aspirante desplazado baja a su siguiente opción.
+- Nunca se supera el plan: si los ajustes fijados no caben, se rechaza.
+- La respuesta incluye los `cambios` del reparto.
+- Un ajuste se puede anular, también con justificación.
+
+**Snapshot** (`ResultadoOtorgamiento`).
+
+- Una fila por solicitud confirmada, con aspirante, índice utilizado, posición
+  en el ranking, motivo de exclusión, opciones tal como estaban y lo otorgado
+  (carrera, entidad, prioridad, automático o manual).
+- `Otorgamiento.capacidad` guarda las plazas disponibles al generar y
+  `resumen`, la elegibilidad que se confirmó.
+- Al publicar queda congelado. Los informes históricos leen el snapshot,
+  nunca las solicitudes actuales.
+- Generado el otorgamiento, la revisión de esa convocatoria se cierra: no hay
+  más validaciones, observaciones ni correcciones en ella.
+
+**Visibilidad.**
+
+- **Antes de publicar:** solo los roles globales ven el resultado
+  provisional; el aspirante no ve nada.
+- **Al publicar:** las solicitudes pasan a *Otorgada* o *No seleccionado*,
+  cada opción a otorgada o no seleccionada, y se avisa:
+  - `plaza_otorgada` (RF-060);
+  - `no_seleccionado_segunda` o `no_seleccionado_final` (RF-061), según la
+    casilla de segunda convocatoria.
+
+  Las entidades ven entonces lo otorgado en ellas.
+
+**Segunda convocatoria (RF-062).**
+
+- Solo se crea con la anterior cerrada **y** su otorgamiento publicado.
+- Ofrece las ofertas con plazas restantes (plan menos lo otorgado y publicado
+  en convocatorias anteriores, `services.plazas_restantes`).
+- Los no seleccionados pueden presentar una solicitud nueva; los otorgados
+  no.
+
+**Exportación (RF-063):** `.../exportar-excel/` (todos los resultados) y
+`.../exportar-pdf/` (otorgados por carrera y entidad, con el sello de
+publicación). Se auditan. El listado público en la landing va en el feature
+`resultados-publicos`.
 
 ### Exportar a PDF
 
