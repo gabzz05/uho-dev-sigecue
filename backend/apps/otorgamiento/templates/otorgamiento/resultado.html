@@ -1,0 +1,33 @@
+{% extends "pdf/base.html" %}
+{% block contenido %}
+<style>
+  .sello { margin-top: 10mm; padding: 4mm 5mm; border: 2px solid {{ membrete.color }}; border-radius: 3mm; width: 95mm; }
+  .sello .titulo { font-weight: bold; color: {{ membrete.color }}; text-transform: uppercase; letter-spacing: 0.5px; }
+</style>
+<h1>{{ titulo }}</h1>
+<p class="muted">{% if otorgamiento.publicado %}Resultado publicado{% else %}Resultado provisional: {{ otorgamiento.get_estado_display }}{% endif %}</p>
+
+{% for grupo in grupos %}
+  <h2>{{ grupo.carrera }} — {{ grupo.entidad }}</h2>
+  <table>
+    <thead><tr><th class="num">Pos.</th><th>Aspirante</th><th class="num">Índice</th><th class="num">Prioridad</th></tr></thead>
+    <tbody>
+      {% for r in grupo.resultados %}
+        <tr><td class="num">{{ r.posicion_ranking }}</td><td>{{ r.aspirante_nombre }}</td><td class="num">{{ r.indice_utilizado }}</td><td class="num">{{ r.prioridad }}</td></tr>
+      {% endfor %}
+      <tr class="total"><td colspan="3">Total</td><td class="num">{{ grupo.resultados|length }}</td></tr>
+    </tbody>
+  </table>
+{% empty %}
+  <p>No hay plazas otorgadas.</p>
+{% endfor %}
+
+{% if otorgamiento.publicado %}
+{# Marca de aprobación visible (no es una firma criptográfica). #}
+<div class="sello">
+  <div class="titulo">Aprobado y publicado</div>
+  <div>{{ publicado_por }} — Vicerrector(a) de Formación</div>
+  <div>{{ otorgamiento.publicado_at|date:"d/m/Y H:i" }}</div>
+</div>
+{% endif %}
+{% endblock %}

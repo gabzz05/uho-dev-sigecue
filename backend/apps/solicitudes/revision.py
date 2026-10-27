@@ -68,11 +68,27 @@ def puede_gestionar(usuario, observacion):
     return (observacion.facultad_id, observacion.cum_fum_id) == (usuario.facultad_id, usuario.cum_fum_id)
 
 
+def revision_cerrada(solicitud):
+    """Generado el otorgamiento de la convocatoria, la revisión queda cerrada: el resultado es un snapshot."""
+    from apps.otorgamiento.models import Otorgamiento
+
+    return Otorgamiento.objects.filter(convocatoria_id=solicitud.convocatoria_id).exists()
+
+
+MENSAJE_CERRADA = "Ya se generó el otorgamiento de esta convocatoria: la revisión está cerrada."
+
+
+def admite_revision(solicitud):
+    return solicitud.estado in REVISABLES and not revision_cerrada(solicitud)
+
+
 def _exigir_revisable(usuario, solicitud):
     if not puede_revisar(usuario, solicitud):
         raise ErrorDeNegocio("No puedes revisar esta solicitud.")
     if solicitud.estado not in REVISABLES:
         raise ErrorDeNegocio("Esta solicitud ya no admite revisión.")
+    if revision_cerrada(solicitud):
+        raise ErrorDeNegocio(MENSAJE_CERRADA)
 
 
 # --- Elegibilidad -----------------------------------------------------------
@@ -208,8 +224,8 @@ def _bloquear_observacion(observacion):
 def _exigir_gestionable(usuario, observacion):
     if not puede_gestionar(usuario, observacion):
         raise ErrorDeNegocio("Solo la entidad que hizo la observación (o la Comisión de Ingreso) puede gestionarla.")
-    if observacion.solicitud.estado not in REVISABLES:
-        raise ErrorDeNegocio("Esta solicitud ya no admite revisión.")
+    if not admite_revision(observacion.solicitud):
+        raise ErrorDeNegocio(MENSAJE_CERRADA if revision_cerrada(observacion.solicitud) else "Esta solicitud ya no admite revisión.")
 
 
 @transaction.atomic
@@ -285,6 +301,8 @@ def enviar_correccion(solicitud):
     solicitud = _bloquear(solicitud)
     if solicitud.estado != E.OBSERVADA:
         raise ErrorDeNegocio("Tu solicitud no tiene observaciones pendientes de corregir.")
+    if revision_cerrada(solicitud):
+        raise ErrorDeNegocio("Ya se generó el otorgamiento de esta convocatoria: no se admiten más correcciones en ella.")
     pendientes = list(
         solicitud.observaciones.filter(estado__in=Observacion.PENDIENTES_DE_CORREGIR).select_related("autor", "tipo_documento")
     )

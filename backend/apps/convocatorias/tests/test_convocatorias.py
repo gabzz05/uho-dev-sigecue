@@ -55,11 +55,15 @@ class TestCreacion:
         assert response.status_code == 201
         assert (response.json()["numero"], response.json()["estado"]) == (1, "borrador")
 
-    def test_la_segunda_exige_cerrar_la_primera(self, api_como, jefe_ci, convocatoria):
+    def test_la_segunda_exige_la_primera_cerrada_y_con_otorgamiento_publicado(self, api_como, jefe_ci, convocatoria):
+        from apps.otorgamiento.models import Otorgamiento
+
         client = api_como(jefe_ci)
 
         assert "no está cerrada" in client.post(URL, datos(), format="json").json()["error"]["mensaje"]
         ConvocatoriaSolicitud.objects.filter(pk=convocatoria.pk).update(estado="cerrada")
+        assert "no está publicado" in client.post(URL, datos(), format="json").json()["error"]["mensaje"]
+        Otorgamiento.objects.create(convocatoria=convocatoria, estado=Otorgamiento.Estado.PUBLICADO)
         assert client.post(URL, datos(), format="json").json()["numero"] == 2
 
     def test_con_entidades_seleccionadas(self, api_como, jefe_ci, facultad, cum):

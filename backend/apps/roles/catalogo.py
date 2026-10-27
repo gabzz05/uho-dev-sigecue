@@ -12,6 +12,11 @@ ELIMINAR = "eliminar"
 EXPORTAR = "exportar"
 # Descargar los documentos personales de los aspirantes (CI, certificación, foto).
 DESCARGAR_DOCUMENTOS = "documentos_descargar"
+# Etapas del otorgamiento: lo genera la Secretaría General, lo revisa y aprueba
+# el Jefe CI, y lo revisa, aprueba y publica el Vicerrector.
+GENERAR = "generar"
+APROBAR = "aprobar"
+PUBLICAR = "publicar"
 
 ACCIONES = {
     VER: "Ver",
@@ -20,6 +25,9 @@ ACCIONES = {
     ELIMINAR: "Eliminar",
     EXPORTAR: "Exportar",
     DESCARGAR_DOCUMENTOS: "Descargar documentos",
+    GENERAR: "Generar",
+    APROBAR: "Aprobar",
+    PUBLICAR: "Publicar",
 }
 
 CRUD = [VER, CREAR, EDITAR, ELIMINAR]
@@ -35,7 +43,8 @@ MODULOS = {
     "plan_plazas": ("Plan de plazas", CRUD + [EXPORTAR]),
     "convocatorias": ("Convocatorias de solicitud", CRUD),
     "solicitudes": ("Solicitudes", [VER, EDITAR, EXPORTAR, DESCARGAR_DOCUMENTOS]),
-    "otorgamiento": ("Otorgamiento", [VER, EDITAR, EXPORTAR]),
+    # Editar depende de la etapa: el Jefe CI (aprobar) o el Vicerrector (publicar).
+    "otorgamiento": ("Otorgamiento", [VER, EXPORTAR, GENERAR, APROBAR, PUBLICAR]),
     "prematricula": ("Prematrícula", [VER, EDITAR, EXPORTAR]),
     "notificaciones": ("Notificaciones", [VER, CREAR]),
     "logs": ("Logs de auditoría", [VER]),

@@ -17,11 +17,20 @@ def convocatoria_abierta():
     return convocatoria if convocatoria and convocatoria.acepta_solicitudes else None
 
 
-def ofertas_de(convocatoria):
-    """Carreras con plazas en el plan vigente del año, dentro de las entidades de la convocatoria."""
+def ofertas_de(convocatoria, con_restantes=True):
+    """Carreras con plazas en el plan vigente del año, dentro de las entidades de la convocatoria.
+
+    Desde la segunda convocatoria, solo las que conservan plazas: plan menos
+    lo otorgado en las anteriores (RF-062).
+    """
     qs = OfertaCarrera.objects.filter(anio_academico=convocatoria.anio_academico, plazas_plan__gt=0)
     if not convocatoria.para_todas_las_entidades:
         qs = qs.filter(Q(facultad__in=convocatoria.facultades.all()) | Q(cum_fum__in=convocatoria.cum_fums.all()))
+    if con_restantes and convocatoria.numero > 1:
+        from apps.otorgamiento.services import plazas_restantes
+
+        sin_plazas = [oferta for oferta, plazas in plazas_restantes(convocatoria).items() if plazas <= 0]
+        qs = qs.exclude(pk__in=sin_plazas)
     return qs
 
 
@@ -31,7 +40,10 @@ def siguiente_numero(anio_academico):
         return 1
     if ultima.estado != E.CERRADA:
         raise ErrorDeNegocio(f"La convocatoria {ultima.numero} de {anio_academico} todavía no está cerrada.")
-    # La condición de que el otorgamiento de la anterior esté publicado se agrega en feature/otorgamiento (RF-062).
+    # RF-062: la siguiente reparte las plazas restantes, que solo se conocen con el otorgamiento publicado.
+    otorgamiento = getattr(ultima, "otorgamiento", None)
+    if otorgamiento is None or not otorgamiento.publicado:
+        raise ErrorDeNegocio(f"El otorgamiento de la convocatoria {ultima.numero} de {anio_academico} todavía no está publicado.")
     return ultima.numero + 1
 
 

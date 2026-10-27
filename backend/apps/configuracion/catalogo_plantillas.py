@@ -172,4 +172,77 @@ PLANTILLAS = {
             'Universidad de Holguín'
         ),
     },
+    "plaza_otorgada": {
+        "nombre": 'Plaza otorgada',
+        "descripcion": 'Al aspirante que obtuvo plaza, al publicarse el otorgamiento (RF-060).',
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "anio": "Año académico",
+            "carrera": "Carrera otorgada",
+            "entidad": "Facultad o CUM/FUM",
+        },
+        "asunto": 'SIGECUE — Obtuviste plaza en {{ carrera }}',
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            '¡Felicidades! Obtuviste plaza en la carrera {{ carrera }} ({{ entidad }}) para el curso {{ anio }}.\n'
+            '\n'
+            'Próximos pasos: entra en SIGECUE y completa la prematrícula, donde se te pedirán los documentos que faltan. Te avisaremos cuando esté disponible y de los plazos para presentarla.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
+    "no_seleccionado_segunda": {
+        "nombre": 'No seleccionado (habrá segunda convocatoria)',
+        "descripcion": 'A quienes no obtuvieron plaza, si el Vicerrector indicó que habrá segunda convocatoria (RF-061).',
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "anio": "Año académico",
+        },
+        "asunto": 'SIGECUE — Resultado de tu solicitud de matrícula {{ anio }}',
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'No obtuviste plaza en esta convocatoria del curso {{ anio }}.\n'
+            '\n'
+            'Podrás participar en la segunda convocatoria con las plazas restantes. Te avisaremos cuando se abra.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
+    "no_seleccionado_final": {
+        "nombre": 'No seleccionado (sin segunda convocatoria)',
+        "descripcion": 'A quienes no obtuvieron plaza, si no habrá segunda convocatoria (RF-061).',
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "anio": "Año académico",
+        },
+        "asunto": 'SIGECUE — Resultado de tu solicitud de matrícula {{ anio }}',
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'No obtuviste plaza en el curso {{ anio }}. El proceso concluyó para esta convocatoria.\n'
+            '\n'
+            'Gracias por tu interés en las carreras por encuentro de la Universidad de Holguín.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
+    "otorgamiento_para_aprobacion": {
+        "nombre": 'Otorgamiento pendiente de aprobación',
+        "descripcion": 'Al Vicerrector cuando el Jefe CI aprueba el otorgamiento.',
+        "variables": {
+            "nombre": "Nombre del destinatario",
+            "anio": "Año académico",
+            "convocatoria": "Número de convocatoria",
+        },
+        "asunto": 'SIGECUE — Otorgamiento {{ anio }} pendiente de aprobación',
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'El Jefe de la Comisión de Ingreso aprobó el otorgamiento de la {{ convocatoria }} convocatoria del curso {{ anio }}. Revísalo en SIGECUE: al aprobarlo se publica y se avisa a los aspirantes.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
 }

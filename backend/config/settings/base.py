@@ -35,6 +35,7 @@ LOCAL_APPS = [
     "apps.convocatorias",
     "apps.aspirantes",
     "apps.solicitudes",
+    "apps.otorgamiento",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
@@ -192,6 +193,9 @@ SPECTACULAR_SETTINGS = {
         "EstadoSolicitudEnum": "apps.solicitudes.models.Solicitud.Estado",
         "EstadoCarreraSolicitadaEnum": "apps.solicitudes.models.SolicitudCarrera.Estado",
         "EstadoObservacionEnum": "apps.solicitudes.models.Observacion.Estado",
+        "TipoAjusteEnum": "apps.otorgamiento.models.AjusteOtorgamiento.Tipo",
+        "TipoAsignacionEnum": "apps.otorgamiento.models.ResultadoOtorgamiento.Tipo",
+        "EstadoOtorgamientoEnum": "apps.otorgamiento.models.Otorgamiento.Estado",
     },
 }
 

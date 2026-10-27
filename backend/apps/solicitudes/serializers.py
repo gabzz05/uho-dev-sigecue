@@ -235,7 +235,7 @@ class SolicitudDetalleAdminSerializer(SolicitudAdminSerializer):
     @extend_schema_field(serializers.DictField())
     def get_permisos(self, solicitud):
         usuario = self._usuario()
-        revisa = revision.puede_revisar(usuario, solicitud) and solicitud.estado in revision.REVISABLES
+        revisa = revision.puede_revisar(usuario, solicitud) and revision.admite_revision(solicitud)
         perfil = aspirantes.perfil_de(solicitud.aspirante)
         return {
             "revisar": revisa,
