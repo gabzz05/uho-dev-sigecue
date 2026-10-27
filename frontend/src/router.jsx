@@ -4,6 +4,7 @@ import { Configuracion } from './pages/admin/configuracion/Configuracion'
 import { Convocatorias } from './pages/admin/convocatorias/Convocatorias'
 import { Dashboard } from './pages/admin/Dashboard'
 import { Interes } from './pages/admin/interes/Interes'
+import { Otorgamiento } from './pages/admin/otorgamiento/Otorgamiento'
 import { Logs } from './pages/admin/logs/Logs'
 import { DetallePlan } from './pages/admin/planPlazas/DetallePlan'
 import { PlanesPlazas } from './pages/admin/planPlazas/PlanesPlazas'
@@ -45,6 +46,7 @@ const PANTALLAS_ADMIN = {
   'plan-plazas': <PlanesPlazas />,
   convocatorias: <Convocatorias />,
   solicitudes: <Solicitudes />,
+  otorgamiento: <Otorgamiento />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({

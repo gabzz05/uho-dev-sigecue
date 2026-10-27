@@ -82,6 +82,18 @@ export function InicioAspirante() {
 }
 
 function SiguientePaso({ perfil, solicitud, hayConvocatoria }) {
+  if (solicitud?.estado === 'otorgada') {
+    const plaza = solicitud.carreras.find((c) => c.estado === 'otorgada')?.oferta
+    return (
+      <Alert tone="success" title="¡Obtuviste plaza!">
+        {plaza ? `${plaza.carrera_nombre} en ${plaza.entidad_nombre}. ` : ''}
+        Te avisaremos cuando la prematrícula esté disponible.
+      </Alert>
+    )
+  }
+  if (solicitud?.estado === 'no_seleccionado' && !hayConvocatoria) {
+    return <Alert tone="info">No obtuviste plaza en la última convocatoria. Te avisaremos si se abre una nueva.</Alert>
+  }
   if (solicitud?.estado === 'observada') {
     return (
       <Alert

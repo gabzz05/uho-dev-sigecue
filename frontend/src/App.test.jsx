@@ -63,8 +63,8 @@ describe('rutas protegidas', () => {
   })
 
   it('los módulos pendientes muestran "en desarrollo"', async () => {
-    auth.restaurarSesion.mockResolvedValue(perfil({ permisos: ['dashboard.ver', 'otorgamiento.ver'] }))
-    renderApp('/admin/otorgamiento')
+    auth.restaurarSesion.mockResolvedValue(perfil({ permisos: ['dashboard.ver', 'prematricula.ver'] }))
+    renderApp('/admin/prematricula')
 
     expect(await screen.findByText('Módulo en desarrollo')).toBeInTheDocument()
   })

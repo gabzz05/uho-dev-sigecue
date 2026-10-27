@@ -1,0 +1,71 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.selector { max-width: 20rem; }
+
+.apagado {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+}
+
+.datos dt { color: var(--color-text-muted); }
+.datos dd { margin: 0; }
+
+.motivos {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.opciones,
+.ajustes {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opciones li,
+.ajustes li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.ajustes li {
+  flex-direction: column;
+  align-items: flex-start;
+}
