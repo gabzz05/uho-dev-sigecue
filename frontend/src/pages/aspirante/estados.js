@@ -1,11 +1,4 @@
-/** Estados de la solicitud que ve el aspirante (RF-051). */
-export const ESTADOS_SOLICITUD = {
-  borrador: { label: 'Borrador', tone: 'neutral' },
-  pendiente: { label: 'Pendiente', tone: 'warning' },
-  en_revision: { label: 'En revisión', tone: 'info' },
-  otorgada: { label: 'Otorgada', tone: 'success' },
-  no_seleccionado: { label: 'No seleccionado', tone: 'danger' },
-}
+export { ESTADOS_SOLICITUD } from '../../utils/estadosSolicitud'
 
 /**
  * La solicitud que se muestra al aspirante (la API las ordena de nueva a antigua).

@@ -1,0 +1,158 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.dosColumnas {
+  display: grid;
+  gap: var(--space-5);
+}
+
+@media (min-width: 1024px) {
+  .dosColumnas { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+
+.selectorConvocatoria {
+  max-width: 20rem;
+  margin-bottom: var(--space-4);
+}
+
+.apagado {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.enlace {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.listaCompacta {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-sm);
+}
+
+.listaCompacta .apagado { display: inline; }
+
+.estado {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.exportar {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}
+
+.resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.resumen .apagado { display: inline; }
+
+.identidad {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+.datos dt { color: var(--color-text-muted); }
+.datos dd { margin: 0; overflow-wrap: anywhere; }
+
+.formulario,
+.formularioEnLinea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.formularioEnLinea > button { align-self: flex-start; }
+
+.documentos,
+.observaciones,
+.historial {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.documentos li,
+.observaciones li,
+.historial li {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.documentos li:first-child,
+.observaciones li:first-child,
+.historial li:first-child { border-top: 0; }
+
+.documentos li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.historial li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.observacionCabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.textoObservacion {
+  margin: var(--space-2) 0;
+  white-space: pre-line;
+}
+
+.accionesObservacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.visorPdf {
+  width: 100%;
+  height: 70vh;
+  border: 0;
+}
+
+.visorImagen {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+}

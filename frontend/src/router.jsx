@@ -12,6 +12,8 @@ import { Carreras } from './pages/admin/nomencladores/Carreras'
 import { Entidades } from './pages/admin/nomencladores/Entidades'
 import { OtrosNomencladores } from './pages/admin/nomencladores/OtrosNomencladores'
 import { Roles } from './pages/admin/roles/Roles'
+import { DetalleSolicitud } from './pages/admin/solicitudes/DetalleSolicitud'
+import { Solicitudes } from './pages/admin/solicitudes/Solicitudes'
 import { Usuarios } from './pages/admin/usuarios/Usuarios'
 import { CompletarPerfil } from './pages/aspirante/CompletarPerfil'
 import { InicioAspirante } from './pages/aspirante/Inicio'
@@ -42,6 +44,7 @@ const PANTALLAS_ADMIN = {
   interes: <Interes />,
   'plan-plazas': <PlanesPlazas />,
   convocatorias: <Convocatorias />,
+  solicitudes: <Solicitudes />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
@@ -76,6 +79,14 @@ export const rutas = [
         element: (
           <RequireAuth permiso="plan_plazas.ver">
             <DetallePlan />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: 'solicitudes/:id',
+        element: (
+          <RequireAuth permiso="solicitudes.ver">
+            <DetalleSolicitud />
           </RequireAuth>
         ),
       },

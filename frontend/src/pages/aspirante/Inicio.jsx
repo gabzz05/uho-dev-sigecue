@@ -82,6 +82,21 @@ export function InicioAspirante() {
 }
 
 function SiguientePaso({ perfil, solicitud, hayConvocatoria }) {
+  if (solicitud?.estado === 'observada') {
+    return (
+      <Alert
+        tone="danger"
+        title="Tu solicitud tiene observaciones"
+        action={
+          <Button as={Link} to="/aspirante/solicitud" size="sm" icon={ArrowRight}>
+            Ver observaciones
+          </Button>
+        }
+      >
+        Corrige lo observado y envía la corrección. Mientras tanto tu solicitud no participa en el otorgamiento.
+      </Alert>
+    )
+  }
   if (!perfil.limites.listo_para_carreras && !perfil.bloqueado) {
     return (
       <Alert

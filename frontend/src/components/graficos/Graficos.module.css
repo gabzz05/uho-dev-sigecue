@@ -1,0 +1,167 @@
+.figura {
+  margin: 0;
+}
+
+.titulo {
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.filas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1.2fr) 2fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 600px) {
+  .fila { grid-template-columns: 1fr auto; }
+  .pista { grid-column: 1 / -1; grid-row: 2; }
+}
+
+.etiqueta {
+  min-width: 0;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.detalle {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.pista {
+  position: relative;
+  height: 0.75rem;
+  border-radius: 4px;
+  background: var(--color-surface-muted);
+}
+
+/* Magnitud: un solo tono, extremo redondeado anclado a la base. */
+.relleno {
+  position: absolute;
+  inset: 0 auto 0 0;
+  max-width: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--color-primary-light);
+}
+
+/* Las plazas del plan: marca fina, recesiva. */
+.referencia {
+  position: absolute;
+  top: -0.25rem;
+  bottom: -0.25rem;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-text);
+}
+
+.valor {
+  color: var(--color-text);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.muestraRelleno,
+.muestraReferencia {
+  display: inline-block;
+  margin-left: var(--space-2);
+}
+
+.muestraRelleno {
+  width: 1rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  background: var(--color-primary-light);
+}
+
+.muestraReferencia {
+  width: 2px;
+  height: 0.9rem;
+  background: var(--color-text);
+}
+
+.lienzo {
+  position: relative;
+  overflow-x: auto;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.rejilla {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.base {
+  stroke: var(--color-text-muted);
+  stroke-width: 1;
+}
+
+.eje {
+  fill: var(--color-text-muted);
+  font-size: 10px;
+}
+
+.barra { fill: var(--color-primary-light); }
+.barraActiva { fill: var(--color-primary); }
+
+.columna { outline: none; }
+.columna:focus-visible .barra,
+.columna:focus-visible .barraActiva {
+  stroke: var(--color-text);
+  stroke-width: 2px;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.tooltip span { color: var(--color-text-muted); }
+
+.tablaOculta {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

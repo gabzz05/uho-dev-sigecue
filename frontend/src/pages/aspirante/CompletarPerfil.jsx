@@ -13,6 +13,15 @@ import { FORMATOS_DOCUMENTO, formatearTamano } from '../../utils/archivos'
 import { formatearFechaHora } from '../../utils/fechas'
 import styles from './Aspirante.module.css'
 
+/**
+ * ¿Se puede cambiar ese elemento? Con el perfil congelado, solo lo que tiene
+ * una observación por corregir (desbloqueo selectivo).
+ */
+function editable(perfil, objetivo, tipoDocumento = null) {
+  if (!perfil.bloqueado) return true
+  return perfil.a_corregir.some((a) => a.objetivo === objetivo && (a.tipo_documento ?? null) === tipoDocumento)
+}
+
 /** Completar perfil (RF-046): datos, foto y documentos que se exigen antes de elegir carreras. */
 export function CompletarPerfil() {
   const carga = useCarga(perfilAspirante.obtener)
@@ -29,9 +38,23 @@ export function CompletarPerfil() {
     <>
       <PageHeader title="Completar perfil" subtitle="Antes de seleccionar carreras necesitas tus datos, tu foto y tus documentos." />
       <div className={styles.pila}>
-        {perfil.bloqueado && (
+        {perfil.bloqueado && perfil.a_corregir.length === 0 && (
           <Alert tone="info" title="Perfil congelado">
             La convocatoria en la que presentaste tu solicitud ya cerró. Puedes consultar tus datos, pero no modificarlos.
+          </Alert>
+        )}
+        {perfil.a_corregir.length > 0 && (
+          <Alert
+            tone="warning"
+            title="Tienes observaciones por corregir"
+            action={
+              <Button as={Link} to="/aspirante/solicitud" size="sm" icon={ArrowRight}>
+                Ver observaciones
+              </Button>
+            }
+          >
+            {perfil.bloqueado ? 'Solo puedes cambiar lo observado. ' : ''}
+            Cuando lo corrijas, pulsa «Enviar corrección» en Mi solicitud.
           </Alert>
         )}
         {listo && !perfil.bloqueado && (
@@ -51,7 +74,7 @@ export function CompletarPerfil() {
         <div className={styles.dosColumnas}>
           <div className={styles.pila}>
             <DatosAcademicos perfil={perfil} onGuardado={setActualizado} />
-            <FotoPerfil bloqueado={perfil.bloqueado} onGuardada={recargar} />
+            <FotoPerfil bloqueado={!editable(perfil, 'foto')} observada={estaObservado(perfil, 'foto')} onGuardada={recargar} />
           </div>
           <Requisitos perfil={perfil} />
         </div>
@@ -65,7 +88,14 @@ export function CompletarPerfil() {
             </p>
             <ul className={styles.documentos}>
               {perfil.documentos.map(({ tipo, documento }) => (
-                <Documento key={tipo.id} tipo={tipo} documento={documento} bloqueado={perfil.bloqueado} onSubido={setActualizado} />
+                <Documento
+                  key={tipo.id}
+                  tipo={tipo}
+                  documento={documento}
+                  bloqueado={!editable(perfil, 'documento', tipo.id)}
+                  observado={estaObservado(perfil, 'documento', tipo.id)}
+                  onSubido={setActualizado}
+                />
               ))}
             </ul>
           </CardBody>
@@ -73,6 +103,10 @@ export function CompletarPerfil() {
       </div>
     </>
   )
+}
+
+function estaObservado(perfil, objetivo, tipoDocumento = null) {
+  return perfil.a_corregir.some((a) => a.objetivo === objetivo && (a.tipo_documento ?? null) === tipoDocumento)
 }
 
 function Requisitos({ perfil }) {
@@ -101,6 +135,8 @@ function Requisitos({ perfil }) {
 function DatosAcademicos({ perfil, onGuardado }) {
   const toast = useToast()
   const formulario = useFormulario({ centro_trabajo: perfil.centro_trabajo, indice_declarado: perfil.indice_declarado ?? '' })
+  const editarCentro = editable(perfil, 'centro_trabajo')
+  const editarIndice = editable(perfil, 'indice')
 
   function validar({ centro_trabajo, indice_declarado }) {
     const errores = {}
@@ -130,7 +166,14 @@ function DatosAcademicos({ perfil, onGuardado }) {
       <CardBody>
         <form className={styles.formulario} onSubmit={guardar} noValidate>
           {formulario.errorGeneral && <Alert tone="danger">{formulario.errorGeneral}</Alert>}
-          <Input label="Centro de trabajo actual" required maxLength={200} disabled={perfil.bloqueado} {...formulario.campo('centro_trabajo')} />
+          <Input
+            label="Centro de trabajo actual"
+            required
+            maxLength={200}
+            disabled={!editarCentro}
+            hint={estaObservado(perfil, 'centro_trabajo') ? 'Observado: corrígelo.' : undefined}
+            {...formulario.campo('centro_trabajo')}
+          />
           <Input
             label="Índice académico de 12.º grado"
             required
@@ -139,12 +182,16 @@ function DatosAcademicos({ perfil, onGuardado }) {
             min={0}
             max={100}
             step={0.01}
-            hint="De 0 a 100, como aparece en tu certificación. La entidad lo validará después."
-            disabled={perfil.bloqueado}
+            hint={
+              estaObservado(perfil, 'indice')
+                ? 'Observado: corrígelo según tu certificación.'
+                : 'De 0 a 100, como aparece en tu certificación. La entidad lo validará después.'
+            }
+            disabled={!editarIndice}
             {...formulario.campo('indice_declarado')}
           />
           {perfil.indice_validado != null && <p className={styles.ayuda}>Índice validado por la entidad: {perfil.indice_validado}</p>}
-          {!perfil.bloqueado && (
+          {(editarCentro || editarIndice) && (
             <Button type="submit" icon={Save} loading={formulario.enviando}>
               Guardar datos
             </Button>
@@ -155,7 +202,7 @@ function DatosAcademicos({ perfil, onGuardado }) {
   )
 }
 
-function FotoPerfil({ bloqueado, onGuardada }) {
+function FotoPerfil({ bloqueado, observada, onGuardada }) {
   const { usuario, actualizarUsuario } = useAuth()
   const toast = useToast()
   const actual = useArchivoPrivado(usuario.foto)
@@ -185,7 +232,7 @@ function FotoPerfil({ bloqueado, onGuardada }) {
         <div className={styles.formulario}>
           <ImageInput
             label="Foto"
-            hint="JPG o PNG, máximo 5 MB. Una foto de frente, tipo carné."
+            hint={observada ? 'Observada: sube una nueva. JPG o PNG, máximo 5 MB.' : 'JPG o PNG, máximo 5 MB. Una foto de frente, tipo carné.'}
             accept="image/jpeg,image/png"
             value={nueva ?? actual ?? ''}
             onChange={(valor) => setNueva(valor instanceof File ? valor : null)}
@@ -205,7 +252,7 @@ function FotoPerfil({ bloqueado, onGuardada }) {
 
 const MAX_MB = 5
 
-function Documento({ tipo, documento, bloqueado, onSubido }) {
+function Documento({ tipo, documento, bloqueado, observado, onSubido }) {
   const toast = useToast()
   const entrada = useRef(null)
   const [subiendo, setSubiendo] = useState(false)
@@ -249,6 +296,7 @@ function Documento({ tipo, documento, bloqueado, onSubido }) {
       <div className={styles.documentoInfo}>
         <strong>{tipo.nombre}</strong>
         {tipo.obligatorio ? <Badge tone="info">Obligatorio</Badge> : <Badge>Opcional</Badge>}
+        {observado && <Badge tone="danger">Observado</Badge>}
         <span className={styles.documentoEstado}>
           {documento
             ? `${documento.nombre_original} · ${formatearTamano(documento.tamano)} · ${formatearFechaHora(documento.subido_at)}`

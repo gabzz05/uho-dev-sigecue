@@ -183,6 +183,7 @@ function Editor({ perfil, solicitud, ofertas, onCambio }) {
       </Card>
 
       {error && <Alert tone="danger">{error}</Alert>}
+      <ObservacionesAspirante solicitud={solicitud} onCambio={onCambio} />
       {esBorrador && editable && (
         <Alert tone="info">
           Tu solicitud está en borrador: no participa hasta que la confirmes. Después de confirmarla podrás seguir cambiándola mientras la
@@ -267,6 +268,75 @@ function Editor({ perfil, solicitud, ofertas, onCambio }) {
         onCancel={() => setConfirmando(false)}
       />
     </div>
+  )
+}
+
+const ESTADO_OBSERVACION_ASPIRANTE = {
+  abierta: { label: 'Por corregir', tone: 'danger' },
+  reabierta: { label: 'Por corregir de nuevo', tone: 'danger' },
+  corregida: { label: 'Corrección enviada', tone: 'warning' },
+  resuelta: { label: 'Resuelta', tone: 'success' },
+}
+
+/** Observaciones de la revisión (RF-055) y el envío de la corrección, también con la convocatoria cerrada. */
+function ObservacionesAspirante({ solicitud, onCambio }) {
+  const toast = useToast()
+  const [confirmando, setConfirmando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const visibles = solicitud.observaciones.filter((o) => o.estado !== 'resuelta')
+  if (visibles.length === 0) return null
+
+  async function enviar() {
+    setEnviando(true)
+    try {
+      onCambio(await solicitudes.enviarCorreccion(solicitud.id))
+      toast.exito('Enviaste la corrección. La entidad la revisará.')
+      setConfirmando(false)
+    } catch (e) {
+      toast.error(mensajeDeError(e))
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader title="Observaciones de la revisión" />
+      <CardBody>
+        <p className={styles.ayuda}>Mientras haya observaciones sin resolver, tu solicitud no participa en el otorgamiento de plazas.</p>
+        <ul className={styles.catalogo}>
+          {visibles.map((o) => (
+            <li key={o.id} className={styles.ofertaCatalogo}>
+              <div>
+                <strong>{o.elemento}</strong>
+                <span className={styles.ayuda}>{o.texto}</span>
+              </div>
+              <StatusBadge estado={o.estado} mapa={ESTADO_OBSERVACION_ASPIRANTE} />
+            </li>
+          ))}
+        </ul>
+        {solicitud.estado === 'observada' && (
+          <div className={styles.barraAcciones}>
+            <Button as={Link} to="/aspirante/completar-perfil" variant="secondary">
+              Corregir en mi perfil
+            </Button>
+            <Button icon={Send} onClick={() => setConfirmando(true)}>
+              Enviar corrección
+            </Button>
+          </div>
+        )}
+      </CardBody>
+      <ConfirmDialog
+        open={confirmando}
+        title="Enviar corrección"
+        message="Confirma que ya corregiste lo observado. La entidad lo verificará y resolverá la observación o la reabrirá."
+        confirmLabel="Enviar corrección"
+        tone="primary"
+        loading={enviando}
+        onConfirm={enviar}
+        onCancel={() => setConfirmando(false)}
+      />
+    </Card>
   )
 }
 

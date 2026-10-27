@@ -21,6 +21,8 @@ export const solicitudes = {
   crear: () => api.post('/solicitudes/').then((r) => r.data),
   guardarCarreras: (id, ofertas) => api.put(`/solicitudes/${id}/carreras/`, { ofertas }).then((r) => r.data),
   confirmar: (id) => api.post(`/solicitudes/${id}/confirmar/`).then((r) => r.data),
+  /** Da por corregido lo observado; vale también con la convocatoria cerrada. */
+  enviarCorreccion: (id) => api.post(`/solicitudes/${id}/enviar-correccion/`).then((r) => r.data),
   ofertas: () => api.get('/solicitudes/ofertas/').then((r) => r.data),
 }
 

@@ -186,10 +186,10 @@ describe('Documentos del aspirante', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Nuevo(a) documento' }))
     const dialogo = screen.getByRole('dialog')
     fireEvent.change(within(dialogo).getByLabelText(/^Nombre/), { target: { value: ' Aval laboral ' } })
-    fireEvent.click(within(dialogo).getByLabelText(/^Obligatorio/))
+    fireEvent.click(within(dialogo).getByLabelText(/^Obligatorio para/))
     fireEvent.click(within(dialogo).getByRole('button', { name: 'Guardar' }))
 
-    await waitFor(() => expect(aspirante.tiposDocumento.crear).toHaveBeenCalledWith({ nombre: 'Aval laboral', orden: 0, obligatorio: false }))
+    await waitFor(() => expect(aspirante.tiposDocumento.crear).toHaveBeenCalledWith({ nombre: 'Aval laboral', orden: 0, obligatorio: false, afecta_elegibilidad: false }))
   })
 })
 

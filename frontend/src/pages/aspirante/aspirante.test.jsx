@@ -8,7 +8,7 @@ import { ASPIRANTE, renderApp } from '../../test/renderApp'
 vi.mock('../../services/auth', () => ({ restaurarSesion: vi.fn(), iniciarSesion: vi.fn(), cerrarSesion: vi.fn() }))
 vi.mock('../../services/aspirante', () => ({
   perfilAspirante: { obtener: vi.fn(), actualizar: vi.fn(), subirDocumento: vi.fn() },
-  solicitudes: { listar: vi.fn(), crear: vi.fn(), guardarCarreras: vi.fn(), confirmar: vi.fn(), ofertas: vi.fn() },
+  solicitudes: { listar: vi.fn(), crear: vi.fn(), guardarCarreras: vi.fn(), confirmar: vi.fn(), enviarCorreccion: vi.fn(), ofertas: vi.fn() },
   obtenerArchivo: vi.fn(),
   tiposDocumento: {},
 }))
@@ -31,6 +31,7 @@ function perfil({ listo = true, faltan = [], ...extra } = {}) {
       { tipo: { id: 1, nombre: 'CI anverso', obligatorio: true }, documento: listo ? DOCUMENTO : null },
       { tipo: { id: 3, nombre: 'Certificación de estudios', obligatorio: true }, documento: null },
     ],
+    a_corregir: [],
     limites: { listo_para_carreras: listo, cuota_usada: 0, cuota_maxima: 20971520, archivo_maximo: 5242880, versiones_maximas: 10 },
     ...extra,
   }
@@ -54,6 +55,7 @@ function solicitud({ estado = 'borrador', carreras = [], ...extra } = {}) {
     id: 5, estado, editable: true, created_at: '2026-10-20T10:00:00Z', confirmada_at: null, modificada_at: null, max_carreras: 5,
     convocatoria: { id: 1, anio_academico: '2026-2027', numero: 1, fecha_inicio: '2026-10-01', fecha_cierre: '2026-11-30', acepta_solicitudes: true },
     carreras: carreras.map((o, i) => ({ prioridad: i + 1, estado: 'pendiente', estado_nombre: 'Pendiente', oferta: o })),
+    observaciones: [],
     ...extra,
   }
 }
@@ -214,5 +216,34 @@ describe('mi solicitud', () => {
     expect(screen.queryByRole('button', { name: 'Agregar carrera' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Mover/ })).not.toBeInTheDocument()
     expect(screen.getByText(/esta es la versión que se tendrá en cuenta/)).toBeInTheDocument()
+  })
+})
+
+describe('observaciones y corrección', () => {
+  const OBSERVACION = { id: 9, objetivo: 'documento', tipo_documento: 3, elemento: 'Certificación de estudios', texto: 'Ilegible', estado: 'abierta', estado_nombre: 'Abierta' }
+
+  it('muestra lo observado y envía la corrección', async () => {
+    const observada = solicitud({ estado: 'observada', editable: false, carreras: [OFERTAS[0]], observaciones: [OBSERVACION] })
+    solicitudes.listar.mockResolvedValue([observada])
+    solicitudes.enviarCorreccion.mockResolvedValue({ ...observada, estado: 'pendiente', observaciones: [{ ...OBSERVACION, estado: 'corregida' }] })
+    renderApp('/aspirante/solicitud')
+
+    expect(await screen.findByText('Ilegible')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar corrección' }))
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Enviar corrección' })).getByRole('button', { name: 'Enviar corrección' }))
+
+    await waitFor(() => expect(solicitudes.enviarCorreccion).toHaveBeenCalledWith(5))
+    expect(await screen.findByText('Corrección enviada')).toBeInTheDocument()
+  })
+
+  it('con el perfil congelado solo deja cambiar lo observado', async () => {
+    perfilAspirante.obtener.mockResolvedValue(perfil({ bloqueado: true, a_corregir: [{ objetivo: 'documento', tipo_documento: 3 }] }))
+    renderApp('/aspirante/completar-perfil')
+
+    expect(await screen.findByRole('button', { name: 'Subir Certificación de estudios' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Sustituir CI anverso' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/^Índice académico/)).toBeDisabled()
+    expect(screen.getByText('Observado')).toBeInTheDocument()
+    expect(screen.getByText('Tienes observaciones por corregir')).toBeInTheDocument()
   })
 })
