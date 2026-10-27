@@ -54,7 +54,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
 | `convocatorias` | Convocatoria de solicitud de matrícula (primera, segunda...) |
 | `aspirantes` | Perfil del aspirante, tipos de documento y documentos versionados; descarga con control de acceso |
-| `solicitudes` | Solicitud de carreras del aspirante: selección por prioridad y confirmación |
+| `solicitudes` | Solicitud de carreras del aspirante (selección y confirmación) y su revisión por las entidades: observaciones, validación del índice, historial, estadísticas y exportación |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
 | `auditoria` | Log de auditoría (RG-010) |
 
@@ -425,8 +425,9 @@ Cada usuario pide su propia foto en `GET /api/v1/auth/me/foto/`.
 - **Estados (RF-051):**
   - `borrador`: no participa;
   - `pendiente`: al confirmar;
-  - `en_revision`, `otorgada` y `no_seleccionado`: los asignan gestión de
-    solicitudes y otorgamiento.
+  - `en_revision` y `observada`: los asigna la revisión de las entidades (ver
+    *Gestión de solicitudes*);
+  - `otorgada` y `no_seleccionado`: los asigna el otorgamiento.
 - **Fechas:** `created_at` (borrador), `confirmada_at` (confirmación oficial,
   desempate del otorgamiento) y `modificada_at` (último cambio de la
   selección).
@@ -450,6 +451,121 @@ Cada usuario pide su propia foto en `GET /api/v1/auth/me/foto/`.
   sobre el asa.
 - Los archivos privados se piden con el token y se muestran como `blob:`
   (`useArchivoPrivado`).
+
+### Gestión de solicitudes (RF-052 a RF-056)
+
+**Ámbito y minimización** (`apps/solicitudes/revision.py`).
+
+- Una entidad ve las solicitudes **confirmadas** que tienen alguna opción suya.
+  De cada una ve los datos personales, el índice, los documentos, todas las
+  observaciones y **solo sus opciones**: no ve carreras ni prioridades de otras
+  entidades, tampoco en el historial ni en la exportación.
+- Los roles globales lo ven todo.
+- Ver el detalle (`GET /admin/solicitudes/{id}/`) queda auditado.
+
+**Permisos, separados:**
+
+- `solicitudes.ver`: listado y detalle.
+- `solicitudes.editar`: revisar, es decir, validar el índice y observar.
+- `solicitudes.documentos_descargar`: abrir los documentos y la foto. Sin este
+  permiso se ven los datos del documento, pero no el archivo.
+- `solicitudes.exportar`: Excel y PDF.
+
+Por semilla, el Director(a) de CUM/FUM puede ver y descargar, pero no revisar.
+
+**Estados y revisión.**
+
+- La primera acción de revisión (validar el índice, o crear, resolver o reabrir
+  una observación) pasa la solicitud de *Pendiente* a *En revisión*
+  automáticamente.
+- Crear una observación la pasa a *Observada*.
+- Cuando el aspirante envía la corrección vuelve a *Pendiente*.
+- Al resolver la última observación por corregir pasa a *En revisión*.
+
+**Índice validado** (`POST /admin/solicitudes/{id}/validar-indice/`).
+
+- Es obligatorio para el ranking: el declarado nunca se usa en el otorgamiento.
+- Lo fija **una sola** entidad (`indice_validado_por`, `indice_validado_at`);
+  después solo un rol global lo cambia.
+- Se anula si el aspirante cambia su índice declarado o si una observación
+  `afecta_elegibilidad`.
+
+**Observaciones** (`POST /admin/solicitudes/{id}/observar/`,
+`PATCH /admin/observaciones/{id}/`, `.../resolver/`, `.../reabrir/`).
+
+- **Objetivo:** siempre un elemento que el aspirante puede corregir: un
+  documento, el índice, el centro de trabajo o la foto. CI, nombre y correo se
+  gestionan por soporte administrativo.
+- **Ciclo:** `abierta` → `corregida` (el aspirante pulsa "Enviar corrección",
+  `POST /solicitudes/{id}/enviar-correccion/`) → `resuelta`, o `reabierta` si
+  la corrección no vale (la reapertura exige un motivo).
+- **Ranking:** toda observación no resuelta (abierta, corregida o reabierta)
+  saca la solicitud **completa** del ranking.
+- **`afecta_elegibilidad`:** no cambia esa regla. Si es `true`, además anula el
+  índice validado (hay que validarlo de nuevo) y marca la solicitud con
+  `revision_documental_pendiente`, que se apaga al revalidar.
+  - Valor por defecto: `true` para el índice y para los tipos de documento con
+    `afecta_elegibilidad` (la certificación de estudios), `false` para el
+    resto.
+  - La entidad puede cambiarlo al crear la observación.
+- **Visibilidad:** todas las entidades ven todas las observaciones y su autora.
+  Cada entidad edita, resuelve y reabre solo las suyas; los roles globales,
+  cualquiera.
+- **Avisos:**
+  - `solicitud_observada`, al aspirante (in-app y correo) al observar o
+    reabrir;
+  - `observacion_corregida`, a la autora (solo in-app) al enviar la corrección.
+- **Desbloqueo selectivo.** Con la convocatoria cerrada, el aspirante puede
+  corregir **solo** lo observado pendiente de corregir: ese documento, el
+  índice, el centro de trabajo o la foto. Nunca carreras ni prioridades.
+
+**Historial (RF-054, `EventoHistorial`).** Se guarda con usuario y fecha:
+
+- la selección de carreras al guardar, antes y después;
+- la confirmación;
+- los documentos subidos o sustituidos, con la versión anterior y la nueva;
+- los cambios de datos del perfil;
+- la validación del índice;
+- creación, edición, corrección, resolución y reapertura de observaciones.
+
+**Elegibilidad.** `revision.motivos_no_elegible(solicitud)` devuelve por qué
+la solicitud no entraría hoy en el ranking:
+
+- estado distinto de *Pendiente* o *En revisión*;
+- observaciones sin resolver;
+- índice sin validar;
+- perfil incompleto.
+
+La usará el otorgamiento.
+
+**Listado, estadísticas y exportación.**
+
+- `GET /admin/solicitudes/` admite los filtros de RF-052: convocatoria,
+  carrera, entidad, estado, rango de fechas de confirmación y rango de índice
+  (el validado o, si falta, el declarado). Además: con observaciones sin
+  resolver, nombre o CI completo (por hash) y orden por índice o nombre.
+- `GET /admin/solicitudes/estadisticas/` (RF-053):
+  - termómetro con las solicitudes de cada oferta frente a sus plazas (y
+    cuántas en 1.ª opción);
+  - distribución por carrera;
+  - evolución diaria de confirmaciones;
+  - totales por estado.
+
+  El panel la consulta cada 60 s con la pestaña visible (`usePolling`). Los
+  gráficos son SVG y CSS propios (`components/graficos/`).
+- `GET /admin/solicitudes/exportar-excel/` y `.../exportar-pdf/` (RF-056):
+  aplican los mismos filtros e incluyen solo las opciones del ámbito. Se
+  auditan.
+
+**Frontend:**
+
+- `/admin/solicitudes`: listado y estadísticas.
+- `/admin/solicitudes/:id`: datos, índice, documentos con visor inline de PDF e
+  imagen, observaciones e historial.
+- Portal del aspirante:
+  - observaciones en *Mi solicitud*, con "Enviar corrección";
+  - elementos observados resaltados y desbloqueados en *Mi perfil de
+    aspirante*.
 
 ### Exportar a PDF
 

@@ -115,6 +115,24 @@ Este archivo registra esas decisiones.
 | Descarga de documentos | Permiso `solicitudes.documentos_descargar` **y** que la entidad participe en alguna carrera de una solicitud confirmada del aspirante (los roles globales, siempre). Por semilla: roles globales, Secretario(a) de Facultad y de CUM/FUM, Director(a) de CUM/FUM. No: Jefes de Área, Vicedecanos, Admins ni roles de consulta. |
 | Motivo de descarga | Automático, sin pedirlo al usuario: `consulta_documentacion` (el propio aspirante) o `revision_solicitud` (personal). Se audita junto con usuario, fecha, IP y archivo. |
 
+## Gestión de solicitudes
+
+| Tema | Decisión |
+|---|---|
+| Qué ve una entidad (RF-052) | Datos personales, índice, documentos, observaciones y **solo sus opciones**. No ve carreras ni prioridades de otras entidades (minimización de datos). |
+| Permisos | Observar y validar el índice: `solicitudes.editar` (secretarías y admins de entidad, y roles globales). Abrir documentos: `solicitudes.documentos_descargar`, aparte. El Director(a) de CUM/FUM ve y descarga, pero no revisa. |
+| Estado *Observada* | Estado propio de la solicitud: Pendiente → En revisión → Observada → corrección del aspirante → Pendiente. |
+| Paso a *En revisión* | Automático con la primera acción de revisión: validar índice, crear, resolver o reabrir una observación. Sin botón manual ni estado "documentación revisada". |
+| Qué se observa | Solo elementos corregibles por el aspirante: un documento, el índice, el centro de trabajo o la foto. CI, nombre y correo: soporte administrativo. |
+| Ciclo de la observación | Abierta → Corregida (el aspirante) → Resuelta o Reabierta (la entidad). |
+| Ranking | Toda observación no resuelta (abierta, corregida, reabierta) excluye la solicitud **completa**. Una regla única, sin lógica especial en el otorgamiento. |
+| `afecta_elegibilidad` | No cambia la regla del ranking. Si es verdadero: anula el índice validado, exige validarlo de nuevo y marca la revisión documental como pendiente. Por defecto verdadero para el índice y la certificación de estudios; falso para CI, foto y centro de trabajo. La entidad puede cambiarlo al observar. |
+| Corrección tras el cierre | Permitida, con desbloqueo selectivo de lo observado. Nunca se añaden, quitan ni reordenan carreras. |
+| Índice validado | Obligatorio para el ranking: sin validar no participa (el declarado no cuenta). Una sola entidad lo valida; después solo un rol global lo cambia. Se anula si el aspirante cambia el declarado o por una observación que afecta la elegibilidad. Después lo puede validar cualquier entidad con acceso a la solicitud. |
+| Observaciones de otras entidades | Todas las entidades las ven, con su autora. Cada una gestiona solo las suyas; los roles globales, cualquiera. |
+| Estadísticas (RF-053) | SVG y CSS propios, sin librerías de gráficos. Polling cada 60 s, como las notificaciones. |
+| Historial (RF-054) | Selección (antes/después, al guardar), documentos (versión anterior y nueva), datos del perfil, índice y ciclo de las observaciones, con usuario y fecha. |
+
 ## Otorgamiento (sección 5.9)
 
 | Tema | Decisión |
