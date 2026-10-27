@@ -131,4 +131,45 @@ PLANTILLAS = {
             "Universidad de Holguín"
         ),
     },
+    "solicitud_observada": {
+        "nombre": "Observación en la solicitud",
+        "descripcion": "Al aspirante cuando una entidad observa un elemento de su solicitud o reabre una observación (RF-055).",
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "anio": "Año académico",
+            "elemento": "Elemento observado (documento, índice, centro de trabajo o foto)",
+            "observacion": "Texto de la observación o motivo de la reapertura",
+        },
+        "asunto": 'SIGECUE — Hay una observación en tu solicitud de matrícula',
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'Al revisar tu solicitud de matrícula del curso {{ anio }} se hizo una observación sobre: {{ elemento }}.\n'
+            '\n'
+            '{{ observacion }}\n'
+            '\n'
+            'Entra en SIGECUE, corrígelo en tu perfil y pulsa «Enviar corrección». Mientras la observación no se resuelva, tu solicitud no participa en el otorgamiento de plazas.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
+    "observacion_corregida": {
+        "nombre": "Observación corregida por el aspirante",
+        "descripcion": "A quien hizo la observación cuando el aspirante envía la corrección (solo en la aplicación).",
+        "variables": {
+            "nombre": "Nombre del destinatario",
+            "aspirante": "Nombre del aspirante",
+            "elementos": "Elementos corregidos",
+        },
+        "asunto": 'SIGECUE — {{ aspirante }} corrigió lo observado',
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            '{{ aspirante }} envió la corrección de: {{ elementos }}.\n'
+            '\n'
+            'Revísala en SIGECUE y resuelve o reabre la observación.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
 }

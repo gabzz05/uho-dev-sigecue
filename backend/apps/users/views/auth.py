@@ -152,10 +152,10 @@ class MeView(generics.RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         usuario = serializer.save()
-        if usuario.es_aspirante:
+        if usuario.es_aspirante and "foto" in serializer.validated_data:
             from apps.aspirantes import services as aspirantes
 
-            aspirantes.actualizar_perfil_completo(aspirantes.perfil_de(usuario))
+            aspirantes.foto_cambiada(usuario)
 
 
 @extend_schema(tags=["auth"], responses={(200, "image/*"): OpenApiTypes.BINARY})

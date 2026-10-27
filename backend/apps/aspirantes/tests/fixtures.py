@@ -36,10 +36,11 @@ def pdf(nombre="certificacion.pdf", relleno=0):
 @pytest.fixture
 def crear_aspirante(db):
     def _crear(username="asp_maria", ci="98042512345", email="maria@nauta.cu", **extra):
-        usuario = Usuario(
-            username=username, first_name="María", last_name="González Pérez", email=email, ci=ci, celular="55123456",
-            rol=Rol.objects.get(codigo=Rol.ASPIRANTE), email_verificado=True, privacidad_aceptada_at=timezone.now(), **extra,
-        )
+        datos = {
+            "first_name": "María", "last_name": "González Pérez", "celular": "55123456",
+            "email_verificado": True, "privacidad_aceptada_at": timezone.now(),
+        }
+        usuario = Usuario(username=username, email=email, ci=ci, rol=Rol.objects.get(codigo=Rol.ASPIRANTE), **(datos | extra))
         usuario.set_password("Clave-Segura-123")
         usuario.save()
         return usuario

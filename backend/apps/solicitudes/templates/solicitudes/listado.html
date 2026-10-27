@@ -1,0 +1,25 @@
+{% extends "pdf/base.html" %}
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+{% if filtros %}<p class="muted">Filtros: {{ filtros }}</p>{% endif %}
+<table>
+  <thead>
+    <tr><th>Aspirante</th><th>CI</th><th class="num">Índice</th><th>Estado</th><th>Carreras</th><th>Confirmada</th></tr>
+  </thead>
+  <tbody>
+    {% for fila in filas %}
+      <tr>
+        <td>{{ fila.0 }}</td>
+        <td>{{ fila.1 }}</td>
+        <td class="num">{% if fila.5 is not None %}{{ fila.5 }}{% else %}{{ fila.4|default_if_none:"—" }} (decl.){% endif %}</td>
+        <td>{{ fila.6 }}{% if fila.7 %} · {{ fila.7 }} obs.{% endif %}</td>
+        <td>{{ fila.8 }}</td>
+        <td>{{ fila.9 }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">No hay solicitudes con esos filtros.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="muted">Total: {{ filas|length }} solicitudes.</p>
+{% endblock %}

@@ -89,9 +89,28 @@ def perfil_bloqueado(usuario):
     return any(not s.convocatoria.acepta_solicitudes for s in solicitudes)
 
 
-def _exigir_editable(usuario):
-    if perfil_bloqueado(usuario):
+def puede_editar(usuario, objetivo, tipo_documento_id=None):
+    """¿Puede el aspirante cambiar ese elemento del perfil?
+
+    Con el perfil congelado, solo lo que tiene una observación por corregir
+    (desbloqueo selectivo): ese documento, el índice, el centro de trabajo o la foto.
+    """
+    if not perfil_bloqueado(usuario):
+        return True
+    from apps.solicitudes.revision import objetivos_a_corregir
+
+    return (objetivo, tipo_documento_id) in objetivos_a_corregir(usuario)
+
+
+def _exigir_editable(usuario, objetivo, tipo_documento_id=None):
+    if not puede_editar(usuario, objetivo, tipo_documento_id):
         raise ErrorDeNegocio(MENSAJE_BLOQUEADO)
+
+
+def _historial(usuario, tipo, descripcion, **kwargs):
+    from apps.solicitudes import historial
+
+    historial.registrar_en_solicitud_actual(usuario, tipo, descripcion, **kwargs)
 
 
 def cuota_usada(usuario, sin_tipo=None, sin_foto=False):
@@ -113,27 +132,60 @@ def verificar_cuota(usuario, tamano_nuevo, sin_tipo=None, sin_foto=False):
 
 def validar_foto(usuario, archivo):
     """Comprobaciones de negocio al cambiar la foto de un aspirante (la valida `UsuarioActualSerializer`)."""
-    _exigir_editable(usuario)
+    _exigir_editable(usuario, "foto")
     if archivo is not None:
         verificar_cuota(usuario, archivo.size, sin_foto=True)
 
 
+def foto_cambiada(usuario):
+    from apps.solicitudes.models import EventoHistorial
+
+    _historial(usuario, EventoHistorial.Tipo.DATOS, "Cambió la foto de perfil")
+    actualizar_perfil_completo(perfil_de(usuario))
+
+
+# Campo del perfil → elemento que se puede observar.
+OBJETIVO_DE_CAMPO = {"centro_trabajo": "centro_trabajo", "indice_declarado": "indice"}
+NOMBRE_DE_CAMPO = {"centro_trabajo": "centro de trabajo", "indice_declarado": "índice declarado"}
+
+
 @transaction.atomic
 def actualizar_datos(usuario, datos):
+    from apps.solicitudes.models import EventoHistorial
+
     perfil = PerfilAspirante.objects.select_for_update().get(pk=perfil_de(usuario).pk)
-    _exigir_editable(usuario)
-    for campo, valor in datos.items():
+    cambios = {campo: valor for campo, valor in datos.items() if getattr(perfil, campo) != valor}
+    for campo in cambios:
+        _exigir_editable(usuario, OBJETIVO_DE_CAMPO[campo])
+    if not cambios:
+        return perfil
+
+    antes = {campo: _texto(getattr(perfil, campo)) for campo in cambios}
+    for campo, valor in cambios.items():
         setattr(perfil, campo, valor)
+    # Si cambia el índice declarado, la validación anterior deja de valer.
+    if "indice_declarado" in cambios and perfil.indice_validado is not None:
+        perfil.indice_validado = perfil.indice_validado_por = perfil.indice_validado_at = None
     perfil.save()
+    _historial(
+        usuario, EventoHistorial.Tipo.DATOS, "Cambió " + ", ".join(NOMBRE_DE_CAMPO[c] for c in cambios),
+        antes=antes, despues={campo: _texto(valor) for campo, valor in cambios.items()},
+    )
     actualizar_perfil_completo(perfil)
     return perfil
+
+
+def _texto(valor):
+    return None if valor is None else str(valor)
 
 
 @transaction.atomic
 def subir_documento(usuario, tipo, archivo, formato):
     """Sube una versión nueva del documento `tipo`; pasa a ser la vigente."""
+    from apps.solicitudes.models import EventoHistorial
+
     perfil = PerfilAspirante.objects.select_for_update().get(pk=perfil_de(usuario).pk)
-    _exigir_editable(usuario)
+    _exigir_editable(usuario, "documento", tipo.pk)
     if not tipo.activo:
         raise ErrorDeNegocio("Ese documento ya no se solicita.")
     verificar_cuota(usuario, archivo.size, sin_tipo=tipo)
@@ -151,6 +203,12 @@ def subir_documento(usuario, tipo, archivo, formato):
     )
     documento.archivo.save(f"documento.{EXTENSION[formato]}", archivo, save=False)
     documento.save()
+    _historial(
+        usuario, EventoHistorial.Tipo.DOCUMENTO,
+        f"{'Sustituyó' if ultima else 'Subió'} {tipo.nombre}",
+        antes={"version": ultima.version, "archivo": ultima.nombre_original} if ultima else None,
+        despues={"version": documento.version, "archivo": documento.nombre_original},
+    )
     _podar_versiones(perfil, tipo)
     actualizar_perfil_completo(perfil)
     return documento

@@ -26,11 +26,16 @@ class PerfilAspirante(models.Model):
         "índice académico declarado", max_digits=5, decimal_places=2, null=True, blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
-    # Lo carga la entidad al validar la certificación (feature gestion-solicitudes).
+    # Lo fija una sola entidad al validar la certificación; después solo un rol
+    # global lo cambia. Es obligatorio para entrar al ranking del otorgamiento.
     indice_validado = models.DecimalField(
         "índice académico validado", max_digits=5, decimal_places=2, null=True, blank=True,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
+    indice_validado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name="índice validado por", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    indice_validado_at = models.DateTimeField("índice validado el", null=True, blank=True)
     perfil_completo = models.BooleanField("perfil completo", default=False, editable=False)
     created_at = models.DateTimeField("creado", auto_now_add=True)
     updated_at = models.DateTimeField("actualizado", auto_now=True)
@@ -52,6 +57,11 @@ class TipoDocumento(models.Model):
 
     nombre = models.CharField("nombre", max_length=100, unique=True)
     obligatorio = models.BooleanField("obligatorio", default=True)
+    # Valor por defecto de `afecta_elegibilidad` en las observaciones sobre este documento.
+    afecta_elegibilidad = models.BooleanField(
+        "una observación afecta la elegibilidad", default=False,
+        help_text="Si se observa, se anula el índice validado y hay que volver a validarlo.",
+    )
     activo = models.BooleanField("activo", default=True)
     orden = models.PositiveSmallIntegerField("orden", default=0)
 

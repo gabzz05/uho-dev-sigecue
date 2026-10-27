@@ -10,7 +10,7 @@ from .models import MAX_TOTAL_MB, MAX_VERSIONES, DocumentoAspirante, PerfilAspir
 class TipoDocumentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoDocumento
-        fields = ["id", "nombre", "obligatorio", "activo", "orden"]
+        fields = ["id", "nombre", "obligatorio", "afecta_elegibilidad", "activo", "orden"]
 
 
 class DocumentoSerializer(serializers.ModelSerializer):
@@ -39,12 +39,14 @@ class PerfilAspiranteSerializer(serializers.ModelSerializer):
     bloqueado = serializers.SerializerMethodField()
     documentos = serializers.SerializerMethodField()
     limites = serializers.SerializerMethodField()
+    a_corregir = serializers.SerializerMethodField()
 
     class Meta:
         model = PerfilAspirante
         fields = [
             "nombre", "apellidos", "ci", "email", "celular", "tiene_foto", "centro_trabajo",
             "indice_declarado", "indice_validado", "perfil_completo", "requisitos", "bloqueado", "documentos", "limites",
+            "a_corregir",
         ]
         read_only_fields = ["indice_validado"]
         extra_kwargs = {"indice_declarado": {"coerce_to_string": False}, "indice_validado": {"coerce_to_string": False}}
@@ -82,6 +84,14 @@ class PerfilAspiranteSerializer(serializers.ModelSerializer):
             }
             for tipo in TipoDocumento.objects.filter(activo=True)
         ]
+
+    @extend_schema_field(
+        serializers.ListField(child=serializers.DictField(), help_text="[{objetivo, tipo_documento}] con observaciones por corregir.")
+    )
+    def get_a_corregir(self, perfil):
+        from apps.solicitudes.revision import objetivos_a_corregir
+
+        return [{"objetivo": o, "tipo_documento": t} for o, t in sorted(objetivos_a_corregir(perfil.usuario), key=str)]
 
     @extend_schema_field(serializers.DictField())
     def get_limites(self, perfil):

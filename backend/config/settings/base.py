@@ -189,6 +189,9 @@ SPECTACULAR_SETTINGS = {
         "OrigenUsuarioEnum": "apps.users.models.Usuario.Origen",
         "OrigenLineaPlanEnum": "apps.plan_plazas.models.LineaPlan.Origen",
         "DecisionCiEnum": "apps.plan_plazas.models.LineaPlan.DecisionCI",
+        "EstadoSolicitudEnum": "apps.solicitudes.models.Solicitud.Estado",
+        "EstadoCarreraSolicitadaEnum": "apps.solicitudes.models.SolicitudCarrera.Estado",
+        "EstadoObservacionEnum": "apps.solicitudes.models.Observacion.Estado",
     },
 }
 

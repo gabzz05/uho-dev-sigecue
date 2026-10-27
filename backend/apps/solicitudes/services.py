@@ -7,7 +7,8 @@ from apps.convocatorias.services import convocatoria_abierta, ofertas_de
 from apps.core.exceptions import ErrorDeNegocio
 from apps.notificaciones.services import notificar
 
-from .models import Solicitud, SolicitudCarrera
+from . import historial
+from .models import EventoHistorial, Solicitud, SolicitudCarrera
 
 E = Solicitud.Estado
 
@@ -91,12 +92,19 @@ def guardar_carreras(solicitud, ofertas):
         raise ErrorDeNegocio("Una solicitud confirmada debe tener al menos una carrera.")
     validar_seleccion(solicitud.convocatoria, ofertas)
 
+    antes = historial.instantanea_seleccion(solicitud)
     solicitud.carreras.all().delete()
     SolicitudCarrera.objects.bulk_create(
         [SolicitudCarrera(solicitud=solicitud, oferta=oferta, prioridad=i) for i, oferta in enumerate(ofertas, start=1)]
     )
     solicitud.modificada_at = timezone.now()
     solicitud.save(update_fields=["modificada_at"])
+    despues = historial.instantanea_seleccion(solicitud)
+    if antes != despues:
+        historial.registrar(
+            solicitud.aspirante, EventoHistorial.Tipo.SELECCION, "Cambió la selección de carreras",
+            usuario=solicitud.aspirante, solicitud=solicitud, antes=antes, despues=despues,
+        )
     aspirantes.actualizar_perfil_completo(perfil)
     return solicitud
 
@@ -116,6 +124,10 @@ def confirmar(solicitud):
     solicitud.confirmada_at = timezone.now()
     solicitud.save(update_fields=["estado", "confirmada_at"])
     aspirantes.actualizar_perfil_completo(perfil)
+    historial.registrar(
+        solicitud.aspirante, EventoHistorial.Tipo.CONFIRMACION, "Confirmó la solicitud",
+        usuario=solicitud.aspirante, solicitud=solicitud, despues=historial.instantanea_seleccion(solicitud),
+    )
 
     convocatoria = solicitud.convocatoria
     carreras = solicitud.carreras.select_related("oferta__carrera", "oferta__facultad", "oferta__cum_fum")
