@@ -58,6 +58,9 @@ class Usuario(AbstractUser):
     email_verificado = models.BooleanField("email verificado", default=False)
     privacidad_aceptada_at = models.DateTimeField("política de privacidad aceptada", null=True, blank=True)
 
+    # RG-028: datos personales anonimizados por la política de retención (la cuenta queda desactivada).
+    anonimizado_at = models.DateTimeField("anonimizado", null=True, blank=True, editable=False)
+
     intentos_fallidos = models.PositiveSmallIntegerField("intentos fallidos", default=0)
     bloqueado_hasta = models.DateTimeField("bloqueado hasta", null=True, blank=True)
 

@@ -20,6 +20,7 @@ api_v1 = [
     path("", include("apps.otorgamiento.urls")),
     path("", include("apps.prematricula.urls")),
     path("", include("apps.dashboard.urls")),
+    path("", include("apps.retencion.urls")),
 ]
 
 urlpatterns = [

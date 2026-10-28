@@ -38,6 +38,7 @@ LOCAL_APPS = [
     "apps.otorgamiento",
     "apps.prematricula",
     "apps.dashboard",
+    "apps.retencion",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
@@ -212,6 +213,11 @@ CELERY_RESULT_BACKEND = env_str("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_BEAT_SCHEDULE = {
+    # RG-028: política de retención de datos, el día 1 de cada mes de madrugada.
+    "retencion-de-datos": {
+        "task": "apps.retencion.tasks.aplicar_retencion",
+        "schedule": crontab(day_of_month=1, hour=3, minute=0),
+    },
     "prematricula-avisos-y-cierre": {
         "task": "apps.prematricula.tasks.avisos_y_cierre_prematricula",
         "schedule": crontab(hour=7, minute=0),

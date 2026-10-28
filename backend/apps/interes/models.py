@@ -70,6 +70,8 @@ class ExpresionInteres(models.Model):
     celular = CampoCifrado("celular")
     email = CampoCifrado("email")
     created_at = models.DateTimeField("fecha", auto_now_add=True, db_index=True)
+    # RG-028: sin nombre, CI, celular ni email; se conservan carrera, entidad y fecha para estadísticas.
+    anonimizada_at = models.DateTimeField("anonimizada", null=True, blank=True, editable=False)
 
     class Meta:
         verbose_name = "expresión de interés"

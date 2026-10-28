@@ -10,7 +10,10 @@ from .models import ConfiguracionSistema, ConfiguracionSMTP, IdentidadVisual, Pl
 class ParametrosSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConfiguracionSistema
-        fields = ["max_carreras_aspirante", "login_max_intentos", "login_bloqueo_minutos", "updated_at"]
+        fields = [
+            "max_carreras_aspirante", "login_max_intentos", "login_bloqueo_minutos",
+            "retencion_anios", "retencion_otorgados_anios", "updated_at",
+        ]
         read_only_fields = ["updated_at"]
 
 

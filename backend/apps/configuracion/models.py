@@ -49,6 +49,15 @@ class ConfiguracionSistema(Singleton):
     max_carreras_aspirante = models.PositiveSmallIntegerField(
         "máximo de carreras por aspirante", default=5, validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
+    # RG-028: años que se conservan los datos personales antes de anonimizarlos.
+    retencion_anios = models.PositiveSmallIntegerField(
+        "retención de datos (años)", default=2, validators=[MinValueValidator(1), MaxValueValidator(20)],
+        help_text="No seleccionados, expresiones de interés y versiones antiguas de documentos.",
+    )
+    retencion_otorgados_anios = models.PositiveSmallIntegerField(
+        "retención de datos de otorgados (años)", default=5, validators=[MinValueValidator(1), MaxValueValidator(30)],
+        help_text="Conservación ampliada de quienes obtuvieron plaza (reclamaciones, prematrícula, consultas).",
+    )
     login_max_intentos = models.PositiveSmallIntegerField(
         "intentos de inicio de sesión antes del bloqueo",
         default=intentos_por_defecto,
