@@ -17,6 +17,8 @@ DESCARGAR_DOCUMENTOS = "documentos_descargar"
 GENERAR = "generar"
 APROBAR = "aprobar"
 PUBLICAR = "publicar"
+# Fijar el período de prematrícula (Secretaría General).
+CONFIGURAR = "configurar"
 
 ACCIONES = {
     VER: "Ver",
@@ -28,6 +30,7 @@ ACCIONES = {
     GENERAR: "Generar",
     APROBAR: "Aprobar",
     PUBLICAR: "Publicar",
+    CONFIGURAR: "Configurar período",
 }
 
 CRUD = [VER, CREAR, EDITAR, ELIMINAR]
@@ -45,7 +48,7 @@ MODULOS = {
     "solicitudes": ("Solicitudes", [VER, EDITAR, EXPORTAR, DESCARGAR_DOCUMENTOS]),
     # Editar depende de la etapa: el Jefe CI (aprobar) o el Vicerrector (publicar).
     "otorgamiento": ("Otorgamiento", [VER, EXPORTAR, GENERAR, APROBAR, PUBLICAR]),
-    "prematricula": ("Prematrícula", [VER, EDITAR, EXPORTAR]),
+    "prematricula": ("Prematrícula", [VER, EDITAR, EXPORTAR, CONFIGURAR]),
     "notificaciones": ("Notificaciones", [VER, CREAR]),
     "logs": ("Logs de auditoría", [VER]),
 }

@@ -36,6 +36,7 @@ LOCAL_APPS = [
     "apps.aspirantes",
     "apps.solicitudes",
     "apps.otorgamiento",
+    "apps.prematricula",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
@@ -198,6 +199,9 @@ SPECTACULAR_SETTINGS = {
         "TipoAjusteEnum": "apps.otorgamiento.models.AjusteOtorgamiento.Tipo",
         "TipoAsignacionEnum": "apps.otorgamiento.models.ResultadoOtorgamiento.Tipo",
         "EstadoOtorgamientoEnum": "apps.otorgamiento.models.Otorgamiento.Estado",
+        "EstadoPrematriculaEnum": "apps.prematricula.models.Prematricula.Estado",
+        "RevisionElementoEnum": "apps.prematricula.models.ElementoPrematricula.Revision",
+        "TipoCampoPrematriculaEnum": "apps.prematricula.models.CampoPrematricula.Tipo",
     },
 }
 
@@ -207,6 +211,10 @@ CELERY_RESULT_BACKEND = env_str("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_BEAT_SCHEDULE = {
+    "prematricula-avisos-y-cierre": {
+        "task": "apps.prematricula.tasks.avisos_y_cierre_prematricula",
+        "schedule": crontab(hour=7, minute=0),
+    },
     "eliminar-cuentas-no-verificadas": {
         "task": "apps.users.tasks.eliminar_cuentas_no_verificadas",
         "schedule": crontab(minute=0),

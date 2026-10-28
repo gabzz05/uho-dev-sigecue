@@ -93,12 +93,16 @@ def puede_editar(usuario, objetivo, tipo_documento_id=None):
     """¿Puede el aspirante cambiar ese elemento del perfil?
 
     Con el perfil congelado, solo lo que tiene una observación por corregir
-    (desbloqueo selectivo): ese documento, el índice, el centro de trabajo o la foto.
+    (ese documento, el índice, el centro de trabajo o la foto) o el documento
+    que la entidad rechazó en la prematrícula: desbloqueo selectivo.
     """
     if not perfil_bloqueado(usuario):
         return True
+    from apps.prematricula.services import documentos_a_corregir
     from apps.solicitudes.revision import objetivos_a_corregir
 
+    if objetivo == "documento" and tipo_documento_id in documentos_a_corregir(usuario):
+        return True
     return (objetivo, tipo_documento_id) in objetivos_a_corregir(usuario)
 
 
@@ -211,6 +215,9 @@ def subir_documento(usuario, tipo, archivo, formato):
     )
     _podar_versiones(perfil, tipo)
     actualizar_perfil_completo(perfil)
+    from apps.prematricula.services import documento_sustituido
+
+    documento_sustituido(usuario, tipo)
     return documento
 
 

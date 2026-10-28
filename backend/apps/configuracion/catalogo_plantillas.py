@@ -245,4 +245,86 @@ PLANTILLAS = {
             'Universidad de Holguín'
         ),
     },
+    "prematricula_abierta": {
+        "nombre": "Prematrícula abierta",
+        "descripcion": "A cada otorgado cuando se abre su período de prematrícula (RF-065).",
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "carrera": "Carrera otorgada",
+            "entidad": "Facultad o CUM/FUM",
+            "fecha_cierre": "Fecha de cierre",
+        },
+        "asunto": "SIGECUE — Ya puedes hacer tu prematrícula en {{ carrera }}",
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'Ya está abierta la prematrícula de {{ carrera }} ({{ entidad }}). Entra en SIGECUE y completa el formulario: puedes guardarlo y terminarlo en varias sesiones hasta el {{ fecha_cierre }}.\n'
+            '\n'
+            'Tu carnet de identidad y tu certificación de estudios ya están en tu perfil: no tienes que volver a subirlos.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
+    "prematricula_recordatorio": {
+        "nombre": "Recordatorio de prematrícula",
+        "descripcion": "A quien no completó la prematrícula, a 5 días y a 1 día del cierre (RF-070).",
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "carrera": "Carrera otorgada",
+            "entidad": "Facultad o CUM/FUM",
+            "fecha_cierre": "Fecha de cierre",
+            "dias": "Días que faltan",
+        },
+        "asunto": "SIGECUE — Faltan {{ dias }} día(s) para cerrar tu prematrícula",
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'Tu prematrícula de {{ carrera }} ({{ entidad }}) todavía no está completa. El plazo cierra el {{ fecha_cierre }}.\n'
+            '\n'
+            'Entra en SIGECUE, entrega lo que falta y envíala.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
+    "prematricula_correccion": {
+        "nombre": "Correcciones en la prematrícula",
+        "descripcion": "Al aspirante cuando la entidad pide corregir documentos o campos (RF-069). No pierde la plaza.",
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "carrera": "Carrera otorgada",
+            "entidad": "Facultad o CUM/FUM",
+            "fecha_cierre": "Fecha de cierre",
+            "correcciones": "Lista de lo que hay que corregir",
+        },
+        "asunto": "SIGECUE — Hay correcciones en tu prematrícula",
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'Al revisar tu prematrícula de {{ carrera }} ({{ entidad }}) hace falta corregir:\n'
+            '\n'
+            '{{ correcciones }}\n'
+            '\n'
+            'Corrígelo en SIGECUE y vuelve a enviarla. No pierdes tu plaza.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
+    "prematricula_aprobada": {
+        "nombre": "Prematrícula aprobada",
+        "descripcion": "Al aspirante cuando la entidad aprueba su prematrícula.",
+        "variables": {
+            "nombre": "Nombre del aspirante",
+            "carrera": "Carrera otorgada",
+            "entidad": "Facultad o CUM/FUM",
+            "fecha_cierre": "Fecha de cierre",
+        },
+        "asunto": "SIGECUE — Tu prematrícula fue aprobada",
+        "cuerpo": (
+            'Hola, {{ nombre }}:\n'
+            '\n'
+            'Tu prematrícula de {{ carrera }} ({{ entidad }}) fue aprobada. La entidad te informará los próximos pasos.\n'
+            '\n'
+            'Universidad de Holguín'
+        ),
+    },
 }

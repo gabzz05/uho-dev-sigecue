@@ -1,0 +1,15 @@
+{% extends "pdf/base.html" %}
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+<table>
+  <thead><tr><th>Aspirante</th><th>Carrera</th><th>Entidad</th><th>Estado</th><th>Falta</th><th>Aprobada</th></tr></thead>
+  <tbody>
+    {% for fila in filas %}
+      <tr><td>{{ fila.0 }}</td><td>{{ fila.2 }}</td><td>{{ fila.3 }}</td><td>{{ fila.4 }}</td><td>{{ fila.5 }}</td><td>{{ fila.6 }}</td></tr>
+    {% empty %}
+      <tr><td colspan="6">No hay prematrículas con esos filtros.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="muted">Total: {{ filas|length }}.</p>
+{% endblock %}
