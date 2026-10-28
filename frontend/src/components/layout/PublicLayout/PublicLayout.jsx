@@ -7,8 +7,10 @@ import { Button } from '../../ui'
 import { Logo } from '../Logo/Logo'
 import styles from './PublicLayout.module.css'
 
-// Se amplía con "Resultados" en feature/resultados-publicos.
-const ENLACES = [{ to: '/#carreras', label: 'Carreras' }]
+const ENLACES = [
+  { to: '/#carreras', label: 'Carreras' },
+  { to: '/resultados', label: 'Resultados' },
+]
 
 /** Estructura de las páginas públicas: cabecera institucional, contenido y pie. */
 export function PublicLayout() {

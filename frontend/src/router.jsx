@@ -29,6 +29,7 @@ import { NoEncontrado } from './pages/errores/NoEncontrado'
 import { DetalleCarrera } from './pages/public/DetalleCarrera'
 import { InicioPublico } from './pages/public/Inicio'
 import { Privacidad } from './pages/public/Privacidad'
+import { Resultados } from './pages/public/Resultados'
 
 // Pantalla de cada entrada del menú. Las que faltan muestran "en construcción"
 // hasta que su feature las implemente.
@@ -64,6 +65,7 @@ export const rutas = [
       { path: 'registro', element: <Registro /> },
       { path: 'activar', element: <Activar /> },
       { path: 'privacidad', element: <Privacidad /> },
+      { path: 'resultados', element: <Resultados /> },
       { path: '*', element: <NoEncontrado /> },
     ],
   },
