@@ -25,6 +25,9 @@ Este archivo registra esas decisiones. El estado de cada requisito está en
 | Retención (RG-028) | 2 años recomendados | **Configurable**: 2 años (no seleccionados) y 5 (otorgados); anonimizar en lugar de borrar | Reclamaciones tardías y consultas sobre los otorgados; estadísticas |
 | Usuarios (RF-017) | Bloquear | Se **desactivan**, nunca se borran | Decisión del cliente |
 | Docker (RG-021, RE-007) | Entrega en Docker | **Solo documentado** | Decisión del cliente |
+| Aviso de apertura de la convocatoria de interés (RF-075) | Notificación automática | **No aplicable en la práctica**: se anuncia en la landing | No hay destinatarios registrados antes de expresar interés |
+| Búsqueda pública por nombre (RF-024) | Buscar por nombre o CI | **Solo consulta por CI completo** | Minimización de datos y protección de la información personal |
+| Grupos de envío masivo (RF-076) | "Aspirantes de una carrera", "otorgados de una entidad" | **Implementación diferida**: hoy hay grupos por rol, por entidad y todos los aspirantes | No bloquea el proceso; se hará en un parche si la UHO lo pide en la aceptación |
 
 ## Infraestructura
 

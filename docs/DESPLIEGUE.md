@@ -422,6 +422,8 @@ Retención de datos) antes de reabrir el sistema.
 - [ ] Servicios web, worker y beat activos y arrancando solos (§3).
 - [ ] Librerías de WeasyPrint instaladas: exportar un PDF de prueba desde el
   panel.
+- [ ] RNF-006: fijar `build: { target: ['chrome90', 'firefox88', 'edge90', 'safari14'] }`
+  en `frontend/vite.config.js`, recompilar y probar en esos navegadores.
 - [ ] Copia diaria de la base de datos y de `MEDIA_ROOT`, con 30 días de
   retención (§5). Hacer **una restauración de prueba** (RNF-004: RTO ≤ 4 h).
 

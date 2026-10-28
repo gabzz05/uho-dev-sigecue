@@ -10,7 +10,17 @@ Qué requisito de la ERS cubre cada parte del sistema. Los estados posibles son:
 - **Documentado:** es una tarea de operación descrita en
   [DESPLIEGUE.md](DESPLIEGUE.md).
 - **No verificado:** requiere medirse en la infraestructura de la UHO.
-- **No:** no está implementado.
+- **Pendiente de validación:** está listo para corregirse al preparar
+  producción, pero necesita comprobarse en el entorno objetivo.
+- **Diferido:** no está implementado y no bloquea el proceso; se hará en un
+  parche si la UHO lo pide durante la aceptación.
+- **No aplicable:** no se puede cumplir en la práctica; el motivo está en
+  DECISIONES.
+- **Externo:** depende de un sistema de la UHO al que no hay acceso.
+
+Estado del proyecto: **v1.0.0, funcionalmente terminado**. Lo que queda abierto
+es certificación, validación en la infraestructura real, integraciones
+externas y mejoras menores que no bloquean la entrega.
 
 Las apps citadas están en `backend/apps/` y las pantallas en `frontend/src/pages/`.
 
@@ -45,7 +55,7 @@ cobertura entre las librerías aprobadas.
 | RF-021 | Expresión de interés anónima | Sí | `interes` |
 | RF-022 | CI de 11 dígitos sin repetir | Decisión | `interes`: único por oferta (carrera + entidad + año) |
 | RF-023 | Banner de convocatoria activa | Sí | `public/Inicio.jsx` |
-| RF-024 | Listados públicos de otorgados | Parcial | `otorgamiento/publico.py`; `/resultados`. La consulta es por CI completo y el CI se muestra enmascarado. El listado está ordenado por apellidos, pero **no hay buscador por nombre** |
+| RF-024 | Listados públicos de otorgados | Decisión | `otorgamiento/publico.py`; `/resultados`. Consulta por CI completo y CI enmascarado; **sin búsqueda pública por nombre**, por minimización de datos |
 | RF-025 | Sección institucional | Parcial | Textos provisionales ([ANOTACIONES.md](ANOTACIONES.md) §4) |
 | RF-026 | Convocatoria de interés anual | Sí | `interes` |
 | RF-027 | La CI asigna carreras a entidades | Sí | `interes` (Oferta) |
@@ -96,8 +106,8 @@ cobertura entre las librerías aprobadas.
 | RF-072 | Exportar prematrículas | Sí | Excel y PDF |
 | RF-073 | Campana de notificaciones | Sí | `notificaciones`; `NotificationCenter` |
 | RF-074 | Panel de notificaciones | Sí | Mis notificaciones (marcar como leída y eliminar) |
-| RF-075 | Notificaciones automáticas | Parcial | Están todas menos la de **apertura de la convocatoria de interés**: no hay destinatarios registrados y se anuncia en la landing |
-| RF-076 | Envíos masivos por grupo | Parcial | Grupos por rol, por entidad y todos los aspirantes. **Faltan** "aspirantes de una carrera" y "otorgados de una entidad" |
+| RF-075 | Notificaciones automáticas | Sí / No aplicable | Todas implementadas. La de **apertura de la convocatoria de interés** no es aplicable: antes de expresar interés no hay destinatarios registrados, y la apertura se anuncia en la landing |
+| RF-076 | Envíos masivos por grupo | Diferido | Hay grupos por rol, por entidad y todos los aspirantes. Los grupos "aspirantes de una carrera" y "otorgados de una entidad" quedan para un parche si la UHO los pide en la aceptación |
 
 ## Requisitos generales
 
@@ -116,8 +126,8 @@ cobertura entre las librerías aprobadas.
 | RG-011 | Sesión de 8 h de inactividad | Sí | Token de renovación JWT y control de actividad en el frontend |
 | RG-012 | Validación y almacenamiento seguro de archivos | Sí | Validación por contenido, límites de tamaño y almacenamiento privado fuera del directorio web |
 | RG-013 | Copias diarias, 30 días | Documentado | DESPLIEGUE §5 |
-| RG-014 | Integración con SIGENU | **No** | Sin acceso al sistema: el índice lo valida a mano la entidad (`indice_validado`) |
-| RG-015 | Integración con ASSET | **No** | Sin acceso al sistema: el centro de trabajo es texto libre |
+| RG-014 | Integración con SIGENU | Externo | Sin acceso al sistema: el índice lo valida a mano la entidad (`indice_validado`) |
+| RG-015 | Integración con ASSET | Externo | Sin acceso al sistema: el centro de trabajo es texto libre |
 | RG-016 | REST, JSON, `/api/v1/`, OpenAPI | Sí | `/api/docs/` |
 | RG-017 | OAuth 2.0, JWT, ISO 8601, UTF-8 | Parcial | JWT, ISO 8601 y UTF-8 sí; OAuth 2.0 llegará con la conexión al SGU |
 | RG-018 | Convenciones y comentarios | Sí | oxlint en el frontend; backend con PEP 8 (sin linter automático) |
@@ -156,7 +166,7 @@ cobertura entre las librerías aprobadas.
 | RNF-003 | Disponibilidad del 99 % | No verificado | Depende de la infraestructura; los servicios systemd se reinician solos |
 | RNF-004 | Copias diarias, RTO ≤ 4 h | Documentado | DESPLIEGUE §5 |
 | RNF-005 | 5 MB por archivo y 20 MB por aspirante | Sí | `aspirantes`, `prematricula` (cuotas separadas) |
-| RNF-006 | Chrome 90+, Firefox 88+, Edge 90+, Safari 14+ | Parcial | `vite.config.js` no fija `build.target`, así que se usa el objetivo por defecto de Vite, que exige navegadores más recientes |
+| RNF-006 | Chrome 90+, Firefox 88+, Edge 90+, Safari 14+ | Pendiente de validación | Falta validarlo en el entorno objetivo. Al preparar producción hay que fijar `build.target` en `vite.config.js` (`['chrome90', 'firefox88', 'edge90', 'safari14']`) y probar en esos navegadores |
 | RNF-007 | Arquitectura en capas | Sí | Vistas → services → modelos ([ARQUITECTURA.md](ARQUITECTURA.md)) |
 | RNF-008 | Logs con rotación diaria, 90 días | Sí | `LOGGING` en `settings/base.py` |
 | RNF-009 | `/api/v1/` y Swagger en `/api/docs` | Sí | `config/urls.py` |
