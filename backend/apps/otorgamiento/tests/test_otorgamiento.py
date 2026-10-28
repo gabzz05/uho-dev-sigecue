@@ -331,7 +331,8 @@ def test_el_aspirante_no_seleccionado_puede_ir_a_la_segunda(api_como, usuarios, 
     ana = api_como(escenario["ana"].aspirante).post("/api/v1/solicitudes/")
 
     assert (nueva.status_code, nueva.json()["convocatoria"]["id"]) == (201, segunda.pk)
-    assert ana.status_code == 400  # ya obtuvo plaza: su perfil queda congelado
+    assert ana.status_code == 400
+    assert ana.json()["error"]["mensaje"] == "Ya tienes una plaza otorgada: no puedes presentar otra solicitud."
 
 
 @pytest.mark.skipif(not pdf_disponible(), reason="WeasyPrint sin librerías nativas (Pango/GTK)")
