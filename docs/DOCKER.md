@@ -96,16 +96,16 @@ DESPLIEGUE §5.
 ## Problemas conocidos
 
 **Error al subir el escudo o la imagen de una carrera** en instalaciones
-creadas antes de la versión 1.0.2: el volumen `media_publica` quedó con dueño
+creadas antes de la versión 1.1.0: el volumen `media_publica` quedó con dueño
 `root` y el backend no puede escribir en él. Se corrige una sola vez con:
 
 ```bash
 docker compose run --rm --no-deps -u root backend chown -R sigecue:sigecue /data/media_publica
 ```
 
-**502 Bad Gateway después de actualizar** en versiones anteriores a la 1.0.2:
+**502 Bad Gateway después de actualizar** en versiones anteriores a la 1.1.0:
 nginx guardaba la IP del contenedor `backend` del arranque y, si se recreaba,
-seguía enviando a la antigua. Desde la 1.0.2 la resuelve en cada petición. En
+seguía enviando a la antigua. Desde la 1.1.0 la resuelve en cada petición. En
 una instalación anterior se arregla con `docker compose restart web`.
 
 ## Verificado
