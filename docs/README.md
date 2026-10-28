@@ -646,6 +646,36 @@ rol:
 publicación). Se auditan. El listado público en la landing va en el feature
 `resultados-publicos`.
 
+### Resultados públicos (RF-063)
+
+Página pública `/resultados` (enlace "Resultados" en la cabecera de la landing).
+Endpoints sin autenticación en `apps/otorgamiento/publico.py`.
+
+- **Listado** (`GET /api/v1/publico/resultados/`): solo los **otorgados** de
+  otorgamientos publicados.
+  - Columnas: nombre y apellidos, CI enmascarado (`*******2345`, los 4
+    últimos dígitos), carrera, entidad y convocatoria.
+  - Nunca índice, posición, prioridad ni motivos de exclusión.
+  - Orden: carrera, entidad, apellidos y nombre.
+  - Filtros por convocatoria (cada convocatoria es un listado aparte),
+    carrera y entidad, disponibles en `.../filtros/`.
+- **Consulta individual** (`POST /api/v1/publico/resultados/consulta/` con
+  `{ci}`; POST para que el CI no quede en URLs ni registros).
+  - Devuelve, por convocatoria publicada, *Otorgado* (con carrera y entidad)
+    o *No seleccionado*.
+  - Si no hay nada publicado responde **siempre** "No existe un resultado
+    publicado para los datos introducidos.", exista o no el CI, para no servir
+    de enumeración de identidades.
+  - Límite por IP: `RESULTADOS_THROTTLE_RATE`, por defecto 10/hora, igual que
+    la expresión de interés.
+- **Vigencia:** el listado se ve mientras no pase `Otorgamiento.publico_hasta`,
+  el cierre de la prematrícula, que fijará ese feature. Vacío = visible.
+  Después desaparece de la landing, sigue disponible para los usuarios
+  internos autorizados en el panel de otorgamiento y queda sujeto a la
+  retención de datos.
+- **Sin descarga pública:** solo se ve en pantalla. Los PDF y Excel oficiales
+  están solo en el panel.
+
 ### Exportar a PDF
 
 `apps.core.pdf.respuesta_pdf(plantilla, contexto, nombre, titulo)` renderiza

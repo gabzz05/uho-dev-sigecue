@@ -156,6 +156,18 @@ Este archivo registra esas decisiones.
 | Snapshot | Obligatorio: `ResultadoOtorgamiento` guarda índice utilizado, posición, motivo de exclusión, opciones y lo otorgado. Queda congelado al publicar. |
 | Revisión tras generar | Generado el otorgamiento, la revisión de esa convocatoria (validar, observar, corregir) se cierra, para que el snapshot no quede desfasado. |
 
+## Resultados públicos
+
+| Tema | Decisión |
+|---|---|
+| Qué se publica | Solo los otorgados: nombre y apellidos, CI enmascarado, carrera, entidad y convocatoria. No se publican no seleccionados, índice, posición, prioridad ni motivos. |
+| CI | Enmascarado, con los 4 últimos dígitos visibles: `*******2345`. |
+| Consulta individual | Por CI completo: convocatoria, resultado y, si aplica, carrera y entidad. Sin datos de terceros. Mismo límite por IP que la expresión de interés. |
+| Respuesta sin resultado | Un único mensaje ("No existe un resultado publicado para los datos introducidos."), exista o no el CI, contra la enumeración de identidades. |
+| Organización | Filtros por convocatoria, entidad y carrera. Primera y segunda convocatoria en listados separados. Orden: carrera, entidad, apellidos y nombre. |
+| Vigencia | Visible en la landing hasta el cierre de la prematrícula. Después, solo para usuarios internos autorizados y sujeto a la retención de datos. |
+| Descarga | No hay descarga pública: solo se ve en pantalla. |
+
 ## Prematrícula
 
 | Tema | Decisión |
