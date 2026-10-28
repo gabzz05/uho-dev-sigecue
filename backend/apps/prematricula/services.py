@@ -173,7 +173,7 @@ def documento_sustituido(usuario, tipo_documento):
 
 
 def _bloquear(prematricula):
-    return Prematricula.objects.select_for_update().select_related("periodo", "resultado").get(pk=prematricula.pk)
+    return Prematricula.objects.select_for_update(of=("self",)).select_related("periodo", "resultado").get(pk=prematricula.pk)
 
 
 def _exigir_editable(prematricula, elemento):

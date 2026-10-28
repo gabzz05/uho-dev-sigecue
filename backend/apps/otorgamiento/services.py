@@ -184,7 +184,7 @@ def puede_editar(usuario, otorgamiento):
 
 
 def _bloquear(usuario, otorgamiento):
-    otorgamiento = Otorgamiento.objects.select_for_update().select_related("convocatoria").get(pk=otorgamiento.pk)
+    otorgamiento = Otorgamiento.objects.select_for_update(of=("self",)).select_related("convocatoria").get(pk=otorgamiento.pk)
     if otorgamiento.publicado:
         raise ErrorDeNegocio("El otorgamiento está publicado: ya no admite cambios.")
     if not puede_editar(usuario, otorgamiento):
