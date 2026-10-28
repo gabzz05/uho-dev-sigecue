@@ -35,3 +35,10 @@ export const plantillas = {
   restablecer: (codigo) => api.post(`${BASE}/plantillas/${codigo}/restablecer/`).then(cuerpo),
   vistaPrevia: (codigo, datos) => api.post(`${BASE}/plantillas/${codigo}/vista-previa/`, datos).then(cuerpo),
 }
+
+/** Política de retención de datos (RG-028). */
+export const retencion = {
+  previsualizar: () => api.get('/admin/retencion/previsualizar/').then(cuerpo),
+  ejecuciones: () => api.get('/admin/retencion/ejecuciones/').then(cuerpo),
+  ejecutar: () => api.post('/admin/retencion/ejecuciones/', { confirmar: true }).then(cuerpo),
+}

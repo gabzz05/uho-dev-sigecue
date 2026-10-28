@@ -14,6 +14,7 @@ vi.mock('../../../services/configuracion', () => ({
   smtp: { obtener: vi.fn(), guardar: vi.fn(), probar: vi.fn() },
   identidad: { obtener: vi.fn(), guardar: vi.fn() },
   plantillas: { listar: vi.fn(), guardar: vi.fn(), restablecer: vi.fn(), vistaPrevia: vi.fn() },
+  retencion: { previsualizar: vi.fn(), ejecuciones: vi.fn(), ejecutar: vi.fn() },
 }))
 
 vi.mock('../../../services/aspirante', () => ({
@@ -23,7 +24,7 @@ vi.mock('../../../services/aspirante', () => ({
 const SUPERADMIN = perfil({ permisos: ['*'], es_superadmin: true, rol: null })
 const LECTOR = perfil({ permisos: ['configuracion.ver'] })
 
-const PARAMETROS = { max_carreras_aspirante: 5, login_max_intentos: 5, login_bloqueo_minutos: 15 }
+const PARAMETROS = { max_carreras_aspirante: 5, login_max_intentos: 5, login_bloqueo_minutos: 15, retencion_anios: 2, retencion_otorgados_anios: 5 }
 const SMTP = { activo: false, host: '', puerto: 587, usuario: '', password_configurada: true, usar_tls: true, usar_ssl: false, remitente: '' }
 const ACTIVACION = {
   codigo: 'activacion_cuenta',
@@ -64,7 +65,7 @@ describe('Parámetros', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
 
     expect(await screen.findByText('Los parámetros se guardaron.')).toBeInTheDocument()
-    expect(config.parametros.guardar).toHaveBeenCalledWith({ max_carreras_aspirante: '3', login_max_intentos: 5, login_bloqueo_minutos: 15 })
+    expect(config.parametros.guardar).toHaveBeenCalledWith({ max_carreras_aspirante: '3', login_max_intentos: 5, login_bloqueo_minutos: 15, retencion_anios: 2, retencion_otorgados_anios: 5 })
   })
 
   it('sin ser Superadmin queda en solo lectura', async () => {
@@ -190,6 +191,35 @@ describe('Documentos del aspirante', () => {
     fireEvent.click(within(dialogo).getByRole('button', { name: 'Guardar' }))
 
     await waitFor(() => expect(aspirante.tiposDocumento.crear).toHaveBeenCalledWith({ nombre: 'Aval laboral', orden: 0, obligatorio: false, afecta_elegibilidad: false }))
+  })
+})
+
+describe('Retención de datos', () => {
+  it('muestra la vista previa y ejecuta tras confirmar', async () => {
+    const vista = { aspirantes: 3, intereses: 10, documentos: 12, espacio_mb: '4.50', solo_versiones_antiguas: 2 }
+    config.retencion.previsualizar.mockResolvedValue(vista)
+    config.retencion.ejecuciones.mockResolvedValue([])
+    config.retencion.ejecutar.mockResolvedValue({ id: 1, aspirantes_anonimizados: 3, intereses_anonimizados: 10 })
+    await abrir()
+    pestana('Retención de datos')
+
+    expect(await screen.findByText('4.50 MB')).toBeInTheDocument()
+    expect(screen.getByText('Todavía no se ejecutó la retención.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Ejecutar ahora' }))
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Ejecutar la retención ahora' })).getByRole('button', { name: 'Ejecutar' }))
+
+    await waitFor(() => expect(config.retencion.ejecutar).toHaveBeenCalled())
+    expect(await screen.findByText(/Retención aplicada: 3 aspirantes/)).toBeInTheDocument()
+  })
+
+  it('sin ser Superadmin no se ejecuta', async () => {
+    config.retencion.previsualizar.mockResolvedValue({ aspirantes: 0, intereses: 0, documentos: 0, espacio_mb: '0.00', solo_versiones_antiguas: 0 })
+    config.retencion.ejecuciones.mockResolvedValue([])
+    await abrir(LECTOR)
+    pestana('Retención de datos')
+
+    expect(await screen.findByText('0.00 MB')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Ejecutar ahora' })).not.toBeInTheDocument()
   })
 })
 

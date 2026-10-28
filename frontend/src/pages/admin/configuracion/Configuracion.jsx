@@ -7,6 +7,7 @@ import { Identidad } from './Identidad'
 import { Parametros } from './Parametros'
 import styles from './Configuracion.module.css'
 import { Plantillas } from './Plantillas'
+import { Retencion } from './Retencion'
 import { TiposDocumento } from './TiposDocumento'
 
 const TABS = [
@@ -16,8 +17,9 @@ const TABS = [
   { id: 'identidad', label: 'Identidad visual' },
   { id: 'documentos', label: 'Documentos del aspirante' },
   { id: 'prematricula', label: 'Campos de prematrícula' },
+  { id: 'retencion', label: 'Retención de datos' },
 ]
-const PANELES = { parametros: Parametros, correo: Correo, plantillas: Plantillas, identidad: Identidad, documentos: TiposDocumento, prematricula: CamposPrematricula }
+const PANELES = { parametros: Parametros, correo: Correo, plantillas: Plantillas, identidad: Identidad, documentos: TiposDocumento, prematricula: CamposPrematricula, retencion: Retencion }
 
 /** Configuración del sistema (sección 5.1). Solo el Superadmin la modifica. */
 export function Configuracion() {

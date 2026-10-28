@@ -113,3 +113,13 @@
 }
 
 .vistaPrevia strong { display: block; margin-bottom: var(--space-2); }
+
+.resumenRetencion {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+
+.resumenRetencion dt { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+.resumenRetencion dd { margin: 0; font-size: var(--font-size-xl); font-weight: 700; }
