@@ -9,6 +9,7 @@ const SECCIONES = [
   { to: '/aspirante', label: 'Inicio', end: true },
   { to: '/aspirante/completar-perfil', label: 'Mi perfil de aspirante' },
   { to: '/aspirante/solicitud', label: 'Mi solicitud' },
+  { to: '/aspirante/prematricula', label: 'Prematrícula' },
 ]
 
 /** Estructura del portal del aspirante: cabecera, secciones y contenido centrado. */

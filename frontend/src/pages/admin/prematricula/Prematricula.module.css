@@ -1,0 +1,87 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.selector { max-width: 20rem; }
+
+.apagado {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.enlace {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.fechas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.exportar {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.elementos {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.elementos li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.elementos li:first-child { border-top: 0; }
+
+.elementoInfo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.elementoInfo > span:not(:first-of-type) { flex-basis: 100%; }
+
+.observacion {
+  flex-basis: 100%;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}

@@ -5,6 +5,8 @@ import { Convocatorias } from './pages/admin/convocatorias/Convocatorias'
 import { Dashboard } from './pages/admin/Dashboard'
 import { Interes } from './pages/admin/interes/Interes'
 import { Otorgamiento } from './pages/admin/otorgamiento/Otorgamiento'
+import { DetallePrematricula } from './pages/admin/prematricula/DetallePrematricula'
+import { Prematriculas } from './pages/admin/prematricula/Prematriculas'
 import { Logs } from './pages/admin/logs/Logs'
 import { DetallePlan } from './pages/admin/planPlazas/DetallePlan'
 import { PlanesPlazas } from './pages/admin/planPlazas/PlanesPlazas'
@@ -19,6 +21,7 @@ import { Usuarios } from './pages/admin/usuarios/Usuarios'
 import { CompletarPerfil } from './pages/aspirante/CompletarPerfil'
 import { InicioAspirante } from './pages/aspirante/Inicio'
 import { MiSolicitud } from './pages/aspirante/MiSolicitud'
+import { Prematricula } from './pages/aspirante/Prematricula'
 import { Activar } from './pages/auth/Activar'
 import { Login } from './pages/auth/Login'
 import { Registro } from './pages/auth/Registro'
@@ -48,6 +51,7 @@ const PANTALLAS_ADMIN = {
   convocatorias: <Convocatorias />,
   solicitudes: <Solicitudes />,
   otorgamiento: <Otorgamiento />,
+  prematricula: <Prematriculas />,
 }
 
 const rutasAdmin = MENU_ADMIN.flatMap((seccion) => seccion.items).map(({ path, label, permiso }) => ({
@@ -87,6 +91,14 @@ export const rutas = [
         ),
       },
       {
+        path: 'prematricula/:id',
+        element: (
+          <RequireAuth permiso="prematricula.ver">
+            <DetallePrematricula />
+          </RequireAuth>
+        ),
+      },
+      {
         path: 'solicitudes/:id',
         element: (
           <RequireAuth permiso="solicitudes.ver">
@@ -110,6 +122,7 @@ export const rutas = [
       { index: true, element: <InicioAspirante /> },
       { path: 'completar-perfil', element: <CompletarPerfil /> },
       { path: 'solicitud', element: <MiSolicitud /> },
+      { path: 'prematricula', element: <Prematricula /> },
       { path: 'perfil', element: <MiPerfil /> },
       { path: 'notificaciones', element: <MisNotificaciones /> },
       { path: '*', element: <NoEncontrado /> },

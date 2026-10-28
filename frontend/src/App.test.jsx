@@ -1,5 +1,6 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { EnConstruccion } from './pages/EnConstruccion'
 import * as auth from './services/auth'
 import { ASPIRANTE, perfil, renderApp } from './test/renderApp'
 
@@ -62,11 +63,10 @@ describe('rutas protegidas', () => {
     expect(within(menu).getByRole('link', { name: 'Logs de auditoría' })).toBeInTheDocument()
   })
 
-  it('los módulos pendientes muestran "en desarrollo"', async () => {
-    auth.restaurarSesion.mockResolvedValue(perfil({ permisos: ['dashboard.ver', 'prematricula.ver'] }))
-    renderApp('/admin/prematricula')
+  it('un módulo sin pantalla propia muestra "en desarrollo"', () => {
+    render(<EnConstruccion titulo="Reportes" />)
 
-    expect(await screen.findByText('Módulo en desarrollo')).toBeInTheDocument()
+    expect(screen.getByText('Módulo en desarrollo')).toBeInTheDocument()
   })
 
   it('una ruta inexistente muestra 404', async () => {

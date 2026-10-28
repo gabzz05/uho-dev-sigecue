@@ -10,6 +10,7 @@ const ACCIONES = [
   { id: 'generar', label: 'Generar' },
   { id: 'aprobar', label: 'Aprobar' },
   { id: 'publicar', label: 'Publicar' },
+  { id: 'configurar', label: 'Configurar período' },
 ]
 
 /**

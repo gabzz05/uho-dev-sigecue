@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, PageHeader, Tabs } from '../../../components/ui'
 import { useAuth } from '../../../hooks/useAuth'
+import { CamposPrematricula } from './CamposPrematricula'
 import { Correo } from './Correo'
 import { Identidad } from './Identidad'
 import { Parametros } from './Parametros'
@@ -14,8 +15,9 @@ const TABS = [
   { id: 'plantillas', label: 'Plantillas de correo' },
   { id: 'identidad', label: 'Identidad visual' },
   { id: 'documentos', label: 'Documentos del aspirante' },
+  { id: 'prematricula', label: 'Campos de prematrícula' },
 ]
-const PANELES = { parametros: Parametros, correo: Correo, plantillas: Plantillas, identidad: Identidad, documentos: TiposDocumento }
+const PANELES = { parametros: Parametros, correo: Correo, plantillas: Plantillas, identidad: Identidad, documentos: TiposDocumento, prematricula: CamposPrematricula }
 
 /** Configuración del sistema (sección 5.1). Solo el Superadmin la modifica. */
 export function Configuracion() {
