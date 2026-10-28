@@ -309,6 +309,13 @@ class TestCorreccion:
 
 
 class TestEstadisticas:
+    def test_sin_convocatorias_responde_vacio(self, api_como, crear_usuario):
+        response = api_como(crear_usuario("jefe", rol="jefe_ci")).get(f"{URL}estadisticas/")
+
+        assert response.status_code == 200
+        assert response.json()["convocatoria"] is None
+        assert response.json()["totales"]["solicitudes"] == 0
+
     def test_termometro_por_oferta_y_ambito(self, api_como, usuarios, solicitud, ofertas):
         datos = api_como(usuarios["jefe_ci"]).get(f"{URL}estadisticas/").json()
 

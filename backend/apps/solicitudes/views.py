@@ -161,7 +161,10 @@ class SolicitudAdminViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False)
     def estadisticas(self, request):
         """RF-053. El panel lo consulta cada 60 s mientras está visible."""
-        return Response(consultas.estadisticas(request.user, consultas.convocatoria_de(request.query_params)))
+        convocatoria = consultas.convocatoria_de(request.query_params)
+        if convocatoria is None:
+            return Response(consultas.estadisticas_vacias())
+        return Response(consultas.estadisticas(request.user, convocatoria))
 
     def _exportacion(self, request, formato):
         solicitudes = list(self.get_queryset())

@@ -25,6 +25,14 @@ export function Estadisticas({ convocatoria }) {
   if (estado.error && !estado.datos) return <Alert tone="danger">{estado.error}</Alert>
 
   const { datos } = estado
+  if (!datos.convocatoria) {
+    return (
+      <EmptyState
+        title="Todavía no hay convocatorias de solicitud"
+        message="Las estadísticas aparecen cuando se abre la primera convocatoria de solicitud de matrícula."
+      />
+    )
+  }
   const { totales } = datos
   const sinDatos = totales.solicitudes === 0
 

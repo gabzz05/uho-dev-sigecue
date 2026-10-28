@@ -65,16 +65,26 @@ def listado(usuario, params):
 
 
 def convocatoria_de(params):
-    """La indicada o, si no, la más reciente."""
+    """La indicada o, si no, la más reciente abierta o cerrada. None si todavía no hay ninguna."""
     if convocatoria_id := params.get("convocatoria"):
         convocatoria = ConvocatoriaSolicitud.objects.filter(pk=convocatoria_id).first()
-    else:
-        convocatoria = ConvocatoriaSolicitud.objects.exclude(estado=ConvocatoriaSolicitud.Estado.BORRADOR).order_by(
-            "-anio_academico", "-numero"
-        ).first()
-    if convocatoria is None:
-        raise ErrorDeNegocio("No hay convocatorias de solicitud.")
-    return convocatoria
+        if convocatoria is None:
+            raise ErrorDeNegocio("La convocatoria no existe.")
+        return convocatoria
+    return ConvocatoriaSolicitud.objects.exclude(estado=ConvocatoriaSolicitud.Estado.BORRADOR).order_by(
+        "-anio_academico", "-numero"
+    ).first()
+
+
+def estadisticas_vacias():
+    """Antes de la primera convocatoria no es un error: simplemente no hay datos."""
+    return {
+        "convocatoria": None,
+        "totales": {"solicitudes": 0, "plazas": 0, "por_estado": {e: 0 for e in E.values if e != E.BORRADOR}},
+        "termometro": [],
+        "por_carrera": [],
+        "evolucion": [],
+    }
 
 
 def estadisticas(usuario, convocatoria):

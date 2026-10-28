@@ -174,6 +174,18 @@ describe('detalle de la solicitud', () => {
 })
 
 describe('estadísticas', () => {
+  it('sin convocatorias muestra un aviso neutro, no un error', async () => {
+    solicitudesAdmin.estadisticas.mockResolvedValue({
+      convocatoria: null,
+      totales: { solicitudes: 0, plazas: 0, por_estado: {} },
+      termometro: [], por_carrera: [], evolucion: [],
+    })
+    renderApp('/admin/solicitudes')
+    fireEvent.click(await screen.findByRole('tab', { name: 'Estadísticas' }))
+
+    expect(await screen.findByText('Todavía no hay convocatorias de solicitud')).toBeInTheDocument()
+  })
+
   it('muestra el termómetro frente al plan', async () => {
     solicitudesAdmin.estadisticas.mockResolvedValue({
       convocatoria: { id: 1, anio_academico: '2026-2027', numero: 1 },
