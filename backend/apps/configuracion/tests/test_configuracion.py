@@ -48,6 +48,10 @@ class TestPermisos:
         assert config.max_carreras_aspirante == 3
         assert config.actualizado_por == superadmin
 
+    @pytest.mark.parametrize("ruta", ["parametros", "smtp", "identidad"])
+    def test_put_no_esta_disponible(self, api_como, superadmin, ruta):
+        assert api_como(superadmin).put(f"{BASE}/{ruta}/", {}, format="json").status_code == 405
+
 
 class TestParametros:
     def test_valores_por_defecto(self, api_como, superadmin):

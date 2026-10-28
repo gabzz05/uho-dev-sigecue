@@ -29,6 +29,8 @@ class PermisoModulo(BasePermission):
         action_map = getattr(view, "action_map", None)
         if action_map is not None and request.method.lower() not in action_map:
             return True  # Método no disponible en esta ruta: DRF responde 405.
+        if request.method.lower() not in view.http_method_names:
+            return True  # Ídem en vistas que limitan sus métodos (p. ej. solo GET y PATCH).
 
         accion_vista = getattr(view, "action", None) or request.method.lower()
         mapa = ACCION_POR_DEFECTO | getattr(view, "acciones_permiso", {})
