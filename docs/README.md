@@ -54,6 +54,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
 | `convocatorias` | Convocatoria de solicitud de matrícula (primera, segunda...) |
 | `aspirantes` | Perfil del aspirante, tipos de documento y documentos versionados; descarga con control de acceso |
+| `prematricula` | Período, expediente de cada otorgado, revisión por documento, correcciones, aprobación y exportación |
 | `otorgamiento` | Ranking, reparto de plazas, ajustes manuales, aprobación y publicación (snapshot del resultado) |
 | `solicitudes` | Solicitud de carreras del aspirante (selección y confirmación) y su revisión por las entidades: observaciones, validación del índice, historial, estadísticas y exportación |
 | `users` | Usuario (`AUTH_USER_MODEL = users.Usuario`), autenticación, registro de aspirantes, gestión de usuarios internos |
@@ -675,6 +676,81 @@ Endpoints sin autenticación en `apps/otorgamiento/publico.py`.
   retención de datos.
 - **Sin descarga pública:** solo se ve en pantalla. Los PDF y Excel oficiales
   están solo en el panel.
+
+### Prematrícula (RF-065 a RF-072)
+
+**Período** (`apps/prematricula`).
+
+- `POST /admin/prematricula/configurar-periodo/` (`prematricula.configurar`,
+  Secretaría General) fija las fechas de inicio y cierre para un otorgamiento
+  publicado.
+- Al fijarlo:
+  - se crea el expediente de cada otorgado;
+  - `Otorgamiento.publico_hasta` se iguala a la fecha de cierre, de modo que
+    el listado público se ve hasta entonces.
+- La tarea diaria `avisos_y_cierre_prematricula` (Celery beat, a las 7:00):
+  - envía el aviso de apertura (`prematricula_abierta`);
+  - envía los recordatorios a 5 y a 1 día del cierre a quien no la completó
+    (`prematricula_recordatorio`, RF-070), una sola vez cada uno;
+  - tras el cierre, pasa a *Incompleta* los expedientes pendientes o en
+    borrador.
+
+**Expediente.** Tiene un elemento por cada pieza, y cada una se revisa por
+separado:
+
+- **Documentos del perfil** (los tipos obligatorios: CI anverso, CI reverso y
+  certificación). Se **reutiliza** la versión vigente. Solo se vuelven a pedir
+  si la entidad los rechaza, y entonces el aspirante sube una versión nueva al
+  perfil con desbloqueo selectivo.
+- **Campos de prematrícula** (`CampoPrematricula`, que gestiona el Superadmin
+  en Configuración → Campos de prematrícula). Tipos: texto, archivo (PDF, JPG
+  o PNG) o imagen (JPG o PNG). Semillas: foto tipo carné (distinta de la foto
+  de perfil), carta de autorización del centro de trabajo y solicitud personal
+  firmada.
+- **Archivos:** 5 MB cada uno, con versiones (10 como máximo) y una cuota de
+  **20 MB propia de la prematrícula**, separada de la del perfil.
+
+**Estados:**
+
+- *Pendiente*, *Borrador* (al guardar algo) y *Completada* (al enviarla).
+- *Con correcciones*: la entidad rechazó algo y lo pidió corregir.
+- *Aprobada*: todos los elementos requeridos están aprobados; se guardan
+  `fecha_aprobacion` y `aprobado_por`.
+- *Incompleta*: venció el plazo sin enviarla. No es renuncia: la plaza se
+  conserva.
+
+**Edición del aspirante:**
+
+- Lo aprobado nunca se modifica.
+- Con el período abierto puede editar el resto, salvo mientras la entidad
+  revisa (estado *Completada*).
+- Tras el cierre, solo lo rechazado.
+
+**Revisión** (`prematricula.editar`: Admin y Secretario de la entidad donde se
+otorgó la plaza, Jefe CI y Secretaría General).
+
+- `.../revisar/` aprueba o rechaza un elemento; rechazar exige observación.
+- `.../solicitar-correcciones/` avisa al aspirante con la lista de lo
+  rechazado (`prematricula_correccion`). Según RF-069, rechazar es pedir
+  correcciones: no se pierde la plaza.
+- `.../aprobar/` exige todo lo requerido aprobado y avisa
+  (`prematricula_aprobada`).
+- Los archivos de la prematrícula se descargan en
+  `/prematricula/archivos/{id}/`: el aspirante, o el personal con
+  `solicitudes.documentos_descargar` de la entidad de la plaza. Cada descarga
+  queda auditada.
+
+**Panel:**
+
+- Expedientes por convocatoria y estado (RF-068).
+- Filtro "le falta…", por documento del perfil o por campo (RF-071).
+- Exportación a Excel y PDF de completos e incompletos (RF-072), auditada.
+
+**Frontend:**
+
+- `/admin/prematricula`: período, listado y filtros.
+- `/admin/prematricula/:id`: revisión elemento por elemento, con visor.
+- `/aspirante/prematricula`: el formulario del aspirante.
 
 ### Exportar a PDF
 

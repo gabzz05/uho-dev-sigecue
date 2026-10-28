@@ -174,6 +174,15 @@ Este archivo registra esas decisiones.
 |---|---|
 | Renuncia | No existe: la ERS no contempla que el aspirante rechace la plaza ni describe la matrícula definitiva. |
 | "Rechazar" (RF-069) | Significa que el aspirante debe corregir o reenviar sus documentos. **No pierde la plaza.** |
+| Período | Lo fija la Secretaría General (`prematricula.configurar`) por cada otorgamiento publicado: inicio y cierre. El cierre es también el último día del listado público. Aviso al abrir y recordatorios a 5 y 1 días del cierre. |
+| Documentos del perfil | CI anverso, CI reverso y certificación se reutilizan (versión vigente). Solo se vuelven a pedir si la entidad los rechaza. |
+| Foto tipo carné | Distinta de la foto de perfil: es un campo propio de la prematrícula, requerido. |
+| Campos dinámicos (RF-010, RF-066) | `CampoPrematricula` (nombre, tipo texto/archivo/imagen, requerido, orden, activo), gestionado por el Superadmin. Semillas: foto tipo carné, carta de autorización del centro de trabajo, solicitud personal firmada. |
+| Archivos | PDF, JPG o PNG (imágenes: JPG o PNG), 5 MB, con versiones. Cuota de 20 MB propia de la prematrícula, separada de la del perfil. |
+| Estados | Pendiente, Borrador, Completada, Con correcciones, Aprobada e Incompleta (venció el plazo sin enviarla; no es renuncia). Revisión por documento; se aprueba cuando todos los requeridos están aprobados. Se guardan `fecha_aprobacion` y `aprobado_por`. |
+| Quién revisa | Admin y Secretario de la entidad donde obtuvo la plaza, y roles globales (por semilla, Jefe CI y Secretaría General), con `prematricula.editar`. Descargar: `solicitudes.documentos_descargar`, limitado a esa entidad. |
+| Correcciones tras el cierre | Permitidas, solo de lo rechazado (desbloqueo selectivo). |
+| Avisos | `prematricula_abierta`, `prematricula_recordatorio`, `prematricula_correccion` y `prematricula_aprobada`, por correo e in-app, editables por el Superadmin. |
 
 ## Plan de plazas
 
