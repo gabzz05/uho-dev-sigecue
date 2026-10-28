@@ -1,5 +1,6 @@
 # Logs
-logs
+# Anclado: sin la barra ignoraría también src/pages/admin/logs/.
+/logs
 *.log
 npm-debug.log*
 yarn-debug.log*

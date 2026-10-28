@@ -1,0 +1,48 @@
+.nowrap { white-space: nowrap; }
+
+.accion {
+  font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
+}
+
+.detalle {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.fila {
+  display: grid;
+  gap: var(--space-1);
+}
+
+@media (min-width: 560px) {
+  .fila { grid-template-columns: 10rem 1fr; }
+}
+
+.fila dt {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.fila dd {
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.json {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-xs);
+  overflow-x: auto;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
