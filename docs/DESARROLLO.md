@@ -56,7 +56,7 @@ Docker levantados (ver [DOCKER.md](DOCKER.md)), la suite completa, PDF
 incluidos, se ejecuta así:
 
 ```bash
-docker compose run --rm --no-deps -u root backend sh -c   "pip install -q -r requirements/dev.txt && pytest --ds=config.settings.test_pg --no-cov"
+docker compose run --rm --no-deps -u root backend sh -c "pip install -q -r requirements/dev.txt && pytest --ds=config.settings.pruebas_pg --no-cov"
 ```
 
 ### Celery en desarrollo
