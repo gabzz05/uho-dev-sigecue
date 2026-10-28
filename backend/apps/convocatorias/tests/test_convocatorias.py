@@ -110,6 +110,16 @@ class TestApertura:
         with pytest.raises(Exception, match="no tienen plazas"):
             services.abrir(convocatoria)
 
+    def test_segunda_sin_plazas_restantes(self, jefe_ci, convocatoria, plan_publicado, monkeypatch):
+        services.abrir(convocatoria)
+        services.cerrar(convocatoria)
+        segunda = ConvocatoriaSolicitud.objects.create(anio_academico=ANIO, numero=2, fecha_inicio=HOY, fecha_cierre=HOY)
+        # Todas las plazas del plan se otorgaron en la primera.
+        monkeypatch.setattr("apps.otorgamiento.services.plazas_restantes", lambda c: {o.pk: 0 for o in OfertaCarrera.objects.all()})
+
+        with pytest.raises(Exception, match="se otorgaron todas"):
+            services.abrir(segunda)
+
     def test_solo_una_abierta(self, jefe_ci, convocatoria, plan_publicado):
         services.abrir(convocatoria)
         services.cerrar(convocatoria)
