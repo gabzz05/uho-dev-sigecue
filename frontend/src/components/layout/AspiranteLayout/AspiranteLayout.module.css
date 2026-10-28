@@ -34,6 +34,7 @@
 .nav {
   display: flex;
   gap: var(--space-1);
+  position: relative;
   overflow-x: auto;
   padding: 0 var(--space-4);
   background: var(--color-surface);
