@@ -99,3 +99,8 @@ class TestCambiarPassword:
 
         assert response.status_code == 400
         assert "Sistema de Gestión de Usuarios" in response.json()["error"]["mensaje"]
+
+
+def test_nombre_completo_sin_nombre_usa_el_usuario(crear_usuario):
+    assert crear_usuario("admin").nombre_completo == "admin"
+    assert crear_usuario("ana", first_name="Ana", last_name="Pérez").nombre_completo == "Ana Pérez"
