@@ -179,6 +179,8 @@ tienen prioridad sobre las del archivo.
 | `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` | Sí | SMTP corporativo. También se puede configurar en el panel (Configuración → Correo); si se activa allí, tiene prioridad sobre estas variables. |
 | `DEFAULT_FROM_EMAIL` | No | Remitente de los correos |
 | `LOGIN_MAX_INTENTOS` / `LOGIN_BLOQUEO_MINUTOS` | No | Valores iniciales del bloqueo temporal (5 / 15). Después se cambian en el panel (Configuración → Parámetros). |
+| `CACHE_URL` | No | Redis para los límites de peticiones, compartido por los procesos de gunicorn. Por defecto `redis://localhost:6379/1` |
+| `NUM_PROXIES` | No | Proxies delante de Django (`1`: nginx). Sirve para tomar la IP real del cliente de `X-Forwarded-For` |
 | `AUTH_THROTTLE_RATE` | No | Límite de peticiones a login y registro por IP (`20/min`) |
 | `INTERES_THROTTLE_RATE` | No | Límite de expresiones de interés por IP en la landing (`10/hour`) |
 | `RESULTADOS_THROTTLE_RATE` | No | Límite de consultas de resultado por CI y por IP en la landing (`10/hour`) |

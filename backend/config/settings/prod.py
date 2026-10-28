@@ -31,3 +31,17 @@ CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Límites de peticiones (login, registro, interés, resultados):
+# - la cuenta se lleva en Redis, compartida por todos los procesos de gunicorn;
+#   con la caché en memoria cada proceso contaba por su lado;
+# - la IP del cliente es la que añade nginx al final de X-Forwarded-For; sin
+#   NUM_PROXIES todas las peticiones parecían venir de nginx y el límite se
+#   aplicaba a todo el sitio a la vez.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env_str("CACHE_URL", "redis://localhost:6379/1"),
+    }
+}
+REST_FRAMEWORK = {**REST_FRAMEWORK, "NUM_PROXIES": env_int("NUM_PROXIES", 1)}
