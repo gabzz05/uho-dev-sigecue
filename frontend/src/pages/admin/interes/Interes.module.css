@@ -5,3 +5,23 @@
 }
 
 .selector { max-width: 20rem; }
+
+.apagado {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-4);
+}
+
+.dosColumnas {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  .dosColumnas { grid-template-columns: 1fr 1fr; align-items: start; }
+}

@@ -4,11 +4,13 @@ import { useAuth } from '../../../hooks/useAuth'
 import { useCarga } from '../../../hooks/useCarga'
 import { convocatoriasInteres } from '../../../services/interes'
 import { Convocatorias } from './Convocatorias'
+import { DashboardInteres } from './DashboardInteres'
 import styles from './Interes.module.css'
 import { Interesados } from './Interesados'
 import { Oferta } from './Oferta'
 
 const TABS = [
+  { id: 'dashboard', label: 'Dashboard' },
   { id: 'convocatorias', label: 'Convocatorias' },
   { id: 'oferta', label: 'Oferta de carreras' },
   { id: 'interesados', label: 'Interesados' },
@@ -35,7 +37,9 @@ function PorConvocatoria({ tab, elegida, onElegir }) {
           />
         </div>
       )}
-      {tab === 'oferta' ? (
+      {tab === 'dashboard' ? (
+        convocatoria ? <DashboardInteres key={convocatoria.id} convocatoria={convocatoria} /> : null
+      ) : tab === 'oferta' ? (
         <Oferta key={convocatoria?.id} convocatoria={convocatoria} />
       ) : (
         <Interesados key={convocatoria?.id} convocatoria={convocatoria} />
@@ -47,12 +51,12 @@ function PorConvocatoria({ tab, elegida, onElegir }) {
 /** Convocatoria de interés (RF-026 a RF-031): convocatorias, oferta e interesados. */
 export function Interes() {
   const { esGlobal, tienePermiso } = useAuth()
-  const [tab, setTab] = useState('convocatorias')
+  const [tab, setTab] = useState('dashboard')
   const [elegida, setElegida] = useState('')
 
   return (
     <>
-      <PageHeader title="Interés de la población" subtitle="Convocatorias de interés, oferta de carreras y personas interesadas." />
+      <PageHeader title="Interés de la población" subtitle="Dashboard, convocatorias de interés, oferta de carreras y personas interesadas." />
       <Tabs tabs={TABS} activa={tab} onChange={setTab} label="Sección">
         {tab === 'convocatorias' ? (
           <Convocatorias puedeGestionar={esGlobal && tienePermiso('interes.editar')} />

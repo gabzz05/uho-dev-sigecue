@@ -1,0 +1,113 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.subtitulo {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+
+.alertas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.alerta > span { flex: 1; }
+
+/* Nivel: icono + borde con el color de estado; el texto va siempre en tinta normal. */
+.atencion { border-left-color: var(--color-danger); }
+.atencion .iconoAlerta { color: var(--color-danger); }
+.aviso { border-left-color: var(--color-warning); }
+.aviso .iconoAlerta { color: var(--color-warning); }
+.info { border-left-color: var(--color-info); }
+.info .iconoAlerta { color: var(--color-info); }
+
+.iconoAlerta {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.enlaceAlerta {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.enlaceAlerta svg { width: 0.9rem; height: 0.9rem; }
+
+.secciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+}
+
+.datos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.dato {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.dato dt { color: var(--color-text-muted); }
+.dato dd { margin: 0; font-weight: 600; text-align: right; }
+
+.accesos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.acceso {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.acceso:hover { border-color: var(--color-primary-light); color: var(--color-primary); }
+.acceso svg { width: 1rem; height: 1rem; }
+
+.apagado {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}

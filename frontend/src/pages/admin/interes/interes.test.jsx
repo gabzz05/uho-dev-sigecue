@@ -11,7 +11,7 @@ vi.mock('../../../services/interes', () => {
   return {
     convocatoriasInteres: { ...recurso('/c/'), abrir: vi.fn(), cerrar: vi.fn() },
     ofertas: recurso('/o/'),
-    expresiones: { ...recurso('/e/'), exportar: vi.fn() },
+    expresiones: { ...recurso('/e/'), exportar: vi.fn(), estadisticas: vi.fn() },
   }
 })
 vi.mock('../../../services/nomencladores', () => {
@@ -45,8 +45,34 @@ afterEach(() => vi.restoreAllMocks())
 async function abrir(usuario = JEFE_CI) {
   auth.restaurarSesion.mockResolvedValue(usuario)
   renderApp('/admin/interes')
+  // La pestaña inicial es el dashboard.
+  fireEvent.click(await screen.findByRole('tab', { name: 'Convocatorias' }))
   await screen.findByText('2026-2027')
 }
+
+const MUNICIPIOS = ['Holguín', 'Banes', 'Moa'].map((nombre, i) => ({ municipio: i + 1, nombre, total: [5, 1, 0][i] }))
+
+describe('dashboard de interés', () => {
+  it('muestra totales, barras por entidad y el mapa con su tabla', async () => {
+    expresiones.estadisticas.mockResolvedValue({
+      total: 6,
+      por_carrera: [{ carrera: 'Derecho', total: 4 }, { carrera: 'Contabilidad', total: 2 }],
+      por_entidad: [{ entidad: 'Fac. Informática', total: 5 }, { entidad: 'CUM Banes', total: 1 }],
+      evolucion: [{ dia: '2026-10-20', total: 6 }],
+      por_municipio: MUNICIPIOS,
+    })
+    auth.restaurarSesion.mockResolvedValue(JEFE_CI)
+    renderApp('/admin/interes')
+
+    expect(await screen.findByText('Interés por municipio')).toBeInTheDocument()
+    expect(expresiones.estadisticas).toHaveBeenCalledWith({ convocatoria: 1 })
+    expect(screen.getByTitle('Holguín: 5 expresiones de interés')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Holguín 5, Banes 1, Moa 0/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Expresiones de interés por día' })).toBeInTheDocument()
+    // Por entidad: barras ordenadas, no pastel.
+    expect(screen.getByTitle('Fac. Informática: 5 expresiones')).toBeInTheDocument()
+  })
+})
 
 describe('convocatorias', () => {
   it('abre una convocatoria en borrador tras confirmar', async () => {
