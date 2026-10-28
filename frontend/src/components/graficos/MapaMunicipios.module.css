@@ -86,7 +86,7 @@
   font-size: var(--font-size-xs);
 }
 
-.tablaContenedor { overflow-x: auto; }
+.tablaContenedor { position: relative; overflow-x: auto; }
 
 .tabla {
   width: 100%;

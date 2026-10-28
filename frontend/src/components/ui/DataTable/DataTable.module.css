@@ -1,4 +1,6 @@
 .wrapper {
+  /* relative: el texto solo para lectores de pantalla (absolute) queda dentro del scroll y no ensancha la página. */
+  position: relative;
   width: 100%;
   overflow-x: auto;
 }
