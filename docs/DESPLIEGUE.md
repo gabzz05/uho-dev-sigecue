@@ -181,7 +181,7 @@ tienen prioridad sobre las del archivo.
 | `LOGIN_MAX_INTENTOS` / `LOGIN_BLOQUEO_MINUTOS` | No | Valores iniciales del bloqueo temporal (5 / 15). Después se cambian en el panel (Configuración → Parámetros). |
 | `CACHE_URL` | No | Redis para los límites de peticiones, compartido por los procesos de gunicorn. Por defecto `redis://localhost:6379/1` |
 | `NUM_PROXIES` | No | Proxies delante de Django (`1`: nginx). Sirve para tomar la IP real del cliente de `X-Forwarded-For` |
-| `AUTH_THROTTLE_RATE` | No | Límite de peticiones a login y registro por IP (`20/min`) |
+| `AUTH_THROTTLE_RATE` | No | Límite de peticiones a login y registro por IP (`60/min`) |
 | `INTERES_THROTTLE_RATE` | No | Límite de expresiones de interés por IP en la landing (`10/hour`) |
 | `RESULTADOS_THROTTLE_RATE` | No | Límite de consultas de resultado por CI y por IP en la landing (`10/hour`) |
 | `AUTH_COOKIE_SECURE` | No | `True` (la cookie de sesión solo viaja por HTTPS). No cambiar en producción. |

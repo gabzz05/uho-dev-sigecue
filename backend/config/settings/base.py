@@ -139,7 +139,7 @@ REST_FRAMEWORK = {
     # Seguro por defecto: toda vista exige sesión salvo que declare lo contrario.
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_THROTTLE_RATES": {
-        "auth": env_str("AUTH_THROTTLE_RATE", "20/min"),
+        "auth": env_str("AUTH_THROTTLE_RATE", "60/min"),
         # Formulario anónimo de expresión de interés: límite por IP contra el spam.
         "interes": env_str("INTERES_THROTTLE_RATE", "10/hour"),
         # Consulta pública del resultado por CI: mismo límite, contra la enumeración de identidades.
