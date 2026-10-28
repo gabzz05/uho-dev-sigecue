@@ -49,8 +49,9 @@ class TestPermisos:
         assert config.actualizado_por == superadmin
 
     @pytest.mark.parametrize("ruta", ["parametros", "smtp", "identidad"])
-    def test_put_no_esta_disponible(self, api_como, superadmin, ruta):
+    def test_put_no_esta_disponible(self, api_como, superadmin, con_lectura, ruta):
         assert api_como(superadmin).put(f"{BASE}/{ruta}/", {}, format="json").status_code == 405
+        assert api_como(con_lectura).put(f"{BASE}/{ruta}/", {}, format="json").status_code == 405
 
 
 class TestParametros:

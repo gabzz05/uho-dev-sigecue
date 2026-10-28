@@ -30,7 +30,7 @@ class PermisoConfiguracion(PermisoModulo):
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
             return False
-        if request.method in SAFE_METHODS or request.user.es_superadmin:
+        if request.method in SAFE_METHODS or request.user.es_superadmin or request.method.lower() not in view.http_method_names:
             return True
         self.message = "Solo el Superadmin modifica la configuración del sistema."
         return False

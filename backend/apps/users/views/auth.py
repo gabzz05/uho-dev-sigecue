@@ -167,7 +167,7 @@ class RestablecerPasswordView(_VistaPublica):
         datos = RestablecerPasswordSerializer(data=request.data)
         datos.is_valid(raise_exception=True)
         usuario = datos.validated_data["usuario"]
-        recuperacion.restablecer(usuario, datos.validated_data["password"])
+        recuperacion.restablecer(usuario, datos.validated_data["token"], datos.validated_data["password"])
         request.user = usuario  # Para que la auditoría registre quién la cambió.
         return Response({"mensaje": "Tu contraseña se cambió. Ya puedes iniciar sesión con la nueva."})
 
