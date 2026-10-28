@@ -72,6 +72,8 @@ def abrir(convocatoria):
     if plan_vigente(convocatoria.anio_academico) is None:
         raise ErrorDeNegocio(f"El plan de plazas {convocatoria.anio_academico} todavía no está publicado.")
     if not ofertas_de(convocatoria).exists():
+        if convocatoria.numero > 1 and ofertas_de(convocatoria, con_restantes=False).exists():
+            raise ErrorDeNegocio("No quedan plazas libres en estas entidades: se otorgaron todas en las convocatorias anteriores.")
         raise ErrorDeNegocio("Las entidades seleccionadas no tienen plazas en el plan de plazas publicado.")
     if ConvocatoriaSolicitud.objects.filter(estado=E.ABIERTA).exists():
         raise ErrorDeNegocio("Ya hay otra convocatoria de solicitud abierta. Ciérrala primero.")
