@@ -39,3 +39,13 @@ export async function activarCuenta(token) {
   const { data } = await api.post('/auth/activar/', { token })
   return data.mensaje
 }
+
+export async function pedirRecuperacion(email) {
+  const { data } = await api.post('/auth/recuperar/', { email })
+  return data.mensaje
+}
+
+export async function restablecerPassword(uid, token, password) {
+  const { data } = await api.post('/auth/restablecer/', { uid, token, password })
+  return data.mensaje
+}

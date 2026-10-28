@@ -20,3 +20,9 @@
   gap: var(--space-4);
   text-align: center;
 }
+
+.enlace {
+  align-self: flex-end;
+  margin-top: calc(-1 * var(--space-2));
+  font-size: var(--font-size-sm);
+}

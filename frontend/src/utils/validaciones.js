@@ -1,7 +1,7 @@
 // Mismas reglas que el backend, para avisar antes de enviar (RG-002).
 export const PATRON_CI = /^\d{11}$/
 export const PATRON_CELULAR = /^5\d{7}$/
-const PATRON_EMAIL = /^\S+@\S+\.\S+$/
+export const PATRON_EMAIL = /^\S+@\S+\.\S+$/
 const MIN_PASSWORD = 8
 
 export const MENSAJE_CI = 'El carnet de identidad debe tener 11 dígitos, sin espacios ni guiones.'
