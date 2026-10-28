@@ -1,7 +1,7 @@
 # Despliegue en producción
 
-Guía para instalar SIGECUE en un servidor sin Docker, en Linux, macOS o
-Windows. Para la versión con contenedores ver [DOCKER.md](DOCKER.md).
+Guía para instalar SIGECUE **sin Docker** en Linux, macOS o Windows. La forma
+recomendada es con contenedores: ver [DOCKER.md](DOCKER.md).
 
 ## Qué se instala
 

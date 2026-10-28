@@ -14,7 +14,7 @@ de plazas y prematrícula.
 | [TRAZABILIDAD.md](TRAZABILIDAD.md) | Cada requisito de la ERS y dónde está implementado |
 | [DESARROLLO.md](DESARROLLO.md) | Cómo levantar el proyecto en una máquina local |
 | [DESPLIEGUE.md](DESPLIEGUE.md) | Cómo instalar y poner en producción en Linux, macOS o Windows |
-| [DOCKER.md](DOCKER.md) | Cómo contenerizar el sistema (documentado; no implementado por decisión del cliente) |
+| [DOCKER.md](DOCKER.md) | Despliegue recomendado con Docker Compose |
 | [GIT.md](GIT.md) | Flujo de ramas y formato de commits |
 | [SGU.md](SGU.md) | Cómo conectar la autenticación con auth.uho.edu.cu |
 | [DECISIONES.md](DECISIONES.md) | Decisiones del cliente que se apartan o precisan la ERS |

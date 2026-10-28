@@ -36,6 +36,18 @@ Implementa la ERS v1.0. El estado de cada requisito está en
 
 API documentada en `/api/docs/`.
 
+## Despliegue con Docker (recomendado)
+
+Solo hace falta Docker con Compose en el host.
+
+```bash
+cp .env.example .env
+docker compose run --rm --no-deps backend claves   # pegar las 3 claves en .env
+docker compose up -d --build                       # https://localhost
+```
+
+Detalle, certificado TLS y copias de seguridad en [docs/DOCKER.md](docs/DOCKER.md).
+
 ## Arranque rápido (desarrollo)
 
 ```bash
@@ -62,8 +74,9 @@ Detalle en [docs/DESARROLLO.md](docs/DESARROLLO.md).
 | [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) | Arquitectura real: apps, flujo, Celery, archivos, auditoría |
 | [docs/MANUAL.md](docs/MANUAL.md) | Qué hace cada rol en cada etapa |
 | [docs/DESARROLLO.md](docs/DESARROLLO.md) | Entorno local y pruebas |
-| [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Producción en Linux, macOS o Windows |
+| [docs/DOCKER.md](docs/DOCKER.md) | Despliegue con Docker Compose (recomendado) |
+| [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Producción sin Docker en Linux, macOS o Windows |
 | [docs/DECISIONES.md](docs/DECISIONES.md) | Decisiones del cliente y desviaciones de la ERS |
 | [docs/TRAZABILIDAD.md](docs/TRAZABILIDAD.md) | Requisito → implementación |
 | [docs/ANOTACIONES.md](docs/ANOTACIONES.md) | Pendientes que debe aportar la UHO |
-| [docs/SGU.md](docs/SGU.md) · [docs/DOCKER.md](docs/DOCKER.md) · [docs/GIT.md](docs/GIT.md) | Integración con el SGU, contenedores y flujo de Git |
+| [docs/SGU.md](docs/SGU.md) · [docs/GIT.md](docs/GIT.md) | Integración con el SGU y flujo de Git |

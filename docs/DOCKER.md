@@ -1,101 +1,111 @@
-# Contenerización con Docker (pendiente)
+# Despliegue con Docker Compose
 
-> Por decisión del cliente, Docker no se implementa todavía. La ERS lo exige
-> para la entrega (RG-021, RE-007, criterio de aceptación 15), así que este
-> documento describe cómo hacerlo cuando toque.
+Forma recomendada de desplegar SIGECUE (RG-021, RE-007, RNF-010, criterio de
+aceptación 15). Solo hace falta **Docker con Compose** en el host. Las
+dependencias del sistema (Python, Node, PostgreSQL, Redis, nginx y las
+librerías de WeasyPrint para los PDF) van dentro de las imágenes.
+
+Para instalar sin Docker, ver [DESPLIEGUE.md](DESPLIEGUE.md).
 
 ## Servicios
 
-| Servicio | Imagen base | Función |
+| Servicio | Imagen | Función |
 |---|---|---|
-| `db` | `postgres:16` | Base de datos |
-| `redis` | `redis:7` | Broker de Celery |
-| `backend` | `python:3.13-slim` | Django servido con gunicorn |
-| `worker` | misma imagen que `backend` | `celery -A config worker` |
-| `beat` | misma imagen que `backend` | `celery -A config beat` |
-| `web` | `nginx` (multi-stage con `node:20`) | Compila el frontend y hace de proxy inverso |
+| `db` | `postgres:16-alpine` | Base de datos (volumen `pgdata`) |
+| `redis` | `redis:7-alpine` | Broker de Celery |
+| `backend` | `sigecue-backend` (`backend/Dockerfile`) | Django + gunicorn. Al arrancar espera a la base, migra, recoge los estáticos y crea el Superadmin si se pidió |
+| `worker` | `sigecue-backend` | `celery worker`: correos y tareas en segundo plano |
+| `beat` | `sigecue-backend` | `celery beat`: cierres, avisos de prematrícula y retención mensual |
+| `web` | `sigecue-web` (`frontend/Dockerfile`) | Compila el frontend y lo sirve con nginx, que hace de proxy de `/api/` y termina el TLS |
 
-## Pasos
+**Volúmenes:**
 
-1. **`backend/Dockerfile`**
-   ```dockerfile
-   FROM python:3.13-slim
-   ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
-       DJANGO_SETTINGS_MODULE=config.settings.prod
-   WORKDIR /app
-   COPY requirements/ requirements/
-   RUN pip install --no-cache-dir -r requirements/prod.txt
-   COPY . .
-   CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
-   ```
+| Volumen | Contenido | Quién lo usa |
+|---|---|---|
+| `pgdata` | Base de datos | `db` |
+| `media` | Archivos privados de los aspirantes | Solo el backend |
+| `media_publica` | Imágenes públicas | nginx lo sirve en `/media/` |
+| `static` | Estáticos de Django | nginx lo sirve en `/static/` |
+| `logs` | Logs de la aplicación | backend, worker y beat |
 
-2. **`frontend/Dockerfile`** (multi-stage)
-   ```dockerfile
-   FROM node:20 AS build
-   WORKDIR /app
-   COPY package*.json ./
-   RUN npm ci
-   COPY . .
-   RUN npm run build
+## Primer arranque (entorno limpio)
 
-   FROM nginx:stable
-   COPY --from=build /app/dist /usr/share/nginx/html
-   COPY nginx.conf /etc/nginx/conf.d/default.conf
-   ```
-   `nginx.conf` es el mismo bloque de [DESPLIEGUE.md](DESPLIEGUE.md#7-nginx)
-   cambiando `proxy_pass` por `http://backend:8000` y `root` por
-   `/usr/share/nginx/html`.
+```bash
+git clone <repositorio> sigecue && cd sigecue
+cp .env.example .env
 
-3. **`docker-compose.yml`** en la raíz
-   ```yaml
-   services:
-     db:
-       image: postgres:16
-       env_file: backend/.env
-       environment:
-         POSTGRES_DB: ${POSTGRES_DB}
-         POSTGRES_USER: ${POSTGRES_USER}
-         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-       volumes: [pgdata:/var/lib/postgresql/data]
-     redis:
-       image: redis:7
-     backend:
-       build: ./backend
-       env_file: backend/.env
-       environment:
-         POSTGRES_HOST: db
-         CELERY_BROKER_URL: redis://redis:6379/0
-         CELERY_RESULT_BACKEND: redis://redis:6379/0
-         MEDIA_ROOT: /data/media
-       volumes: [media:/data/media, static:/app/staticfiles]
-       depends_on: [db, redis]
-     worker:
-       build: ./backend
-       command: celery -A config worker -l info
-       env_file: backend/.env
-       environment: { POSTGRES_HOST: db, CELERY_BROKER_URL: redis://redis:6379/0 }
-       volumes: [media:/data/media]
-       depends_on: [db, redis]
-     beat:
-       build: ./backend
-       command: celery -A config beat -l info
-       env_file: backend/.env
-       environment: { POSTGRES_HOST: db, CELERY_BROKER_URL: redis://redis:6379/0 }
-       depends_on: [db, redis]
-     web:
-       build: ./frontend
-       ports: ["80:80", "443:443"]
-       volumes: [static:/static:ro]
-       depends_on: [backend]
-   volumes: { pgdata: {}, media: {}, static: {} }
-   ```
+# Generar las claves y pegar las tres líneas en .env
+docker compose run --rm --no-deps backend claves
 
-4. **Arranque**
-   ```bash
-   docker compose up -d --build
-   docker compose exec backend python manage.py migrate
-   docker compose exec backend python manage.py collectstatic --noinput
-   ```
+# Editar en .env: POSTGRES_PASSWORD, DJANGO_SUPERUSER_PASSWORD, dominio y SMTP
+docker compose up -d --build
+```
 
-5. Agregar a `.gitignore` lo que haga falta y documentar el arranque en el
-   README (criterio 15: `docker-compose up` en un entorno limpio).
+Después, abrir `https://localhost` (o el dominio configurado) y entrar con el
+Superadmin de `.env` en `/login`.
+
+- **Claves:** `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY` se guardan **fuera del
+  servidor**. Si se pierden, CI, correo y celular no se pueden recuperar.
+- **Arranque sin claves:** si `.env` no tiene las claves, el backend no
+  arranca e indica el comando para generarlas.
+- **Puertos:** si 80 o 443 están ocupados, se cambian `WEB_HTTP_PORT` y
+  `WEB_HTTPS_PORT`. Con puertos no estándar, la redirección de HTTP a HTTPS
+  apunta al 443; hay que entrar directamente por `https://host:PUERTO`.
+
+## Certificado TLS (RG-006)
+
+nginx sirve solo HTTPS (TLS 1.2 y 1.3) y redirige el HTTP.
+
+- **Producción:** copiar el certificado de la UHO en `./certs/sigecue.crt` y
+  `./certs/sigecue.key` y reiniciar `web` (`docker compose restart web`).
+- **Sin certificado:** se genera uno autofirmado para poder probar. El
+  navegador avisa de que no es de confianza.
+
+## Operación
+
+| Tarea | Comando |
+|---|---|
+| Ver el estado | `docker compose ps` |
+| Ver logs | `docker compose logs -f backend` (o `worker`, `beat`, `web`) |
+| Comando de Django | `docker compose exec backend python manage.py <comando>` |
+| Actualizar a una versión nueva | `git pull && docker compose up -d --build` (las migraciones se aplican solas) |
+| Parar | `docker compose down` (los datos quedan en los volúmenes) |
+
+## Copias de seguridad (RG-013, RNF-004)
+
+```bash
+# Copia de la base de datos (programarla a diario, con 30 días de retención)
+docker compose exec -T db pg_dump -U sigecue -Fc sigecue > sigecue-$(date +%F).dump
+
+# Copia de los archivos privados y públicos
+docker run --rm -v sigecue_media:/m -v sigecue_media_publica:/p -v "$PWD":/copia alpine \
+    tar czf /copia/archivos-$(date +%F).tgz -C / m p
+
+# Restaurar la base en una instalación nueva (con los servicios parados salvo db)
+docker compose up -d db
+docker compose exec -T db pg_restore -U sigecue -d sigecue --clean --if-exists < sigecue-AAAA-MM-DD.dump
+```
+
+El nombre de los volúmenes lleva delante el de la carpeta del proyecto
+(`sigecue_` si se clonó en `sigecue/`): se comprueba con `docker volume ls`.
+
+Si se restaura una copia antigua, hay que volver a ejecutar la retención de
+datos (Configuración → Retención de datos) antes de reabrir el sistema. Ver
+DESPLIEGUE §5.
+
+## Verificado
+
+Probado en un clon limpio del repositorio:
+
+- **Arranque:** construcción de las imágenes, generación de claves y
+  `docker compose up` sin instalar nada en el host.
+- **Punto a punto a través de nginx:**
+  - landing y rutas del panel;
+  - salud de la API, Swagger y estáticos;
+  - redirección de HTTP a HTTPS;
+  - login del Superadmin;
+  - worker y beat de Celery funcionando.
+- **Suite de pruebas dentro de la imagen del backend:** 529 pasan, incluidas
+  las de PDF (plan de plazas, otorgamiento, prematrícula y solicitudes), que en
+  Windows se omiten por falta de GTK.
+- **Copia y restauración:** `pg_dump` y `pg_restore` de la base de datos.

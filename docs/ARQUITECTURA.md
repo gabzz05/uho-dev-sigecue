@@ -22,6 +22,9 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado)
 - **Base de datos:** PostgreSQL en producción y SQLite en desarrollo.
 - **Tareas en segundo plano:** Celery con Redis. En desarrollo se ejecutan en el
   mismo proceso (`CELERY_TASK_ALWAYS_EAGER`).
+- **Despliegue:** Docker Compose con seis servicios (`db`, `redis`, `backend`,
+  `worker`, `beat`, `web`), descritos en [DOCKER.md](DOCKER.md). También se
+  puede instalar sin contenedores ([DESPLIEGUE.md](DESPLIEGUE.md)).
 
 ## Flujo de una petición
 

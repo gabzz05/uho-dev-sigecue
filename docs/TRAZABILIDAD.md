@@ -24,9 +24,11 @@ externas y mejoras menores que no bloquean la entrega.
 
 Las apps citadas están en `backend/apps/` y las pantallas en `frontend/src/pages/`.
 
-Pruebas automatizadas: 526 en el backend (cobertura del 96 %) y 192 en el
-frontend. La cobertura del frontend no se mide: no hay herramienta de
-cobertura entre las librerías aprobadas.
+Pruebas automatizadas: 530 en el backend (cobertura del 96 %) y 192 en el
+frontend. Dentro de la imagen Docker pasan 529 del backend, incluidas las de
+PDF. En Windows sin GTK pasan 526 y las de PDF se omiten. La cobertura del
+frontend no se mide: no hay herramienta de cobertura entre las librerías
+aprobadas.
 
 ## Requisitos funcionales
 
@@ -133,7 +135,7 @@ cobertura entre las librerías aprobadas.
 | RG-018 | Convenciones y comentarios | Sí | oxlint en el frontend; backend con PEP 8 (sin linter automático) |
 | RG-019 | Repositorio con ramas y commits atómicos | Sí | [GIT.md](GIT.md) |
 | RG-020 | Pruebas, cobertura ≥ 70 % | Sí | Backend 96 % |
-| RG-021 | Contenedor Docker | Decisión | Solo documentado ([DOCKER.md](DOCKER.md)) |
+| RG-021 | Contenedor Docker | Sí | `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml` ([DOCKER.md](DOCKER.md)) |
 | RG-022 | Documentación técnica y diagrama | Sí | README, DESARROLLO, DESPLIEGUE, [ARQUITECTURA.md](ARQUITECTURA.md) |
 | RG-023 | Respuesta < 2 s con 100 usuarios | No verificado | Hay paginación y consultas optimizadas; falta una prueba de carga |
 | RG-024 | Legislación de protección de datos | Parcial | Cifrado, ámbito, auditoría, consentimiento y retención; la validación jurídica corresponde a la UHO |
@@ -152,7 +154,7 @@ cobertura entre las librerías aprobadas.
 | RE-004 | API documentada | Sí | `/api/docs/` |
 | RE-005 | Nomencladores como CRUD | Sí | `nomencladores` |
 | RE-006 | Roles y permisos granulares | Sí | `roles`: matriz módulo × acción editable |
-| RE-007 | docker-compose y `.env` | Decisión | `.env` con python-dotenv; Docker solo documentado |
+| RE-007 | docker-compose y `.env` | Sí | `docker compose up -d --build` con variables en `.env` (`.env.example` en la raíz) |
 | RE-008 | Versionado con commits regulares | Sí | GitHub, rama `develop` |
 | RE-009 | Membrete en los PDF | Sí | `core/templates/pdf/base.html` (el escudo aparece cuando se carga) |
 | RE-010 | SMTP editable desde el panel | Sí | `configuracion` |
@@ -170,4 +172,4 @@ cobertura entre las librerías aprobadas.
 | RNF-007 | Arquitectura en capas | Sí | Vistas → services → modelos ([ARQUITECTURA.md](ARQUITECTURA.md)) |
 | RNF-008 | Logs con rotación diaria, 90 días | Sí | `LOGGING` en `settings/base.py` |
 | RNF-009 | `/api/v1/` y Swagger en `/api/docs` | Sí | `config/urls.py` |
-| RNF-010 | Despliegue Linux con Docker | Decisión | Despliegue en Linux sin Docker documentado; Docker en DOCKER.md |
+| RNF-010 | Despliegue Linux con Docker | Sí | Probado en un clon limpio: las dependencias, incluidas las de WeasyPrint, van en las imágenes y las versiones de Python están fijadas |
