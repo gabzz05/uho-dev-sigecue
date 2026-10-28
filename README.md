@@ -33,6 +33,8 @@ Implementa la ERS v1.0. El estado de cada requisito está en
 - **Backend** (`backend/`): Django + Django REST Framework, PostgreSQL (SQLite
   en desarrollo) y Celery + Redis.
 - **Frontend** (`frontend/`): React + Vite y CSS Modules.
+- **Despliegue:** Docker Compose (PostgreSQL, Redis, backend, worker y beat de
+  Celery, y nginx con HTTPS).
 
 API documentada en `/api/docs/`.
 
@@ -45,6 +47,12 @@ cp .env.example .env
 docker compose run --rm --no-deps backend claves   # pegar las 3 claves en .env
 docker compose up -d --build                       # https://localhost
 ```
+
+Después, abrir **https://localhost** y entrar en `/login` con el usuario y la
+contraseña de `DJANGO_SUPERUSER_USERNAME` / `DJANGO_SUPERUSER_PASSWORD` del
+`.env`. Hasta que se instale el certificado de la UHO en `./certs/`, nginx usa
+uno autofirmado y el navegador avisa de que no es de confianza: aceptar y
+continuar.
 
 Detalle, certificado TLS y copias de seguridad en [docs/DOCKER.md](docs/DOCKER.md).
 
