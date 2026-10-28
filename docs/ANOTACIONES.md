@@ -3,6 +3,18 @@
 Elementos que hoy están resueltos de forma provisional porque falta material
 externo, y qué hacer cuando ese material llegue.
 
+## Pendientes que debe aportar la UHO
+
+| # | Qué | Para qué | Dónde se integra |
+|---|---|---|---|
+| 1 | GeoJSON (o SVG) de los 14 municipios | Mapa real del dashboard de interés (RF-029) | Componente con la misma interfaz que `MapaMunicipios` (§1) |
+| 2 | Escudo y Manual de Identidad Visual | Interfaz y membrete de los PDF (RE-001, RE-009) | Configuración → Identidad visual (§2, §6) |
+| 3 | Texto oficial de la política de privacidad | Consentimiento del registro (RG-024, RG-026) | `pages/public/Privacidad.jsx` (§3) |
+| 4 | Misión, visión y datos de contacto | Sección institucional de la landing (RF-025) | `SeccionInstitucional.jsx` (§4) |
+| 5 | Datos de conexión al SGU (auth.uho.edu.cu) | Acceso de los roles internos (RF-012, RE-002) | [SGU.md](SGU.md) (§7) |
+| 6 | Acceso a SIGENU y ASSET | Validar el índice y el centro de trabajo (RG-014, RG-015) | §8 |
+| 7 | Infraestructura para pruebas de carga | Comprobar tiempos y concurrencia (RG-023, RNF-001 a RNF-003) | §9 |
+
 ## 1. Mapa de interés por municipio (RF-029)
 
 **Qué es:** el dashboard de la convocatoria de interés debe mostrar cuánto
@@ -40,7 +52,7 @@ nombre o por código.
 "UHO" en su lugar.
 
 **Cómo integrarlo:** subirlo desde Configuración → Identidad visual. La interfaz
-lo usa en cuanto se guarda; los PDF lo tomarán de ahí (feature de exportaciones).
+y el membrete de los PDF (`core/pdf.py`) lo usan en cuanto se guarda.
 
 **Qué hace falta:** el escudo en SVG (preferido) o PNG de alta resolución, y el
 Manual de Identidad Visual si existe.
@@ -88,3 +100,45 @@ El frontend los pide con el token y los muestra como `blob:`
 la cambia en Configuración → Identidad visual y el frontend la aplica al
 cargar. `frontend/src/styles/tokens.css` contiene los valores por defecto, que
 se usan si la API no responde.
+
+## 7. Autenticación con el SGU (RF-012, RE-002)
+
+**Estado actual:** los roles internos entran con usuario y contraseña locales.
+El adaptador (`backend/apps/users/sgu.py`) está preparado y desactivado
+(`SGU_PROVEEDOR` vacío).
+
+**Qué hace falta:** el protocolo (LDAP u OAuth 2.0 / OpenID Connect), la URL,
+las credenciales de la aplicación y el atributo que identifica al usuario.
+
+**Cómo integrarlo:** seguir [SGU.md](SGU.md).
+
+## 8. SIGENU y ASSET (RG-014, RG-015)
+
+**Estado actual:** no hay integración.
+
+- El índice académico lo declara el aspirante y lo **valida a mano** una
+  entidad contra la certificación (`indice_validado`). Solo el índice validado
+  cuenta para el ranking.
+- El centro de trabajo es **texto libre**.
+
+**Qué hace falta:** acceso a las API (o vistas de base de datos) de SIGENU y
+ASSET, con su documentación.
+
+**Cómo integrarlo:**
+
+- **SIGENU:** un adaptador como el del SGU, que consulte el índice por CI y lo
+  proponga al validar (`solicitudes/revision.py`, `validar_indice`), sin
+  quitar la validación de la entidad.
+- **ASSET:** se consulta al guardar el perfil, solo como referencia del centro
+  de trabajo (`aspirantes/services.py`, `actualizar_datos`).
+
+## 9. Rendimiento y disponibilidad (RG-023, RNF-001 a RNF-003)
+
+**Estado actual:** no medido. El sistema pagina las listas, carga las
+relaciones de cada consulta en bloque (`select_related` / `prefetch_related`),
+comprime las respuestas con gzip y difiere la carga de las imágenes de la
+landing. Los servicios se reinician solos (systemd).
+
+**Qué hace falta:** un entorno equivalente al de producción para una prueba de
+carga (100 y 500 usuarios concurrentes), con la herramienta que elija la
+Dirección de Informatización.

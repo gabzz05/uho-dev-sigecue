@@ -404,3 +404,42 @@ datos anonimizados desaparecen de las copias en el ciclo natural siguiente. No
 amplíes esa retención sin revisar la política de datos personales, y si
 restauras una copia antigua, vuelve a ejecutar la retención (Configuración →
 Retención de datos) antes de reabrir el sistema.
+
+## 6. Lista de comprobación para la primera puesta en producción
+
+**Antes de abrir el sistema:**
+
+- [ ] `DJANGO_SETTINGS_MODULE=config.settings.prod` en el servicio web, el worker y beat.
+- [ ] `DJANGO_SECRET_KEY`, `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY` generadas
+  y **guardadas fuera del servidor**. Sin la clave de cifrado no se recuperan
+  CI, correo ni celular.
+- [ ] `DJANGO_ALLOWED_HOSTS` y `FRONTEND_URL` con el dominio real;
+  `AUTH_COOKIE_SECURE=True`; `CELERY_TASK_ALWAYS_EAGER=False`.
+- [ ] `migrate`, `collectstatic` y `check --deploy` sin errores (§2.3).
+- [ ] Superadmin creado (`createsuperuser`).
+- [ ] HTTPS activo en nginx con TLS 1.2 o superior (RG-006). `/media/` solo
+  sirve `PUBLIC_MEDIA_ROOT`; `MEDIA_ROOT` **no** se publica.
+- [ ] Servicios web, worker y beat activos y arrancando solos (§3).
+- [ ] Librerías de WeasyPrint instaladas: exportar un PDF de prueba desde el
+  panel.
+- [ ] Copia diaria de la base de datos y de `MEDIA_ROOT`, con 30 días de
+  retención (§5). Hacer **una restauración de prueba** (RNF-004: RTO ≤ 4 h).
+
+**En el panel, como Superadmin:**
+
+- [ ] Configuración → Correo: SMTP corporativo y envío de prueba.
+- [ ] Configuración → Identidad visual: nombre, colores y escudo.
+- [ ] Configuración → Parámetros: máximo de carreras, intentos de acceso y
+  plazos de retención.
+- [ ] Revisar las plantillas de correo, los documentos del aspirante y los
+  campos de prematrícula.
+- [ ] Nomencladores: Facultades, CUM/FUM, carreras, áreas, departamentos y
+  cargos (los municipios ya vienen cargados).
+- [ ] Usuarios internos de cada entidad, con su rol; revisar la matriz de
+  permisos.
+- [ ] Sustituir los textos provisionales: política de privacidad y sección
+  institucional ([ANOTACIONES.md](ANOTACIONES.md)).
+
+**Después:** revisar Logs de auditoría y el log de aplicación
+(`backend/logs/`) durante los primeros días.
+

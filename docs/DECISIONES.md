@@ -2,7 +2,29 @@
 
 La ERS (sección 1.1) establece que cualquier discrepancia con la implementación
 se resuelve a favor del documento, **salvo decisión documentada del cliente**.
-Este archivo registra esas decisiones.
+Este archivo registra esas decisiones. El estado de cada requisito está en
+[TRAZABILIDAD.md](TRAZABILIDAD.md).
+
+## Resumen: desviaciones principales respecto a la ERS
+
+| Tema | ERS | Implementado | Motivo |
+|---|---|---|---|
+| Plazas por aspirante | No lo limita | **Una sola plaza**, la de mayor prioridad que alcance | Decisión del cliente |
+| Regla 5 del algoritmo | Prioriza el CUM/FUM del municipio sobre la Facultad | **Descartada**: manda la prioridad del aspirante | Manda la prioridad elegida por el aspirante |
+| Orden del ranking | Por carrera y entidad | **Global**, por índice validado, luego confirmación y luego id | Consecuencia de dar una sola plaza por aspirante |
+| Índice | Declarado | Solo cuenta el **validado** por una entidad | El índice es un dato único del aspirante, no de cada entidad |
+| Misma carrera (RF-049) | En un CUM/FUM "de su municipio" | Permitida en **una Facultad y un CUM/FUM**, nunca en dos del mismo tipo | El aspirante no tiene municipio asociado |
+| Estado *Observada* | No existe | Nuevo estado, con observaciones corregibles que excluyen del ranking hasta resolverse | Una solicitud observada no es lo mismo que una en revisión |
+| Otorgamiento (RF-058, RF-059) | Admin o secretario de la entidad | Lo genera la **Secretaría General**; ajustan el **Jefe CI** y el **Vicerrector**; la aprobación del Vicerrector publica | Decisión del cliente |
+| Reversión tras aprobar (RF-064) | Permitida con justificación | **Descartada**: publicado, no cambia | Decisión del cliente |
+| Firma del Vicerrector (RF-036, RF-037) | Firma digital | **Sello visible** con usuario, fecha y hora | Decisión del cliente |
+| Resultado público (RF-024) | Listados con nombre o CI | Solo otorgados, **CI enmascarado**, sin índice, posición ni prioridad; consulta individual por CI completo | Minimización de datos |
+| Pastel por entidad (RF-029) | Gráfico de pastel | **Barras horizontales** ordenadas | Más legible con muchas entidades |
+| Mapa (RF-029) | Por municipio | **Provisional** de casillas, por municipio de la entidad ofertante | Falta la geometría oficial |
+| "Rechazar" la prematrícula (RF-069) | Rechazar | **Pedir correcciones**: nunca hace perder la plaza | No existe la renuncia |
+| Retención (RG-028) | 2 años recomendados | **Configurable**: 2 años (no seleccionados) y 5 (otorgados); anonimizar en lugar de borrar | Reclamaciones tardías y consultas sobre los otorgados; estadísticas |
+| Usuarios (RF-017) | Bloquear | Se **desactivan**, nunca se borran | Decisión del cliente |
+| Docker (RG-021, RE-007) | Entrega en Docker | **Solo documentado** | Decisión del cliente |
 
 ## Infraestructura
 

@@ -42,7 +42,8 @@ cd backend
 pytest
 ```
 
-Muestra el reporte de cobertura al final. La meta del proyecto es ≥ 70 %.
+Muestra el reporte de cobertura al final. La meta de la ERS es ≥ 70 % (RG-020);
+al cierre del proyecto hay 526 pruebas y una cobertura del 96 %.
 
 Las pruebas que generan PDF reales se saltan si WeasyPrint no encuentra sus
 librerías nativas (Pango/GTK), lo habitual en Windows. Para ejecutarlas,
@@ -64,6 +65,13 @@ programadas de verdad:
    ```
    En Windows el worker necesita `--pool=solo`.
 
+Las tareas programadas están en `CELERY_BEAT_SCHEDULE` (`config/settings/base.py`):
+cierres de convocatorias, cuentas sin activar, avisos de prematrícula y
+retención mensual. La tabla completa está en
+[ARQUITECTURA.md](ARQUITECTURA.md#tareas-programadas-celery-beat). Cada tarea
+llama a una función de un service, que se puede probar sin Celery (p. ej.
+`prematricula.services.tarea_diaria(hoy=...)`).
+
 ## Frontend
 
 ```bash
@@ -79,7 +87,7 @@ Otros comandos:
 
 | Comando | Qué hace |
 |---|---|
-| `npm test` | Ejecuta las pruebas con Vitest |
+| `npm test` | Ejecuta las pruebas con Vitest (192 al cierre del proyecto) |
 | `npm run test:watch` | Pruebas en modo observación |
 | `npm run lint` | Revisa el código con oxlint |
 | `npm run build` | Compila a `frontend/dist/` para producción |

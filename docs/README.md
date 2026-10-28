@@ -9,13 +9,16 @@ de plazas y prematrícula.
 
 | Documento | Contenido |
 |---|---|
+| [ARQUITECTURA.md](ARQUITECTURA.md) | Arquitectura real: apps, flujo de una petición, Celery, archivos, exportaciones, auditoría |
+| [MANUAL.md](MANUAL.md) | Qué hace cada rol en cada etapa del proceso |
+| [TRAZABILIDAD.md](TRAZABILIDAD.md) | Cada requisito de la ERS y dónde está implementado |
 | [DESARROLLO.md](DESARROLLO.md) | Cómo levantar el proyecto en una máquina local |
 | [DESPLIEGUE.md](DESPLIEGUE.md) | Cómo instalar y poner en producción en Linux, macOS o Windows |
-| [DOCKER.md](DOCKER.md) | Cómo contenerizar el sistema más adelante (pendiente de implementar) |
+| [DOCKER.md](DOCKER.md) | Cómo contenerizar el sistema (documentado; no implementado por decisión del cliente) |
 | [GIT.md](GIT.md) | Flujo de ramas y formato de commits |
 | [SGU.md](SGU.md) | Cómo conectar la autenticación con auth.uho.edu.cu |
 | [DECISIONES.md](DECISIONES.md) | Decisiones del cliente que se apartan o precisan la ERS |
-| [ANOTACIONES.md](ANOTACIONES.md) | Elementos provisionales y pendientes de material externo |
+| [ANOTACIONES.md](ANOTACIONES.md) | Elementos provisionales y lo que debe aportar la UHO |
 
 ## Arquitectura
 
@@ -29,9 +32,9 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 - **backend/** — API REST con Django + Django REST Framework.
   - `config/`: configuración del proyecto. `settings/base.py` es común;
     `dev.py` (SQLite, depuración) y `prod.py` (PostgreSQL, HTTPS) la extienden.
-  - `apps/`: una app de Django por dominio (`core`, y las que se agreguen
-    por feature). Cada app separa modelos, serializers, vistas y, si la lógica
-    es compleja, `services.py`.
+  - `apps/`: una app de Django por dominio. Cada app separa modelos,
+    serializers, vistas y `services.py` con las reglas de negocio (tabla
+    completa en [ARQUITECTURA.md](ARQUITECTURA.md)).
   - Todas las rutas de la API cuelgan de `/api/v1/`.
 - **frontend/** — SPA con React + Vite.
   - `src/components/`: componentes reutilizables.
@@ -321,9 +324,8 @@ Endpoints: `/api/v1/admin/plan-plazas/` (+ `enviar/`, `cargar-oferta/`,
   fechas, mensaje público y entidades opcionales. Sin entidades marcadas,
   aplica a todas las que tienen plazas en el plan publicado.
 - La crean y gestionan los roles globales con permiso `convocatorias.*`. El
-  número se asigna solo. La siguiente exige la anterior cerrada; la condición
-  de que su otorgamiento esté publicado se agrega en el feature de
-  otorgamiento.
+  número se asigna solo. La siguiente exige la anterior cerrada y con su
+  otorgamiento publicado (RF-062).
 - **Abrir** (manual) exige:
   - el plan de plazas **publicado** del año;
   - carreras con plazas en las entidades elegidas;
@@ -339,8 +341,9 @@ Endpoints: `/api/v1/admin/plan-plazas/` (+ `enviar/`, `cargar-oferta/`,
     la dirección de su cuenta;
   - si no, un único correo al email que dejó.
 
-  La plantilla es `convocatoria_solicitud_abierta`. En la segunda convocatoria
-  se avisa a los no seleccionados (RF-061), en su feature.
+  La plantilla es `convocatoria_solicitud_abierta`. A los no seleccionados se
+  les avisa al publicar el otorgamiento (RF-061), según haya o no segunda
+  convocatoria.
 - `GET /api/v1/convocatorias/activa/` (público): convocatoria que hoy acepta
   solicitudes, o `null`. La landing muestra su aviso **por encima** del de la
   convocatoria de interés, con el botón "Solicitar matrícula".
@@ -351,7 +354,7 @@ Endpoints: `/api/v1/admin/plan-plazas/` (+ `enviar/`, `cargar-oferta/`,
 
 - Nombre, apellidos, CI, email, celular y foto están en `Usuario`.
   `PerfilAspirante` guarda el centro de trabajo, `indice_declarado` (lo escribe
-  el aspirante, 0–100) e `indice_validado` (lo cargará la entidad en
+  el aspirante, 0–100) e `indice_validado` (lo carga la entidad en
   gestión de solicitudes).
 - La foto se cambia en `PATCH /auth/me/`. Para los aspirantes solo se aceptan
   JPG y PNG.
@@ -540,7 +543,7 @@ la solicitud no entraría hoy en el ranking:
 - índice sin validar;
 - perfil incompleto.
 
-La usará el otorgamiento.
+La usa el otorgamiento para decidir quién entra al ranking.
 
 **Listado, estadísticas y exportación.**
 
@@ -950,11 +953,11 @@ determinista. Las claves están en `FIELD_ENCRYPTION_KEY` y `SEARCH_HASH_KEY`.
 ### Reglas de estilo
 
 - Cada componente tiene su `Componente.module.css`. Nada de estilos inline ni
-  de clases globales.
+  de clases globales, salvo valores calculados en tiempo de ejecución (ancho
+  de una barra, posición de una casilla del mapa).
 - Colores, espacios, radios y tipografía salen de las variables de `tokens.css`
   (`var(--color-primary)`, `var(--space-4)`...). La identidad visual guardada en
-  base de datos sobrescribirá esas variables al cargar la app (pendiente:
-  feature `system-config`).
+  base de datos sobrescribe esas variables al cargar la app (`useIdentidad`).
 - Mobile-first (RE-003): estilos base para 320 px y `@media (min-width: ...)`
   para 768 px y 1024 px.
 - Accesibilidad (RG-005): etiquetas asociadas a cada campo, errores enlazados
