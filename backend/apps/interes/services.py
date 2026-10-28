@@ -10,6 +10,44 @@ from apps.oferta.models import OfertaCarrera
 from .models import ConvocatoriaInteres, ExpresionInteres
 
 
+def estadisticas(expresiones):
+    """RF-029 sobre las expresiones ya filtradas y dentro del ámbito del usuario (RF-030).
+
+    La distribución territorial se calcula por el **municipio de la entidad
+    ofertante**: la expresión de interés no guarda el municipio de la persona.
+    """
+    from django.db.models import Count
+    from django.db.models.functions import Coalesce, TruncDate
+
+    from apps.nomencladores.models import Municipio
+
+    def contar(valores):
+        return expresiones.values(*valores).annotate(total=Count("pk")).order_by("-total")
+
+    por_entidad = [
+        {"entidad": f["oferta__facultad__nombre"] or f["oferta__cum_fum__nombre"], "total": f["total"]}
+        for f in contar(["oferta__facultad__nombre", "oferta__cum_fum__nombre"])
+    ]
+    por_municipio = dict(
+        expresiones.annotate(municipio=Coalesce("oferta__facultad__municipio", "oferta__cum_fum__municipio"))
+        .values_list("municipio")
+        .annotate(total=Count("pk"))
+    )
+    return {
+        "total": expresiones.count(),
+        "por_carrera": [{"carrera": f["oferta__carrera__nombre"], "total": f["total"]} for f in contar(["oferta__carrera__nombre"])],
+        "por_entidad": sorted(por_entidad, key=lambda f: (-f["total"], f["entidad"])),
+        "evolucion": [
+            {"dia": f["dia"], "total": f["total"]}
+            for f in expresiones.annotate(dia=TruncDate("created_at")).values("dia").annotate(total=Count("pk")).order_by("dia")
+        ],
+        # Los 14 municipios, también los que no tienen interés, para pintar el mapa completo.
+        "por_municipio": [
+            {"municipio": m.pk, "nombre": m.nombre, "total": por_municipio.get(m.pk, 0)} for m in Municipio.objects.order_by("nombre")
+        ],
+    }
+
+
 def convocatoria_abierta():
     """La convocatoria que hoy acepta expresiones de interés, o None."""
     convocatoria = ConvocatoriaInteres.objects.filter(estado=ConvocatoriaInteres.Estado.ABIERTA).first()

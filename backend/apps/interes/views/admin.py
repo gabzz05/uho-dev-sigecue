@@ -1,6 +1,6 @@
 from django.db.models import Count, Q
-from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import exceptions, mixins, status, viewsets
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view, inline_serializer
+from rest_framework import exceptions, mixins, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -9,7 +9,7 @@ from apps.core.ambito import filtrar_por_entidad
 from apps.core.excel import respuesta_excel
 from apps.core.exceptions import ErrorDeNegocio
 from apps.oferta.models import OfertaCarrera
-from apps.roles.catalogo import EDITAR, EXPORTAR
+from apps.roles.catalogo import EDITAR, EXPORTAR, VER
 from apps.roles.permissions import PermisoModulo
 
 from .. import services
@@ -119,7 +119,7 @@ class ExpresionInteresViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = ExpresionInteresSerializer
     permission_classes = [PermisoModulo]
     modulo = "interes"
-    acciones_permiso = {"exportar": EXPORTAR}
+    acciones_permiso = {"exportar": EXPORTAR, "estadisticas": VER}
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
@@ -133,6 +133,24 @@ class ExpresionInteresViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if buscar := params.get("buscar"):
             qs = qs.filter(Q(nombre__icontains=buscar))
         return filtrar_por_entidad(qs, self.request.user, campo_facultad="oferta__facultad", campo_cum_fum="oferta__cum_fum")
+
+    @extend_schema(
+        parameters=PARAMETROS_EXPRESIONES,
+        responses=inline_serializer(
+            "EstadisticasInteres",
+            {
+                "total": serializers.IntegerField(),
+                "por_carrera": serializers.ListField(child=serializers.DictField()),
+                "por_entidad": serializers.ListField(child=serializers.DictField()),
+                "evolucion": serializers.ListField(child=serializers.DictField()),
+                "por_municipio": serializers.ListField(child=serializers.DictField()),
+            },
+        ),
+    )
+    @action(detail=False)
+    def estadisticas(self, request):
+        """Dashboard de interés (RF-029) con los mismos filtros y el mismo ámbito que el listado (RF-030)."""
+        return Response(services.estadisticas(self.get_queryset()))
 
     @extend_schema(parameters=PARAMETROS_EXPRESIONES, responses={(200, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"): bytes})
     @action(detail=False)

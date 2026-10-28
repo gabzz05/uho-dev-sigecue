@@ -37,6 +37,7 @@ LOCAL_APPS = [
     "apps.solicitudes",
     "apps.otorgamiento",
     "apps.prematricula",
+    "apps.dashboard",
     "apps.notificaciones",
     "apps.users",
     "apps.auditoria",
