@@ -156,6 +156,21 @@ Este archivo registra esas decisiones.
 | Snapshot | Obligatorio: `ResultadoOtorgamiento` guarda índice utilizado, posición, motivo de exclusión, opciones y lo otorgado. Queda congelado al publicar. |
 | Revisión tras generar | Generado el otorgamiento, la revisión de esa convocatoria (validar, observar, corregir) se cierra, para que el snapshot no quede desfasado. |
 
+## Retención de datos (RG-028)
+
+| Tema | Decisión |
+|---|---|
+| Plazos | `retencion_anios` = 2 (no seleccionados, expresiones de interés y versiones antiguas) y `retencion_otorgados_anios` = 5 (otorgados: reclamaciones tardías, prematrícula, consultas). Los configura el Superadmin. |
+| Desde cuándo | Publicación del último otorgamiento del año académico. Con una solicitud o participación posterior, no se anonimiza todavía. |
+| Sin solicitud confirmada | Plazo base desde el último acceso (o el registro): no hay otorgamiento del que contar. |
+| Anonimizar, no borrar | Se quitan nombre y apellidos, CI, correo, celular, centro de trabajo, foto, documentos con todas sus versiones y notificaciones; la cuenta se desactiva. Se conservan solicitudes, carreras, prioridades, estados, resultado, índice, estadísticas y snapshots. |
+| Nombre anonimizado | "Aspirante anonimizado", sin número: un `#id` seguiría siendo un identificador. La clave técnica queda solo en la base de datos. |
+| Versiones de documentos | Las históricas se borran al vencer la retención; la vigente se conserva solo mientras el expediente siga sujeto a conservación. Al anonimizar se borran todas. |
+| Expresiones de interés | Cierre de la convocatoria + retención: se anonimizan nombre, CI, correo y celular; se conservan carrera, entidad, municipio y fecha. |
+| Auditoría | Excluida: la anonimización no altera los registros de auditoría. |
+| Ejecución | Automática mensual y manual adelantada por el Superadmin, con vista previa (aspirantes, intereses, documentos, espacio). Cada ejecución en `RetencionEjecutada` y en la auditoría. |
+| Copias de seguridad | No es retroactiva: con 30 días de retención de backups, los datos desaparecen de las copias en el ciclo siguiente. |
+
 ## Dashboards
 
 | Tema | Decisión |

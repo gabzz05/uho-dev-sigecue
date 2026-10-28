@@ -397,3 +397,10 @@ En macOS se puede usar la misma línea con `crontab -e`, quitando la columna
 En Windows con WSL, la línea de cron funciona dentro de Ubuntu siempre que WSL
 esté corriendo (ver el paso 5 de la sección de Windows). Conviene además copiar
 `/var/backups/sigecue` fuera de WSL, p. ej. a `/mnt/c/Backups/sigecue`.
+
+**Copias de seguridad y retención de datos (RG-028).** La anonimización no es
+retroactiva sobre las copias ya generadas. Con la retención de 30 días, los
+datos anonimizados desaparecen de las copias en el ciclo natural siguiente. No
+amplíes esa retención sin revisar la política de datos personales, y si
+restauras una copia antigua, vuelve a ejecutar la retención (Configuración →
+Retención de datos) antes de reabrir el sistema.

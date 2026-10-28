@@ -54,6 +54,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
 | `convocatorias` | Convocatoria de solicitud de matrícula (primera, segunda...) |
 | `aspirantes` | Perfil del aspirante, tipos de documento y documentos versionados; descarga con control de acceso |
+| `retencion` | Política de retención de datos personales (RG-028): anonimización, borrado de archivos y registro de ejecuciones |
 | `dashboard` | Vista ejecutiva del panel por rol, con alertas operativas |
 | `prematricula` | Período, expediente de cada otorgado, revisión por documento, correcciones, aprobación y exportación |
 | `otorgamiento` | Ranking, reparto de plazas, ajustes manuales, aprobación y publicación (snapshot del resultado) |
@@ -795,6 +796,61 @@ información) y cada una enlaza a su módulo:
 - otorgamiento pendiente de aprobar (Jefe CI o Vicerrector, según la etapa);
 - prematrículas enviadas sin revisar, con correcciones o incompletas, y
   prematrícula que cierra pronto.
+
+### Retención de datos (RG-028)
+
+`apps/retencion/services.py` aplica la política. Hay dos plazos en
+Configuración → Parámetros: `retencion_anios` (2 por defecto) y
+`retencion_otorgados_anios` (5). Se ejecuta de dos formas:
+
+- **Automática:** tarea `aplicar_retencion` (Celery beat), el día 1 de cada mes
+  a las 3:00.
+- **Manual:** Configuración → Retención de datos (solo Superadmin). Muestra
+  antes los aspirantes y las expresiones de interés que se anonimizarán, los
+  archivos que se borrarán y el espacio estimado que se libera
+  (`GET /admin/retencion/previsualizar/`), y ofrece ejecutar al momento
+  (`POST /admin/retencion/ejecuciones/` con `confirmar: true`).
+
+Cada ejecución queda en `RetencionEjecutada` (fecha, quién, automática o no,
+totales, espacio liberado y duración) y en la auditoría.
+
+**Cuándo se anonimiza a un aspirante.** El plazo cuenta desde la publicación
+del último otorgamiento del año académico de su solicitud más reciente:
+
+| Caso | Plazo |
+|---|---|
+| No seleccionado | `retencion_anios` |
+| Otorgado | `retencion_otorgados_anios` (conservación ampliada) |
+| Nunca confirmó una solicitud | `retencion_anios` desde su último acceso (o desde el registro, si nunca entró) |
+| Tiene una solicitud de un año posterior o un proceso sin publicar | No se toca todavía |
+
+**Qué hace la anonimización.** La cuenta se desactiva y se le quita la
+contraseña.
+
+- **Se elimina:**
+  - el nombre, que pasa a "Aspirante anonimizado", sin número ni otra marca
+    identificable; el id queda solo como clave técnica en la base de datos;
+  - el usuario de acceso, CI, correo, celular y centro de trabajo;
+  - la foto y **todos** los archivos con todas sus versiones, del perfil y de
+    la prematrícula;
+  - los textos de la prematrícula y las notificaciones;
+  - los valores guardados en el historial de datos y documentos.
+- **Se conserva:** solicitudes, carreras, prioridades, estados, resultado del
+  otorgamiento (con el nombre anonimizado en el snapshot), índice y
+  estadísticas.
+
+**Versiones antiguas de documentos.** A los expedientes que aún se conservan
+(los otorgados entre los 2 y los 5 años) se les borran las versiones antiguas
+cuando vence `retencion_anios`. La vigente se mantiene hasta la anonimización.
+
+**Expresiones de interés.** Pasado el cierre de su convocatoria más
+`retencion_anios`, el nombre pasa a "Interesado anonimizado" y se borran CI,
+celular y correo. Se conservan carrera, entidad (y su municipio) y fecha para
+las estadísticas.
+
+**No se altera:** los **registros de auditoría**, que son evidencia del
+sistema. Las copias de seguridad ya hechas tampoco cambian: ver DESPLIEGUE,
+sección 5.
 
 ### Exportar a PDF
 
