@@ -74,6 +74,8 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `POST /api/v1/auth/logout/` | Invalida el refresh y borra la cookie. |
 | `POST /api/v1/auth/registro/` | Registro de aspirante. Envía el correo de activación. |
 | `POST /api/v1/auth/activar/` | `{token}` recibido en el correo. |
+| `POST /api/v1/auth/recuperar/` | `{email}`. Envía el enlace para restablecer la contraseña. Responde igual exista o no la cuenta. |
+| `POST /api/v1/auth/restablecer/` | `{uid, token, password}` del enlace. Cambia la contraseña, quita el bloqueo por intentos y cierra las sesiones abiertas. |
 | `GET/PATCH /api/v1/auth/me/` | Perfil propio con rol y permisos. Editables: `celular`, `foto`. |
 | `POST /api/v1/auth/me/password/` | `{actual, nueva}`. No aplica a usuarios del SGU. |
 
@@ -89,6 +91,12 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
   cuenta queda bloqueada `LOGIN_BLOQUEO_MINUTOS`. Los endpoints públicos de auth
   tienen además un límite de peticiones por IP (`AUTH_THROTTLE_RATE`).
 - **Contraseñas**: Argon2 (RG-007) y validadores de Django.
+- **Recuperación de contraseña**: el enlace usa el token de Django, que
+  depende del hash de la contraseña y del último inicio de sesión, así que
+  sirve una sola vez y deja de valer si el usuario entra antes de usarlo.
+  Caduca a las 2 h (`PASSWORD_RESET_TIMEOUT`). Solo cuentas locales activas
+  con correo (los aspirantes, con la cuenta activada); las del SGU cambian la
+  contraseña en el SGU.
 - **Cuentas no activadas**: la tarea `eliminar_cuentas_no_verificadas` (Celery
   beat, cada hora) borra los aspirantes que no activaron su cuenta en 48 h.
 

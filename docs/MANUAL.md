@@ -17,6 +17,13 @@ Qué hace cada rol en cada etapa del proceso de ingreso. Al entrar al panel, el
 | 8 | Resultados públicos | Todos | Landing → Resultados |
 | 9 | Prematrícula | Secretaría General, aspirantes otorgados y entidades | Prematrícula |
 
+## Contraseña olvidada
+
+En **Iniciar sesión → ¿Olvidaste tu contraseña?** se escribe el correo de la
+cuenta y llega un enlace para elegir una contraseña nueva. Vale 2 horas y una
+sola vez. Al cambiarla se cierran las sesiones abiertas en otros equipos. Las
+cuentas del SGU cambian la contraseña en el SGU.
+
 ## Aspirante
 
 1. **Registrarse** (desde "Solicitar matrícula" en la landing): nombre,
