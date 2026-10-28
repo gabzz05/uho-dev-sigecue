@@ -42,7 +42,7 @@ def _convocatoria_que_acepta():
 
 
 def _bloquear(solicitud):
-    solicitud = Solicitud.objects.select_for_update().select_related("convocatoria").get(pk=solicitud.pk)
+    solicitud = Solicitud.objects.select_for_update(of=("self",)).select_related("convocatoria").get(pk=solicitud.pk)
     if not solicitud.editable:
         raise ErrorDeNegocio("La solicitud ya no se puede modificar: la convocatoria está cerrada.")
     return solicitud

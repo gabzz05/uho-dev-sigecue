@@ -113,7 +113,7 @@ def motivos_no_elegible(solicitud):
 
 
 def _bloquear(solicitud):
-    return Solicitud.objects.select_for_update().select_related("aspirante", "convocatoria").get(pk=solicitud.pk)
+    return Solicitud.objects.select_for_update(of=("self",)).select_related("aspirante", "convocatoria").get(pk=solicitud.pk)
 
 
 def _iniciar_revision(solicitud):
@@ -154,7 +154,8 @@ def validar_indice(usuario, solicitud, valor):
     """Fija el índice validado contra la certificación. Una sola validación; después solo un rol global lo cambia."""
     solicitud = _bloquear(solicitud)
     _exigir_revisable(usuario, solicitud)
-    perfil = PerfilAspirante.objects.select_for_update().select_related("indice_validado_por").get(usuario=solicitud.aspirante)
+    # of=("self",): PostgreSQL no admite FOR UPDATE sobre el lado nulo de un LEFT JOIN.
+    perfil = PerfilAspirante.objects.select_for_update(of=("self",)).select_related("indice_validado_por").get(usuario=solicitud.aspirante)
     if perfil.indice_validado is not None and not usuario.es_global:
         por = perfil.indice_validado_por.nombre_completo if perfil.indice_validado_por else "otra entidad"
         raise ErrorDeNegocio(f"El índice ya lo validó {por}. Solo la Comisión de Ingreso puede cambiarlo.")
@@ -216,7 +217,7 @@ def crear_observacion(usuario, solicitud, *, objetivo, texto, tipo_documento=Non
 
 
 def _bloquear_observacion(observacion):
-    return Observacion.objects.select_for_update().select_related("solicitud__aspirante", "solicitud__convocatoria", "tipo_documento").get(
+    return Observacion.objects.select_for_update(of=("self",)).select_related("solicitud__aspirante", "solicitud__convocatoria", "tipo_documento").get(
         pk=observacion.pk
     )
 
