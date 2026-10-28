@@ -35,6 +35,10 @@ class Otorgamiento(models.Model):
         settings.AUTH_USER_MODEL, verbose_name="publicado por", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     publicado_at = models.DateTimeField("publicado", null=True, blank=True)
+    # Último día en que el listado se ve en la landing: el cierre de la prematrícula
+    # (lo fija el feature de prematrícula). Vacío = visible. Después sigue disponible
+    # para los usuarios internos autorizados.
+    publico_hasta = models.DateField("visible en la landing hasta", null=True, blank=True)
 
     class Meta:
         verbose_name = "otorgamiento"
