@@ -84,7 +84,8 @@ class Usuario(AbstractUser):
 
     @property
     def nombre_completo(self) -> str:
-        return f"{self.first_name} {self.last_name}".strip()
+        # El Superadmin creado con createsuperuser no tiene nombre: se muestra su usuario.
+        return f"{self.first_name} {self.last_name}".strip() or self.username
 
     @property
     def es_superadmin(self) -> bool:
