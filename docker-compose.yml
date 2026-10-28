@@ -80,7 +80,14 @@ services:
       SERVER_NAME: ${SERVER_NAME:-localhost}
     volumes:
       - static:/static:ro
-      - media_publica:/media:ro
+      # nocopy: si el volumen está vacío, Docker copiaría en él el /media de
+      # la imagen de nginx (de root) y el backend no podría guardar imágenes.
+      - type: volume
+        source: media_publica
+        target: /media
+        read_only: true
+        volume:
+          nocopy: true
       # Certificado de la UHO: copiar sigecue.crt y sigecue.key a ./certs.
       # Sin ellos se genera uno autofirmado para pruebas.
       - ./certs:/etc/nginx/certs

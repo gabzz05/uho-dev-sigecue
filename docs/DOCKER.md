@@ -93,6 +93,16 @@ Si se restaura una copia antigua, hay que volver a ejecutar la retención de
 datos (Configuración → Retención de datos) antes de reabrir el sistema. Ver
 DESPLIEGUE §5.
 
+## Problemas conocidos
+
+**Error al subir el escudo o la imagen de una carrera** en instalaciones
+creadas antes de la versión 1.0.2: el volumen `media_publica` quedó con dueño
+`root` y el backend no puede escribir en él. Se corrige una sola vez con:
+
+```bash
+docker compose run --rm --no-deps -u root backend chown -R sigecue:sigecue /data/media_publica
+```
+
 ## Verificado
 
 Probado en un clon limpio del repositorio:
