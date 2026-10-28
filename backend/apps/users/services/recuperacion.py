@@ -58,8 +58,13 @@ def usuario_del_enlace(uid, token):
 
 
 @transaction.atomic
-def restablecer(usuario, password):
+def restablecer(usuario, token, password):
     """Cambia la contraseña, quita el bloqueo por intentos y cierra las sesiones abiertas."""
+    # Con la fila bloqueada se vuelve a comprobar el token: si otra petición con el
+    # mismo enlace cambió la contraseña mientras tanto, el enlace ya no vale.
+    usuario = Usuario.objects.select_for_update().get(pk=usuario.pk)
+    if not default_token_generator.check_token(usuario, token):
+        raise ErrorDeNegocio(ENLACE_INVALIDO)
     usuario.set_password(password)
     usuario.intentos_fallidos = 0
     usuario.bloqueado_hasta = None

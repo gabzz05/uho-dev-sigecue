@@ -4,7 +4,9 @@ import pytest
 from django.core import mail
 from django.test import override_settings
 
+from apps.core.exceptions import ErrorDeNegocio
 from apps.users.models import Usuario
+from apps.users.services import recuperacion
 
 from .conftest import PASSWORD
 
@@ -130,6 +132,17 @@ class TestRestablecer:
         api.post(LOGIN, {"identificador": "maria@nauta.cu", "password": PASSWORD}, format="json")
 
         assert restablecer(api, enlace).status_code == 400
+
+    def test_el_enlace_se_comprueba_otra_vez_con_la_fila_bloqueada(self, aspirante, enlace):
+        # Dos peticiones simultáneas con el mismo enlace pasan la validación antes
+        # de que ninguna cambie la contraseña; solo la primera debe aplicarse.
+        usuario = recuperacion.usuario_del_enlace(enlace["uid"], enlace["token"])
+        recuperacion.restablecer(usuario, enlace["token"], NUEVA)
+
+        with pytest.raises(ErrorDeNegocio):
+            recuperacion.restablecer(usuario, enlace["token"], "Tercera-Clave-789")
+        aspirante.refresh_from_db()
+        assert aspirante.check_password(NUEVA)
 
     def test_cuenta_bloqueada_despues_de_pedirlo(self, api, aspirante, enlace):
         Usuario.objects.filter(pk=aspirante.pk).update(is_active=False)
