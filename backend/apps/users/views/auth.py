@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import IntegrityError
 from django.http import FileResponse
 from drf_spectacular.utils import OpenApiTypes, extend_schema, inline_serializer
 from rest_framework import exceptions, generics, serializers, status
@@ -13,6 +14,8 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from apps.core.exceptions import ErrorDeNegocio
 from apps.users.models import Usuario
 from apps.users.serializers import (
+    CI_REGISTRADO,
+    EMAIL_REGISTRADO,
     ActivacionSerializer,
     CambiarPasswordSerializer,
     LoginSerializer,
@@ -119,10 +122,15 @@ class RegistroView(_VistaPublica):
         datos = RegistroSerializer(data=request.data)
         datos.is_valid(raise_exception=True)
         d = datos.validated_data
-        registro.registrar_aspirante(
-            nombre=d["nombre"], apellidos=d["apellidos"], ci=d["ci"],
-            email=d["email"], celular=d["celular"], password=d["password"],
-        )
+        try:
+            registro.registrar_aspirante(
+                nombre=d["nombre"], apellidos=d["apellidos"], ci=d["ci"],
+                email=d["email"], celular=d["celular"], password=d["password"],
+            )
+        except IntegrityError as exc:
+            # Dos registros simultáneos con el mismo CI o correo pasan juntos la validación.
+            campo, mensaje = ("ci", CI_REGISTRADO) if "ci_hash" in str(exc) else ("email", EMAIL_REGISTRADO)
+            raise serializers.ValidationError({campo: [mensaje]})
         return Response(
             {"mensaje": "Te enviamos un correo para activar tu cuenta. Revisa tu bandeja de entrada."},
             status=status.HTTP_201_CREATED,

@@ -73,6 +73,19 @@ class TestRegistro:
 
         assert "Ya existe una cuenta" in errores(response)["ci"][0]
 
+    @pytest.mark.parametrize("campo", ["ci", "email"])
+    def test_registro_simultaneo_duplicado_da_400(self, api, datos_registro, aspirante, monkeypatch, campo):
+        # Simula la carrera: la validación previa no ve la otra cuenta y choca con la restricción única.
+        from apps.users.serializers import RegistroSerializer
+
+        monkeypatch.setattr(RegistroSerializer, f"validate_{campo}", lambda self, valor: valor)
+        duplicado = {"ci": aspirante.ci, "email": aspirante.email}[campo]
+
+        response = registrar(api, datos_registro | {campo: duplicado})
+
+        assert response.status_code == 400
+        assert "Ya existe una cuenta" in errores(response)[campo][0]
+
     def test_email_unico_sin_distinguir_mayusculas(self, api, datos_registro, aspirante):
         response = registrar(api, datos_registro | {"email": "MARIA@nauta.cu"})
 
