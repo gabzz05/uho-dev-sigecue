@@ -52,6 +52,8 @@ def _bloquear(solicitud):
 def obtener_o_crear(usuario):
     """Crea el borrador del aspirante en la convocatoria abierta (o devuelve el que ya tiene)."""
     convocatoria = _convocatoria_que_acepta()
+    if Solicitud.objects.filter(aspirante=usuario, estado=Solicitud.Estado.OTORGADA).exists():
+        raise ErrorDeNegocio("Ya tienes una plaza otorgada: no puedes presentar otra solicitud.")
     if aspirantes.perfil_bloqueado(usuario):
         raise ErrorDeNegocio(aspirantes.MENSAJE_BLOQUEADO)
     solicitud, _ = Solicitud.objects.get_or_create(aspirante=usuario, convocatoria=convocatoria)
