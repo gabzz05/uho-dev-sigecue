@@ -9,6 +9,7 @@ from apps.aspirantes.tests.fixtures import ANIO, HOY, cerrar
 from apps.auditoria.models import LogAuditoria
 from apps.convocatorias.models import ConvocatoriaSolicitud
 from apps.convocatorias.services import ofertas_de
+from apps.core.pdf import pdf_disponible
 from apps.notificaciones.models import Notificacion
 from apps.otorgamiento import services
 from apps.otorgamiento.models import Otorgamiento, ResultadoOtorgamiento
@@ -331,3 +332,15 @@ def test_el_aspirante_no_seleccionado_puede_ir_a_la_segunda(api_como, usuarios, 
 
     assert (nueva.status_code, nueva.json()["convocatoria"]["id"]) == (201, segunda.pk)
     assert ana.status_code == 400  # ya obtuvo plaza: su perfil queda congelado
+
+
+@pytest.mark.skipif(not pdf_disponible(), reason="WeasyPrint sin librerías nativas (Pango/GTK)")
+def test_exportar_pdf_publicado(api_como, usuarios, otorgamiento):
+    services.aprobar(usuarios["jefe"], otorgamiento)
+    services.publicar(usuarios["vicerrector"], otorgamiento, segunda_convocatoria=False)
+
+    response = api_como(usuarios["jefe"]).get(f"{URL}{otorgamiento.pk}/exportar-pdf/")
+
+    assert response.status_code == 200
+    assert response["Content-Type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")

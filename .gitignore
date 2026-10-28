@@ -30,3 +30,6 @@ frontend/coverage/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Docker: certificado TLS montado en el contenedor web
+certs/

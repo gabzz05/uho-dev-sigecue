@@ -9,6 +9,7 @@ from apps.aspirantes.models import TipoDocumento
 from apps.aspirantes.tests.fixtures import pdf, png
 from apps.auditoria.models import LogAuditoria
 from apps.core.exceptions import ErrorDeNegocio
+from apps.core.pdf import pdf_disponible
 from apps.notificaciones.models import Notificacion
 from apps.otorgamiento import services as otorgamiento_services
 from apps.otorgamiento.models import Otorgamiento
@@ -233,3 +234,12 @@ class TestPanel:
         assert api_como(superadmin).post(url, {"nombre": "Dirección particular", "tipo": "texto", "requerido": False}, format="json").status_code == 201
         assert api_como(usuarios["jefe"]).post(url, {"nombre": "X", "tipo": "texto"}, format="json").status_code == 403
         assert ElementoPrematricula.objects.count() == 0
+
+
+@pytest.mark.skipif(not pdf_disponible(), reason="WeasyPrint sin librerías nativas (Pango/GTK)")
+def test_exportar_pdf(api_como, usuarios, de_ana):
+    response = api_como(usuarios["jefe"]).get(f"{ADMIN}exportar-pdf/")
+
+    assert response.status_code == 200
+    assert response["Content-Type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
