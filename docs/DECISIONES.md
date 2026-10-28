@@ -156,6 +156,18 @@ Este archivo registra esas decisiones.
 | Snapshot | Obligatorio: `ResultadoOtorgamiento` guarda índice utilizado, posición, motivo de exclusión, opciones y lo otorgado. Queda congelado al publicar. |
 | Revisión tras generar | Generado el otorgamiento, la revisión de esa convocatoria (validar, observar, corregir) se cierra, para que el snapshot no quede desfasado. |
 
+## Dashboards
+
+| Tema | Decisión |
+|---|---|
+| Dónde (RF-029) | Dashboard de interés dentro del módulo de interés. Dashboard principal: vista ejecutiva por rol (interés, plan, solicitudes, otorgamiento, prematrícula) con totales, pendientes, alertas y accesos rápidos. |
+| Gráfico por entidad | Barras horizontales ordenadas de mayor a menor en lugar del pastel de la ERS: es más legible con muchas entidades. |
+| Mapa | Provisional mientras no llegue la geometría oficial: 14 casillas en posición aproximada, color por intensidad, cantidad visible y tabla complementaria. La interfaz admite cambiar la fuente visual. |
+| Municipio | La distribución territorial se calcula por **municipio de la entidad ofertante**, no por el de la persona (la expresión de interés no lo guarda). |
+| Ámbito (RF-030) | Globales: todo. Locales: solo su entidad. |
+| Actualización | Polling cada 60 s con la pestaña visible. Sin WebSockets en esta fase. |
+| Alertas operativas | Tarjetas de atención rápida en el dashboard principal (no notificaciones): convocatorias próximas a cerrar, solicitudes observadas o pendientes, otorgamiento pendiente de generar o aprobar, prematrículas por revisar, con correcciones o incompletas. |
+
 ## Resultados públicos
 
 | Tema | Decisión |

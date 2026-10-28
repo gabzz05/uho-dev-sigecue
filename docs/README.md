@@ -54,6 +54,7 @@ navegador ──► nginx ──┬──► frontend/dist (React compilado, arc
 | `plan_plazas` | Plan de plazas: flujo de aprobación multinivel, historial, versión complementaria y exportaciones |
 | `convocatorias` | Convocatoria de solicitud de matrícula (primera, segunda...) |
 | `aspirantes` | Perfil del aspirante, tipos de documento y documentos versionados; descarga con control de acceso |
+| `dashboard` | Vista ejecutiva del panel por rol, con alertas operativas |
 | `prematricula` | Período, expediente de cada otorgado, revisión por documento, correcciones, aprobación y exportación |
 | `otorgamiento` | Ranking, reparto de plazas, ajustes manuales, aprobación y publicación (snapshot del resultado) |
 | `solicitudes` | Solicitud de carreras del aspirante (selección y confirmación) y su revisión por las entidades: observaciones, validación del índice, historial, estadísticas y exportación |
@@ -751,6 +752,49 @@ otorgó la plaza, Jefe CI y Secretaría General).
 - `/admin/prematricula`: período, listado y filtros.
 - `/admin/prematricula/:id`: revisión elemento por elemento, con visor.
 - `/aspirante/prematricula`: el formulario del aspirante.
+
+### Dashboards (RF-029, RF-030)
+
+Los dos respetan el ámbito: los roles globales ven todo y los locales solo su
+entidad. Se actualizan cada 60 s con la pestaña visible (`usePolling`), sin
+WebSockets.
+
+**Dashboard de interés** (Interés → pestaña "Dashboard",
+`GET /admin/interes/expresiones/estadisticas/`, con los mismos filtros y el
+mismo ámbito que el listado de interesados):
+
+- total de expresiones;
+- barras por carrera;
+- barras horizontales **por entidad**, ordenadas de mayor a menor. Reemplazan
+  el pastel de la ERS: con muchas entidades un pastel no se lee;
+- evolución diaria;
+- **distribución territorial por municipio de la entidad ofertante**: la
+  expresión de interés no guarda el municipio de la persona.
+
+El mapa (`components/graficos/MapaMunicipios.jsx`) es **provisional**:
+
+- una casilla por municipio, en su posición aproximada;
+- color en escala secuencial de un solo tono, con el número escrito en cada
+  casilla y como tooltip;
+- una tabla con los mismos datos.
+
+Ver `docs/ANOTACIONES.md`, sección 1, para cambiarlo por la geometría
+oficial.
+
+**Dashboard principal** (`/admin`, `GET /admin/dashboard/`, `apps/dashboard`).
+Tiene una tarjeta por cada módulo que el rol puede ver (interés, plan de
+plazas, solicitudes, otorgamiento y prematrícula), con totales y estado, y
+accesos rápidos al menú del rol. Las **alertas operativas** son tarjetas de
+atención rápida, no notificaciones. Se ordenan por nivel (atención, aviso,
+información) y cada una enlaza a su módulo:
+
+- convocatoria de interés o de solicitud que cierra en 3 días o menos;
+- entidades sin enviar su propuesta del plan;
+- solicitudes observadas o pendientes de revisión (si el rol revisa);
+- falta generar el otorgamiento (Secretaría General);
+- otorgamiento pendiente de aprobar (Jefe CI o Vicerrector, según la etapa);
+- prematrículas enviadas sin revisar, con correcciones o incompletas, y
+  prematrícula que cierra pronto.
 
 ### Exportar a PDF
 

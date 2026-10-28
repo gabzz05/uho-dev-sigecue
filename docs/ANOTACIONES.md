@@ -10,17 +10,29 @@ interés hay en cada municipio, sobre un mapa de la provincia de Holguín.
 Cada municipio se colorea más intenso cuanto más expresiones de interés
 recibieron las carreras que se ofertan allí.
 
-**Estado actual:** pendiente de la geometría real de los municipios.
-La solución provisional se describirá aquí cuando se implemente el dashboard
-(feature `convocatoria-interes`).
+**Estado actual: provisional.** `frontend/src/components/graficos/MapaMunicipios.jsx`
+dibuja una casilla por municipio en su posición aproximada (tabla `POSICIONES`,
+columna y fila). El color es una escala secuencial de un solo tono, cada
+casilla lleva el número escrito y debajo hay una tabla con los mismos datos.
+El interés se cuenta por el **municipio de la entidad que oferta la carrera**.
 
 **Qué hace falta:** un archivo con los contornos de los 14 municipios de
 Holguín, preferiblemente **GeoJSON** (o un SVG con un `<path>` por municipio).
 Cada contorno debe poder relacionarse con un municipio del nomenclador, por
 nombre o por código.
 
-**Cómo integrarlo cuando llegue:** se completará con los pasos concretos
-cuando exista el componente del mapa.
+**Cómo integrarlo cuando llegue:**
+
+1. Guardar el GeoJSON en `frontend/src/assets/` (o el SVG con un `<path>` por
+   municipio).
+2. Crear un componente con la **misma interfaz** que `MapaMunicipios`:
+   `filas = [{ municipio, nombre, total }]`. La API ya devuelve los 14
+   municipios en `/admin/interes/expresiones/estadisticas/` (`por_municipio`).
+3. Relacionar cada contorno con el municipio por nombre, o por un código si se
+   añade al nomenclador.
+4. Reutilizar la misma escala de color (`n0` a `n5`), el número en el tooltip
+   y la tabla complementaria, y sustituir el componente en
+   `pages/admin/interes/DashboardInteres.jsx`.
 
 ## 2. Escudo de la UHO (RE-001, RE-009)
 
