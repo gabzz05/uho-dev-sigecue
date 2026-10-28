@@ -6,7 +6,7 @@ from django.conf import settings
 from apps.configuracion.services import enviar_correo
 
 from .models import Usuario
-from .services import registro
+from .services import recuperacion, registro
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +20,22 @@ def enviar_correo_activacion(usuario_id):
         "activacion_cuenta",
         [usuario.email],
         {"nombre": usuario.first_name, "enlace": registro.enlace_activacion(usuario), "horas": settings.ACTIVACION_HORAS},
+    )
+
+
+@shared_task
+def enviar_correo_recuperacion(usuario_id):
+    usuario = Usuario.objects.filter(pk=usuario_id).first()
+    if usuario is None:
+        return
+    enviar_correo(
+        "recuperar_password",
+        [usuario.email],
+        {
+            "nombre": usuario.first_name,
+            "enlace": recuperacion.enlace_recuperacion(usuario),
+            "horas": recuperacion.horas_validez(),
+        },
     )
 
 

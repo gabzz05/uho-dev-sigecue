@@ -28,6 +28,25 @@ PLANTILLAS = {
             "Universidad de Holguín"
         ),
     },
+    "recuperar_password": {
+        "nombre": "Recuperación de contraseña",
+        "descripcion": "Se envía al pedir restablecer la contraseña desde el inicio de sesión.",
+        "variables": {
+            "nombre": "Nombre del usuario",
+            "enlace": "Enlace para elegir la contraseña nueva",
+            "horas": "Horas de validez del enlace",
+        },
+        "asunto": "SIGECUE — Restablece tu contraseña",
+        "cuerpo": (
+            "Hola, {{ nombre }}:\n\n"
+            "Recibimos una solicitud para restablecer la contraseña de tu cuenta en SIGECUE.\n\n"
+            "Para elegir una contraseña nueva abre este enlace:\n\n"
+            "{{ enlace }}\n\n"
+            "El enlace es válido durante {{ horas }} horas y solo se puede usar una vez.\n\n"
+            "Si no fuiste tú quien lo pidió, ignora este mensaje: tu contraseña no cambia.\n\n"
+            "Universidad de Holguín"
+        ),
+    },
     "interes_confirmado": {
         "nombre": "Interés registrado",
         "descripcion": "Se envía al registrar una expresión de interés en la landing (RF-021).",

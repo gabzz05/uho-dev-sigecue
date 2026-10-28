@@ -101,6 +101,9 @@ LOGIN_BLOQUEO_MINUTOS = env_int("LOGIN_BLOQUEO_MINUTOS", 15)
 # RF-045: horas para activar la cuenta antes de que se elimine.
 ACTIVACION_HORAS = 48
 
+# Validez del enlace para restablecer la contraseña.
+PASSWORD_RESET_TIMEOUT = 2 * 3600
+
 # URL pública del frontend, para los enlaces de los correos.
 FRONTEND_URL = env_str("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 
