@@ -50,6 +50,15 @@ librerías nativas (Pango/GTK), lo habitual en Windows. Para ejecutarlas,
 instálalas como se indica en
 [DESPLIEGUE.md](DESPLIEGUE.md#librerías-de-weasyprint-pdf).
 
+**Contra PostgreSQL.** SQLite ignora `select_for_update`, así que algunos
+errores solo aparecen con el motor de producción. Con los contenedores de
+Docker levantados (ver [DOCKER.md](DOCKER.md)), la suite completa, PDF
+incluidos, se ejecuta así:
+
+```bash
+docker compose run --rm --no-deps -u root backend sh -c   "pip install -q -r requirements/dev.txt && pytest --ds=config.settings.test_pg --no-cov"
+```
+
 ### Celery en desarrollo
 
 En desarrollo `CELERY_TASK_ALWAYS_EAGER=True` (valor por defecto) hace que las
