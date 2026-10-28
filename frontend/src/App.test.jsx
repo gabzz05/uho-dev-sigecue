@@ -10,6 +10,8 @@ vi.mock('./services/auth', () => ({
   cerrarSesion: vi.fn(),
   registrarAspirante: vi.fn(),
   activarCuenta: vi.fn(),
+  pedirRecuperacion: vi.fn(),
+  restablecerPassword: vi.fn(),
 }))
 
 function errorApi(mensaje, detalles) {
@@ -192,6 +194,70 @@ describe('registro', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
     expect(await screen.findByText('Ya existe una cuenta con este carnet de identidad.')).toBeInTheDocument()
+  })
+})
+
+describe('recuperación de contraseña', () => {
+  it('el login enlaza con la recuperación', async () => {
+    renderApp('/login')
+    fireEvent.click(await screen.findByRole('link', { name: '¿Olvidaste tu contraseña?' }))
+    expect(await screen.findByRole('heading', { name: 'Recuperar contraseña' })).toBeInTheDocument()
+  })
+
+  it('pide el enlace y muestra el aviso', async () => {
+    auth.pedirRecuperacion.mockResolvedValue('Si el correo pertenece a una cuenta de SIGECUE, te enviamos un enlace.')
+    renderApp('/recuperar')
+    fireEvent.change(await screen.findByLabelText(/Correo electrónico/), { target: { value: ' ana@nauta.cu ' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }))
+
+    expect(await screen.findByText(/te enviamos un enlace/)).toBeInTheDocument()
+    expect(auth.pedirRecuperacion).toHaveBeenCalledWith('ana@nauta.cu')
+  })
+
+  it('no llama a la API con un correo inválido', async () => {
+    renderApp('/recuperar')
+    fireEvent.change(await screen.findByLabelText(/Correo electrónico/), { target: { value: 'ana' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }))
+
+    expect(await screen.findByText('Escribe un correo electrónico válido.')).toBeInTheDocument()
+    expect(auth.pedirRecuperacion).not.toHaveBeenCalled()
+  })
+
+  it('restablece y vuelve al login con el mensaje', async () => {
+    auth.restablecerPassword.mockResolvedValue('Tu contraseña se cambió. Ya puedes iniciar sesión con la nueva.')
+    renderApp('/restablecer?uid=MQ&token=abc')
+    fireEvent.change(await screen.findByLabelText(/Contraseña nueva/), { target: { value: 'Nueva-Clave-1' } })
+    fireEvent.change(screen.getByLabelText(/Repite la contraseña/), { target: { value: 'Nueva-Clave-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Cambiar contraseña' }))
+
+    expect(await screen.findByText('Tu contraseña se cambió. Ya puedes iniciar sesión con la nueva.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument()
+    expect(auth.restablecerPassword).toHaveBeenCalledWith('MQ', 'abc', 'Nueva-Clave-1')
+  })
+
+  it('las contraseñas deben coincidir', async () => {
+    renderApp('/restablecer?uid=MQ&token=abc')
+    fireEvent.change(await screen.findByLabelText(/Contraseña nueva/), { target: { value: 'Nueva-Clave-1' } })
+    fireEvent.change(screen.getByLabelText(/Repite la contraseña/), { target: { value: 'Otra-Clave-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Cambiar contraseña' }))
+
+    expect(await screen.findByText('Las contraseñas no coinciden.')).toBeInTheDocument()
+    expect(auth.restablecerPassword).not.toHaveBeenCalled()
+  })
+
+  it('muestra el error del enlace caducado', async () => {
+    auth.restablecerPassword.mockRejectedValue(errorApi('El enlace para restablecer la contraseña no es válido o ya caducó. Pide uno nuevo.'))
+    renderApp('/restablecer?uid=MQ&token=abc')
+    fireEvent.change(await screen.findByLabelText(/Contraseña nueva/), { target: { value: 'Nueva-Clave-1' } })
+    fireEvent.change(screen.getByLabelText(/Repite la contraseña/), { target: { value: 'Nueva-Clave-1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Cambiar contraseña' }))
+
+    expect(await screen.findByText(/ya caducó/)).toBeInTheDocument()
+  })
+
+  it('sin uid ni token avisa de enlace inválido', async () => {
+    renderApp('/restablecer')
+    expect(await screen.findByText('El enlace para restablecer la contraseña no es válido.')).toBeInTheDocument()
   })
 })
 

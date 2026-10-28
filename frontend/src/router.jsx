@@ -24,7 +24,9 @@ import { MiSolicitud } from './pages/aspirante/MiSolicitud'
 import { Prematricula } from './pages/aspirante/Prematricula'
 import { Activar } from './pages/auth/Activar'
 import { Login } from './pages/auth/Login'
+import { Recuperar } from './pages/auth/Recuperar'
 import { Registro } from './pages/auth/Registro'
+import { Restablecer } from './pages/auth/Restablecer'
 import { MiPerfil } from './pages/cuenta/MiPerfil'
 import { MisNotificaciones } from './pages/cuenta/MisNotificaciones'
 import { EnConstruccion } from './pages/EnConstruccion'
@@ -68,6 +70,8 @@ export const rutas = [
       { path: 'login', element: <Login /> },
       { path: 'registro', element: <Registro /> },
       { path: 'activar', element: <Activar /> },
+      { path: 'recuperar', element: <Recuperar /> },
+      { path: 'restablecer', element: <Restablecer /> },
       { path: 'privacidad', element: <Privacidad /> },
       { path: 'resultados', element: <Resultados /> },
       { path: '*', element: <NoEncontrado /> },

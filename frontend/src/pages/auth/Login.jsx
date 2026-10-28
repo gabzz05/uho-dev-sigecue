@@ -45,6 +45,9 @@ export function Login() {
         {errorGeneral && <Alert tone="danger">{errorGeneral}</Alert>}
         <Input label="Correo o usuario" autoComplete="username" required {...campo('identificador')} />
         <Input label="Contraseña" type="password" autoComplete="current-password" required {...campo('password')} />
+        <Link to="/recuperar" className={styles.enlace}>
+          ¿Olvidaste tu contraseña?
+        </Link>
         <Button type="submit" icon={LogIn} loading={enviando} fullWidth>
           Entrar
         </Button>

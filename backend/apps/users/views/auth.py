@@ -16,10 +16,12 @@ from apps.users.serializers import (
     ActivacionSerializer,
     CambiarPasswordSerializer,
     LoginSerializer,
+    RecuperarPasswordSerializer,
     RegistroSerializer,
+    RestablecerPasswordSerializer,
     UsuarioActualSerializer,
 )
-from apps.users.services import autenticacion, registro
+from apps.users.services import autenticacion, recuperacion, registro
 
 SESION = inline_serializer("Sesion", {"access": serializers.CharField(), "usuario": UsuarioActualSerializer()})
 ACCESS = inline_serializer("Access", {"access": serializers.CharField()})
@@ -136,6 +138,38 @@ class ActivarView(_VistaPublica):
         datos.is_valid(raise_exception=True)
         registro.activar_cuenta(datos.validated_data["token"])
         return Response({"mensaje": "Tu cuenta está activa. Ya puedes iniciar sesión."})
+
+
+class RecuperarPasswordView(_VistaPublica):
+    """Envía al correo un enlace para restablecer la contraseña.
+
+    Responde lo mismo exista o no la cuenta, para no revelar qué correos están registrados.
+    """
+
+    @extend_schema(request=RecuperarPasswordSerializer, responses=MENSAJE, tags=["auth"])
+    def post(self, request):
+        datos = RecuperarPasswordSerializer(data=request.data)
+        datos.is_valid(raise_exception=True)
+        recuperacion.solicitar(datos.validated_data["email"])
+        return Response(
+            {
+                "mensaje": "Si el correo pertenece a una cuenta de SIGECUE, te enviamos un enlace para "
+                f"restablecer la contraseña. Es válido durante {recuperacion.horas_validez()} horas."
+            }
+        )
+
+
+class RestablecerPasswordView(_VistaPublica):
+    """Fija la contraseña nueva con el enlace recibido por correo y cierra las sesiones abiertas."""
+
+    @extend_schema(request=RestablecerPasswordSerializer, responses=MENSAJE, tags=["auth"])
+    def post(self, request):
+        datos = RestablecerPasswordSerializer(data=request.data)
+        datos.is_valid(raise_exception=True)
+        usuario = datos.validated_data["usuario"]
+        recuperacion.restablecer(usuario, datos.validated_data["password"])
+        request.user = usuario  # Para que la auditoría registre quién la cambió.
+        return Response({"mensaje": "Tu contraseña se cambió. Ya puedes iniciar sesión con la nueva."})
 
 
 @extend_schema(tags=["auth"])

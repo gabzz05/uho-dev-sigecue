@@ -120,6 +120,26 @@ class UsuarioActualSerializer(serializers.ModelSerializer):
         return datos
 
 
+class RecuperarPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class RestablecerPasswordSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    password = serializers.CharField(trim_whitespace=False, write_only=True)
+
+    def validate(self, attrs):
+        from apps.users.services import recuperacion
+
+        usuario = recuperacion.usuario_del_enlace(attrs["uid"], attrs["token"])
+        try:
+            validate_password(attrs["password"], usuario)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": list(exc.messages)})
+        return attrs | {"usuario": usuario}
+
+
 class CambiarPasswordSerializer(serializers.Serializer):
     actual = serializers.CharField(trim_whitespace=False)
     nueva = serializers.CharField(trim_whitespace=False)
